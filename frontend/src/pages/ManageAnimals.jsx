@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
 
 const emptyForm = {
   name: '',
@@ -11,10 +12,35 @@ const emptyForm = {
 
 function ManageAnimals() {
   const [animals, setAnimals] = useState([])
+  const [categories, setCategories] = useState(['Semua'])
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth > 768 : true
+  )
+  const [selectedCategory, setSelectedCategory] = useState('Semua')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5 // Ubah sesuai kebutuhan
+
+  const loadCategories = async () => {
+    try {
+      const res = await axios.get('http://localhost:3000/api/superadmin/categories')
+      const data = ['Semua', ...(res.data.data || []).map(cat => cat.name)]
+      setCategories(data)
+    } catch {
+      setCategories(['Semua'])
+    }
+  }
+
+  // Hitung data untuk halaman saat ini
+  const filteredAnimals = selectedCategory === 'Semua'
+    ? animals
+    : animals.filter(animal => animal.species === selectedCategory)
+  const totalPages = Math.ceil(filteredAnimals.length / itemsPerPage)
+  const currentPageAnimals = filteredAnimals.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   )
 
   const loadAnimals = async () => {
@@ -26,22 +52,30 @@ function ManageAnimals() {
     }
   }
 
+  // Reset ke halaman pertama ketika kategori berubah atau data hewan berubah
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedCategory, animals])
+
   useEffect(() => {
     let active = true
-
     ;(async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/superadmin/animals')
+        const [animalsRes, categoriesRes] = await Promise.all([
+          axios.get('http://localhost:3000/api/superadmin/animals'),
+          axios.get('http://localhost:3000/api/superadmin/categories'),
+        ])
         if (active) {
-          setAnimals(response.data.data || [])
+          setAnimals(animalsRes.data.data || [])
+          setCategories(['Semua', ...(categoriesRes.data.data || []).map(cat => cat.name)])
         }
       } catch {
         if (active) {
           setAnimals([])
+          setCategories(['Semua'])
         }
       }
     })()
-
     return () => {
       active = false
     }
@@ -52,31 +86,30 @@ function ManageAnimals() {
     setForm((current) => ({ ...current, [name]: value }))
   }
 
-  const resetForm = () => {
-    setForm(emptyForm)
-    setEditingId(null)
-  }
-
   const handleSubmit = async (event) => {
     event.preventDefault()
-
     try {
       const payload = { ...form, age: Number(form.age) }
-
       if (editingId) {
         await axios.put(`http://localhost:3000/api/superadmin/animals/${editingId}`, payload)
       } else {
         await axios.post('http://localhost:3000/api/superadmin/animals', payload)
       }
-
       await loadAnimals()
-      resetForm()
+      closeDrawer()
     } catch (error) {
       window.alert(error.response?.data?.message || 'Gagal menyimpan hewan.')
     }
   }
 
-  const handleEdit = (animal) => {
+  const openAddDrawer = () => {
+    const firstCategory = categories.find(c => c !== 'Semua') || 'Kucing'
+    setEditingId(null)
+    setForm({ ...emptyForm, species: firstCategory })
+    setDrawerOpen(true)
+  }
+
+  const openEditDrawer = (animal) => {
     setEditingId(animal.id)
     setForm({
       name: animal.name || '',
@@ -85,16 +118,22 @@ function ManageAnimals() {
       age: animal.age?.toString() || '',
       status: animal.status || 'tersedia',
     })
+    setDrawerOpen(true)
+  }
+
+  const closeDrawer = () => {
+    setDrawerOpen(false)
+    setEditingId(null)
+    setForm(emptyForm)
   }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Hapus hewan ini?')) return
-
     try {
       await axios.delete(`http://localhost:3000/api/superadmin/animals/${id}`)
       await loadAnimals()
       if (editingId === id) {
-        resetForm()
+        closeDrawer()
       }
     } catch (error) {
       window.alert(error.response?.data?.message || 'Gagal menghapus hewan.')
@@ -109,35 +148,32 @@ function ManageAnimals() {
 
   const getSpeciesIcon = (species) => {
     switch (species) {
-      case 'Kucing':
-        return 'fa-cat'
-      case 'Anjing':
-        return 'fa-dog'
-      case 'Kelinci':
-        return 'fa-rabbit'
-      case 'Burung':
-        return 'fa-dove'
-      case 'Hamster':
-        return 'fa-hippo'
-      default:
-        return 'fa-paw'
+      case 'Kucing': return 'fa-cat'
+      case 'Anjing': return 'fa-dog'
+      case 'Kelinci': return 'fa-rabbit'
+      case 'Burung': return 'fa-dove'
+      case 'Hamster': return 'fa-hippo'
+      default: return 'fa-paw'
     }
   }
 
   const getSpeciesColor = (species) => {
     switch (species) {
-      case 'Kucing':
-        return 'linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%)'
-      case 'Anjing':
-        return 'linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%)'
-      case 'Kelinci':
-        return 'linear-gradient(135deg, var(--green) 0%, var(--teal) 100%)'
-      case 'Burung':
-        return 'linear-gradient(135deg, var(--purple) 0%, var(--blue) 100%)'
-      case 'Hamster':
-        return 'linear-gradient(135deg, var(--red) 0%, var(--accent) 100%)'
-      default:
-        return 'linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%)'
+      case 'Kucing': return 'linear-gradient(135deg, var(--accent), var(--accent-dark))'
+      case 'Anjing': return 'linear-gradient(135deg, var(--blue), var(--purple))'
+      case 'Kelinci': return 'linear-gradient(135deg, var(--green), var(--teal))'
+      case 'Burung': return 'linear-gradient(135deg, var(--purple), var(--blue))'
+      case 'Hamster': return 'linear-gradient(135deg, var(--red), var(--accent))'
+      default: return 'linear-gradient(135deg, var(--accent), var(--accent-dark))'
+    }
+  }
+
+  const getStatusTagClass = (status) => {
+    switch (status) {
+      case 'tersedia': return 'tag-success'
+      case 'diadopsi': return 'tag-muted'
+      case 'rawat': return 'tag-kitchen'
+      default: return 'tag-muted'
     }
   }
 
@@ -163,20 +199,50 @@ function ManageAnimals() {
             <i className="fas fa-users"></i>
             <span>Kelola User</span>
           </a>
+          <a href="/dashboard/categories" className="nav-item">
+            <i className="fas fa-tags"></i>
+            <span>Kelola Kategori</span>
+          </a>
           <a href="/dashboard/animals" className="nav-item active">
             <i className="fas fa-paw"></i>
             <span>Kelola Hewan</span>
           </a>
+          <a href="/dashboard/questionnaire-character" className="nav-item">
+            <i className="fas fa-clipboard-list"></i>
+            <span>Kuisioner Karakter</span>
+          </a>
+          <a href="/dashboard/adoptions" className="nav-item">
+            <i className="fas fa-file-alt"></i>
+            <span>Kelola Pengajuan Adopsi</span>
+          </a>
+          <a href="/dashboard/reports" className="nav-item">
+            <i className="fas fa-chart-line"></i>
+            <span>Laporan</span>
+          </a>
+          <a href="/dashboard/settings" className="nav-item">
+            <i className="fas fa-cog"></i>
+            <span>Pengaturan Sistem</span>
+          </a>
+          <a href="/dashboard/restore" className="nav-item">
+            <i className="fas fa-undo"></i>
+            <span>Pulihkan Data</span>
+          </a>
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-user">
+          <Link to="/dashboard/profile" className="sidebar-user">
             <div className="sidebar-avatar">SA</div>
             <div className="sidebar-user-info">
               <div className="sidebar-user-name">Super Admin</div>
               <div className="sidebar-user-email">admin@adopsi.test</div>
             </div>
-          </div>
+          </Link>
+          <button 
+            className="sidebar-logout-btn"
+            onClick={() => { window.location.href = '/'; }}
+          >
+            <i className="fas fa-sign-out-alt"></i> Keluar
+          </button>
         </div>
       </aside>
 
@@ -192,8 +258,14 @@ function ManageAnimals() {
               <i className="fas fa-bars"></i>
             </button>
             <div className="topbar-title">
-              <div className="topbar-kicker">Kelola Hewan</div>
-              <div className="topbar-page-title">CRUD Hewan</div>
+              <button 
+                className="topbar-toggle" 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                aria-label="Toggle sidebar"
+              >
+                {sidebarOpen ? '≪' : '≫'}
+              </button>
+              <div className="topbar-page-title">Kelola Hewan</div>
             </div>
           </div>
 
@@ -214,183 +286,256 @@ function ManageAnimals() {
 
         {/* Page Body */}
         <div className="page-body">
-          <div className="two-col">
-            {/* Form */}
-            <div className="section-card">
-              <div className="section-card-header">
-                <div className="section-card-title">
-                  <i className="fas fa-plus"></i>
-                  {editingId ? 'Edit Hewan' : 'Tambah Hewan Baru'}
-                </div>
-              </div>
-              <div className="section-card-body">
-                <div style={{ padding: '22px' }}>
-                  <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                      <label className="form-label">Nama</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={form.name}
-                        onChange={handleChange}
-                        required
-                        className="form-input"
-                      />
-                    </div>
+          <div className="page-header">
+            <h1 className="page-header-title">
+              <i className="fas fa-paw"></i>
+              Daftar Hewan
+            </h1>
+            <p className="page-header-desc">
+              Kelola semua hewan yang tersedia untuk diadopsi.
+            </p>
+          </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Jenis</label>
-                      <select
-                        name="species"
-                        value={form.species}
-                        onChange={handleChange}
-                        className="form-select"
-                      >
-                        <option value="Kucing">Kucing</option>
-                        <option value="Anjing">Anjing</option>
-                        <option value="Kelinci">Kelinci</option>
-                        <option value="Burung">Burung</option>
-                        <option value="Hamster">Hamster</option>
-                      </select>
-                    </div>
+          <div className="content-toolbar">
+            <div className="search-box">
+              <input type="text" placeholder="Cari nama atau spesies..." />
+              <button><i className="fas fa-search"></i> Cari</button>
+            </div>
+            <button className="primary-link" onClick={openAddDrawer}>
+              <i className="fas fa-plus"></i> Tambah Hewan
+            </button>
+          </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Jenis Kelamin</label>
-                      <select
-                        name="gender"
-                        value={form.gender}
-                        onChange={handleChange}
-                        className="form-select"
-                      >
-                        <option value="Betina">Betina</option>
-                        <option value="Jantan">Jantan</option>
-                      </select>
-                    </div>
+          {/* Category Filter Pills (above panel) */}
+          <div className="filter-pills" style={{ marginBottom: '20px' }}>
+            {categories.map((category) => (
+              <button
+                key={category}
+                className={`filter-pill ${selectedCategory === category ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Umur (tahun)</label>
-                      <input
-                        type="number"
-                        name="age"
-                        min="0"
-                        value={form.age}
-                        onChange={handleChange}
-                        required
-                        className="form-input"
-                      />
-                    </div>
+          {/* Panel / Table */}
+          <div className="panel">
+            <div className="panel-head">
+              <h2><i className="fas fa-table"></i> Semua Hewan</h2>
+              <span>{filteredAnimals.length} hewan</span>
+            </div>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Hewan</th>
+                    <th>Spesies</th>
+                    <th>Jenis Kelamin</th>
+                    <th>Umur</th>
+                    <th>Status</th>
+                    <th>Terdaftar</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentPageAnimals.map((animal) => (
+                    <tr key={animal.id}>
+                      <td>{animal.id}</td>
+                      <td>
+                        <div className="user-cell">
+                          <div 
+                            className="user-avatar"
+                            style={{
+                              background: getSpeciesColor(animal.species),
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontWeight: '700',
+                            }}
+                          >
+                            <i className={`fas ${getSpeciesIcon(animal.species)}`}></i>
+                          </div>
+                          <strong>{animal.name}</strong>
+                        </div>
+                      </td>
+                      <td>{animal.species}</td>
+                      <td>{animal.gender}</td>
+                      <td>{animal.age} tahun</td>
+                      <td>
+                        <span className={`tag ${getStatusTagClass(animal.status)}`}>
+                          <span className="status-dot"></span>
+                          {animal.status}
+                        </span>
+                      </td>
+                      <td>{formatDate(animal.created_at)}</td>
+                      <td>
+                        <div className="actions">
+                          <button 
+                            className="btn-open-edit" 
+                            onClick={() => openEditDrawer(animal)}
+                          >
+                            <i className="fas fa-pen"></i> Edit
+                          </button>
+                          <button 
+                            className="btn-delete-user" 
+                            onClick={() => handleDelete(animal.id)}
+                          >
+                            <i className="fas fa-trash"></i> Hapus
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Status</label>
-                      <select
-                        name="status"
-                        value={form.status}
-                        onChange={handleChange}
-                        className="form-select"
-                      >
-                        <option value="tersedia">tersedia</option>
-                        <option value="diadopsi">diadopsi</option>
-                        <option value="rawat">rawat</option>
-                      </select>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                      <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                        {editingId ? 'Simpan Perubahan' : 'Tambah Hewan'}
-                      </button>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="pagination-area">
+                <div className="pagination-wrap">
+                  <div className="pagination-meta">
+                    Menampilkan {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredAnimals.length)} dari {filteredAnimals.length} hewan
+                  </div>
+                  <div className="pagination-links">
+                    <button
+                      className="pagination-link"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    >
+                      &lt;
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                       <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={resetForm}
+                        key={page}
+                        className={`pagination-link ${currentPage === page ? 'active' : ''}`}
+                        onClick={() => setCurrentPage(page)}
                       >
-                        Reset
+                        {page}
                       </button>
-                    </div>
-                  </form>
+                    ))}
+                    <button
+                      className="pagination-link"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    >
+                      &gt;
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Table */}
-            <div className="section-card">
-              <div className="section-card-header">
-                <div className="section-card-title">
-                  <i className="fas fa-table"></i>
-                  Daftar Hewan
-                </div>
-              </div>
-              <div className="section-card-body">
-                <div className="table-scroll">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>NAMA</th>
-                        <th>JENIS</th>
-                        <th>KELAMIN</th>
-                        <th>UMUR</th>
-                        <th>STATUS</th>
-                        <th>TERDAFTAR</th>
-                        <th>AKSI</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {animals.map((animal) => (
-                        <tr key={animal.id}>
-                          <td>{animal.id}</td>
-                          <td>
-                            <div className="cell-branch">
-                              <div
-                                className="cell-branch-dot"
-                                style={{
-                                  background: getSpeciesColor(animal.species),
-                                }}
-                              >
-                                <i className={`fas ${getSpeciesIcon(animal.species)}`}></i>
-                              </div>
-                              <div>
-                                <div className="cell-branch-name">{animal.name}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>{animal.species}</td>
-                          <td>{animal.gender}</td>
-                          <td>{animal.age} tahun</td>
-                          <td>
-                            <span className={`status-badge ${animal.status}`}>
-                              <span className="status-dot"></span>
-                              {animal.status}
-                            </span>
-                          </td>
-                          <td>{formatDate(animal.created_at)}</td>
-                          <td>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={() => handleEdit(animal)}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                className="btn btn-danger"
-                                onClick={() => handleDelete(animal.id)}
-                              >
-                                Hapus
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
+
+      {/* Drawer */}
+      <div 
+        className={`drawer-backdrop ${drawerOpen ? 'open' : ''}`} 
+        onClick={closeDrawer}
+      ></div>
+      <div className={`user-drawer ${drawerOpen ? 'open' : ''}`}>
+        <div className="drawer-head">
+          <h3>
+            <i className="fas fa-paw"></i>
+            {editingId ? 'Edit Hewan' : 'Tambah Hewan'}
+          </h3>
+          <button className="drawer-close" onClick={closeDrawer}>
+            <i className="fas fa-times"></i> Tutup
+          </button>
+        </div>
+        <div className="drawer-body">
+          <form className="user-form" onSubmit={handleSubmit}>
+            <div className="drawer-field">
+              <label htmlFor="name">Nama Hewan</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                placeholder="Masukkan nama hewan"
+              />
+            </div>
+
+            <div className="form-grid">
+              <div className="drawer-field">
+                <label htmlFor="species">Spesies</label>
+                <select
+                  id="species"
+                  name="species"
+                  value={form.species}
+                  onChange={handleChange}
+                >
+                  {categories.filter(c => c !== 'Semua').map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="drawer-field">
+                <label htmlFor="gender">Jenis Kelamin</label>
+                <select
+                  id="gender"
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                >
+                  <option value="Betina">Betina</option>
+                  <option value="Jantan">Jantan</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-grid">
+              <div className="drawer-field">
+                <label htmlFor="age">Umur (tahun)</label>
+                <input
+                  type="number"
+                  id="age"
+                  name="age"
+                  min="0"
+                  value={form.age}
+                  onChange={handleChange}
+                  required
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="drawer-field">
+                <label htmlFor="status">Status</label>
+                <select
+                  id="status"
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                >
+                  <option value="tersedia">Tersedia</option>
+                  <option value="diadopsi">Diadopsi</option>
+                  <option value="rawat">Rawat</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="drawer-buttons">
+              <button type="submit" className="primary-link">
+                {editingId ? 'Simpan Perubahan' : 'Tambah Hewan'}
+              </button>
+              <button 
+                type="button" 
+                className="danger-link"
+                onClick={closeDrawer}
+              >
+                Batal
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }

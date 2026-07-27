@@ -40,25 +40,22 @@ function IconSettings() {
   )
 }
 
-function SuperadminTopbar({ eyebrow, title, chipLabel, onToggleSidebar }) {
+function SuperadminTopbar({ title, onToggleSidebar, statusLabel = 'LIVE' }) {
   return (
-    <header className="topbar admin-topbar">
-      <div className="topbar-title">
+    <header className="superadmin-navbar">
+      <div className="superadmin-navbar-left">
         <button
           type="button"
-          className="sidebar-toggle"
+          className="sidebar-toggle navbar-toggle"
           aria-label="Buka tutup sidebar"
           onClick={onToggleSidebar}
         >
-          ≡
+          ≪
         </button>
-        <div className="topbar-copy">
-          <p className="eyebrow">{eyebrow}</p>
-          <h1>{title}</h1>
-        </div>
+        {title ? <div className="topbar-page-title">{title}</div> : null}
       </div>
 
-      <div className="topbar-actions">
+      <div className="superadmin-navbar-right">
         <button type="button" className="icon-button" aria-label="Pengaturan">
           <IconSettings />
         </button>
@@ -66,7 +63,7 @@ function SuperadminTopbar({ eyebrow, title, chipLabel, onToggleSidebar }) {
           <IconBell />
           <span className="icon-badge" aria-hidden="true" />
         </button>
-        <div className="admin-chip">{chipLabel}</div>
+        <div className="navbar-live">{statusLabel}</div>
       </div>
     </header>
   )

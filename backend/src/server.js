@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 
 app.use((error, req, res, next) => {
   console.error("Server error:", error)
-  if (error && error.code === "ER_DUP_ENTRY") {
+  if (error && (error.code === "23505" || error.constraint)) {
     return res.status(409).json({
       success: false,
       message: "Data sudah ada. Email user atau data hewan mungkin duplikat.",

@@ -1,26 +1,29 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_adopsi
+  postgres:
+    image: postgres:17
+    container_name: postgres_adopsi
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: adopsi
+      POSTGRES_DB: adopsi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin_adopsi
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_adopsi
     restart: always
-    depends_on:
-      - mysql
     environment:
-      PMA_HOST: mysql
+      PGADMIN_DEFAULT_EMAIL: jelly@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: jelly1245
     ports:
-      - "8080:80"
+      - "8081:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
-  mysql_data:
+  postgres_data:
+  pgadmin_data:

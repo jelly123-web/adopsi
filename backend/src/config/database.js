@@ -1,39 +1,64 @@
-const mysql = require("mysql2/promise")
+const { Pool } = require("pg")
 
-const resolvedHost =
-  process.env.DB_HOST && process.env.DB_HOST !== "mysql"
-    ? process.env.DB_HOST
-    : "127.0.0.1"
+const resolvedHost = process.env.DB_HOST || "127.0.0.1"
 
-// Create a pool without database first to check/create database
 let pool
 
-async function ensureDatabaseExists() {
-  const tempPool = mysql.createPool({
+function getPoolConfig(databaseName) {
+  return {
     host: resolvedHost,
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USERNAME || process.env.DB_USER || "root",
+    port: Number(process.env.DB_PORT || 5432),
+    user: process.env.DB_USERNAME || process.env.DB_USER || "postgres",
     password: process.env.DB_PASSWORD || "123456",
-    waitForConnections: true,
-    connectionLimit: 10,
-    multipleStatements: true,
-  })
+    database: databaseName,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  }
+}
+
+async function columnExists(tableName, columnName) {
+  const result = await pool.query(
+    `SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = $2`,
+    [tableName, columnName],
+  )
+  return result.rowCount > 0
+}
+
+async function insertRows(tableName, columns, rows) {
+  if (!rows.length) {
+    return null
+  }
+
+  const placeholders = rows
+    .map((_, rowIndex) => {
+      const startIndex = rowIndex * columns.length
+      return `(${columns
+        .map((_, columnIndex) => `$${startIndex + columnIndex + 1}`)
+        .join(", ")})`
+    })
+    .join(", ")
+
+  const values = rows.flat()
+  return pool.query(`INSERT INTO ${tableName} (${columns.join(", ")}) VALUES ${placeholders}`, values)
+}
+
+async function ensureDatabaseExists() {
   const dbName = process.env.DB_DATABASE || process.env.DB_NAME || "adopsi"
-  await tempPool.execute(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`)
+  const tempPool = new Pool(getPoolConfig("postgres"))
+
+  const existingDatabase = await tempPool.query(
+    "SELECT 1 FROM pg_database WHERE datname = $1",
+    [dbName],
+  )
+
+  if (existingDatabase.rowCount === 0) {
+    await tempPool.query(`CREATE DATABASE "${dbName}"`)
+  }
+
   await tempPool.end()
 
-  // Now create the real pool with the database
-  pool = mysql.createPool({
-    host: resolvedHost,
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USERNAME || process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "123456",
-    database: dbName,
-    waitForConnections: true,
-    connectionLimit: 10,
-    multipleStatements: true,
-  })
-
+  pool = new Pool(getPoolConfig(dbName))
   return pool
 }
 
@@ -42,199 +67,187 @@ async function initializeDatabase() {
     await ensureDatabaseExists()
   }
 
-  await pool.execute(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
-      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(120) NOT NULL,
-      email VARCHAR(190) NOT NULL,
+      email VARCHAR(190) NOT NULL UNIQUE,
+      password VARCHAR(255) NULL,
       role VARCHAR(30) NOT NULL DEFAULT 'user',
       status VARCHAR(30) NOT NULL DEFAULT 'aktif',
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (id),
-      UNIQUE KEY users_email_unique (email)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      deleted BOOLEAN NOT NULL DEFAULT FALSE,
+      deleted_by VARCHAR(255) NULL,
+      deleted_at TIMESTAMP NULL,
+      deleted_ip VARCHAR(45) NULL
+    )
   `)
 
-  await pool.execute(`
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_ip VARCHAR(45) NULL`)
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS animals (
-      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(120) NOT NULL,
       species VARCHAR(60) NOT NULL,
       gender VARCHAR(20) NOT NULL,
-      age INT UNSIGNED NOT NULL DEFAULT 0,
+      age INTEGER NOT NULL DEFAULT 0,
       status VARCHAR(30) NOT NULL DEFAULT 'tersedia',
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      deleted BOOLEAN NOT NULL DEFAULT FALSE,
+      deleted_by VARCHAR(255) NULL,
+      deleted_at TIMESTAMP NULL,
+      deleted_ip VARCHAR(45) NULL
+    )
   `)
+  await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
+  await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS deleted_ip VARCHAR(45) NULL`)
 
-  await pool.execute(`
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(120) NOT NULL UNIQUE,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      deleted BOOLEAN NOT NULL DEFAULT FALSE,
+      deleted_by VARCHAR(255) NULL,
+      deleted_at TIMESTAMP NULL,
+      deleted_ip VARCHAR(45) NULL
+    )
+  `)
+  await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
+  await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE categories ADD COLUMN IF NOT EXISTS deleted_ip VARCHAR(45) NULL`)
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS adoption_requests (
-      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-      user_id INT UNSIGNED NOT NULL,
-      animal_id INT UNSIGNED NOT NULL,
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL,
+      animal_id INTEGER NOT NULL,
       status VARCHAR(30) NOT NULL DEFAULT 'pending',
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (id),
-      KEY adoption_requests_user_id_index (user_id),
-      KEY adoption_requests_animal_id_index (animal_id),
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      deleted BOOLEAN NOT NULL DEFAULT FALSE,
+      deleted_by VARCHAR(255) NULL,
+      deleted_at TIMESTAMP NULL,
+      deleted_ip VARCHAR(45) NULL,
       CONSTRAINT adoption_requests_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       CONSTRAINT adoption_requests_animal_fk FOREIGN KEY (animal_id) REFERENCES animals(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    )
   `)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS deleted_ip VARCHAR(45) NULL`)
 
-  await pool.execute(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS adoptions (
-      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-      request_id INT UNSIGNED NOT NULL,
-      user_id INT UNSIGNED NOT NULL,
-      animal_id INT UNSIGNED NOT NULL,
+      id SERIAL PRIMARY KEY,
+      request_id INTEGER NOT NULL UNIQUE,
+      user_id INTEGER NOT NULL,
+      animal_id INTEGER NOT NULL,
       status VARCHAR(30) NOT NULL DEFAULT 'berhasil',
-      approved_at DATETIME NOT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (id),
-      UNIQUE KEY adoptions_request_id_unique (request_id),
-      KEY adoptions_user_id_index (user_id),
-      KEY adoptions_animal_id_index (animal_id),
+      approved_at TIMESTAMP NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      deleted BOOLEAN NOT NULL DEFAULT FALSE,
+      deleted_by VARCHAR(255) NULL,
+      deleted_at TIMESTAMP NULL,
+      deleted_ip VARCHAR(45) NULL,
       CONSTRAINT adoptions_request_fk FOREIGN KEY (request_id) REFERENCES adoption_requests(id) ON DELETE CASCADE,
       CONSTRAINT adoptions_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       CONSTRAINT adoptions_animal_fk FOREIGN KEY (animal_id) REFERENCES animals(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    )
   `)
+  await pool.query(`ALTER TABLE adoptions ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
+  await pool.query(`ALTER TABLE adoptions ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE adoptions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE adoptions ADD COLUMN IF NOT EXISTS deleted_ip VARCHAR(45) NULL`)
 
-  await pool.execute(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS activities (
-      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      id SERIAL PRIMARY KEY,
       type VARCHAR(60) NOT NULL,
       title VARCHAR(120) NOT NULL,
       description VARCHAR(255) NOT NULL,
       entity_type VARCHAR(60) NULL,
-      entity_id INT UNSIGNED NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (id),
-      KEY activities_created_at_index (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      entity_id INTEGER NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      deleted BOOLEAN NOT NULL DEFAULT FALSE,
+      deleted_by VARCHAR(255) NULL,
+      deleted_at TIMESTAMP NULL,
+      deleted_ip VARCHAR(45) NULL
+    )
   `)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS user_name VARCHAR(120) NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS user_email VARCHAR(190) NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS user_role VARCHAR(60) NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45) NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS latitude NUMERIC(10, 8) NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS longitude NUMERIC(11, 8) NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_name VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS deleted_ip VARCHAR(45) NULL`)
 
-  const [[userCountRow]] = await pool.query("SELECT COUNT(*) AS count FROM users")
-  if (Number(userCountRow.count) === 0) {
-    const users = []
-    users.push(["Super Admin", "superadmin@adopsi.test", "superadmin", "aktif"])
-    for (let index = 1; index <= 149; index += 1) {
-      users.push([
-        `User ${String(index).padStart(3, "0")}`,
-        `user${String(index).padStart(3, "0")}@adopsi.test`,
-        "user",
-        index % 11 === 0 ? "nonaktif" : "aktif",
-      ])
-    }
-    await pool.query(
-      "INSERT INTO users (name, email, role, status) VALUES ?",
-      [users],
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS questionnaire_questions (
+      id SERIAL PRIMARY KEY,
+      question TEXT NOT NULL,
+      answer_type VARCHAR(30) NOT NULL DEFAULT 'Pilihan',
+      status VARCHAR(30) NOT NULL DEFAULT 'aktif',
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      deleted BOOLEAN NOT NULL DEFAULT FALSE,
+      deleted_by VARCHAR(255) NULL,
+      deleted_at TIMESTAMP NULL,
+      deleted_ip VARCHAR(45) NULL
     )
-  }
+  `)
+  await pool.query(`ALTER TABLE questionnaire_questions ADD COLUMN IF NOT EXISTS answer_type VARCHAR(30) NOT NULL DEFAULT 'Pilihan'`)
+  await pool.query(`ALTER TABLE questionnaire_questions ADD COLUMN IF NOT EXISTS status VARCHAR(30) NOT NULL DEFAULT 'aktif'`)
+  await pool.query(`ALTER TABLE questionnaire_questions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
+  await pool.query(`ALTER TABLE questionnaire_questions ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
+  await pool.query(`ALTER TABLE questionnaire_questions ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE questionnaire_questions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE questionnaire_questions ADD COLUMN IF NOT EXISTS deleted_ip VARCHAR(45) NULL`)
 
-  const [[animalCountRow]] = await pool.query("SELECT COUNT(*) AS count FROM animals")
-  if (Number(animalCountRow.count) === 0) {
-    const animals = []
-    const speciesPlan = [
-      ["Kucing", 21],
-      ["Anjing", 12],
-      ["Kelinci", 7],
-      ["Burung", 3],
-      ["Hamster", 2],
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS settings (
+      id SERIAL PRIMARY KEY,
+      setting_key VARCHAR(120) NOT NULL UNIQUE,
+      setting_value TEXT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+  await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
+
+  const { rows: [settingsCountRow] } = await pool.query("SELECT COUNT(*) AS count FROM settings")
+  if (Number(settingsCountRow.count) === 0) {
+    const defaultSettings = [
+      ["nama_apk", "Adopsi Hewan"],
+      ["warna_apk", "#0EA5E9"],
+      ["logo_apk", "A"],
+      ["admin_name", "Super Admin"],
+      ["admin_email", "admin@adopsi.test"],
     ]
-    let age = 1
-    for (const [species, total] of speciesPlan) {
-      for (let index = 1; index <= total; index += 1) {
-        animals.push([
-          `${species} ${String(index).padStart(2, "0")}`,
-          species,
-          index % 2 === 0 ? "Jantan" : "Betina",
-          age,
-          "tersedia",
-        ])
-        age = age >= 8 ? 1 : age + 1
-      }
-    }
-    await pool.query(
-      "INSERT INTO animals (name, species, gender, age, status) VALUES ?",
-      [animals],
-    )
-  }
-
-  const [[requestCountRow]] = await pool.query("SELECT COUNT(*) AS count FROM adoption_requests")
-  if (Number(requestCountRow.count) === 0) {
-    const [users] = await pool.query("SELECT id FROM users WHERE role = 'user' ORDER BY id")
-    const [animals] = await pool.query("SELECT id FROM animals ORDER BY id")
-    const requests = []
-    const statuses = [
-      ...Array(20).fill("disetujui"),
-      ...Array(8).fill("pending"),
-      ...Array(4).fill("ditolak"),
-    ]
-
-    statuses.forEach((status, index) => {
-      const user = users[index % users.length]
-      const animal = animals[index % animals.length]
-      const createdAt = new Date(2026, index % 6, (index % 25) + 1, 9, 0, 0)
-      requests.push([
-        user.id,
-        animal.id,
-        status,
-        createdAt.toISOString().slice(0, 19).replace("T", " "),
-      ])
-    })
-
-    await pool.query(
-      "INSERT INTO adoption_requests (user_id, animal_id, status, created_at) VALUES ?",
-      [requests],
-    )
-  }
-
-  const [[adoptionCountRow]] = await pool.query("SELECT COUNT(*) AS count FROM adoptions")
-  if (Number(adoptionCountRow.count) === 0) {
-    const [requests] = await pool.query(
-      "SELECT id, user_id, animal_id FROM adoption_requests WHERE status = 'disetujui' ORDER BY id LIMIT 20",
-    )
-    const months = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
-    const adoptions = requests.map((request, index) => {
-      const monthIndex = months[index] ?? 0
-      const approvedAt = new Date(2026, monthIndex, (index % 24) + 1, 15, 0, 0)
-      return [
-        request.id,
-        request.user_id,
-        request.animal_id,
-        "berhasil",
-        approvedAt.toISOString().slice(0, 19).replace("T", " "),
-      ]
-    })
-
-    await pool.query(
-      "INSERT INTO adoptions (request_id, user_id, animal_id, status, approved_at) VALUES ?",
-      [adoptions],
-    )
-  }
-
-  const [[activityCountRow]] = await pool.query("SELECT COUNT(*) AS count FROM activities")
-  if (Number(activityCountRow.count) === 0) {
-    await pool.query(
-      "INSERT INTO activities (type, title, description, entity_type, entity_id, created_at) VALUES ?",
-      [[
-        ["user", "User baru mendaftar", "Akun adopter baru masuk ke sistem.", "user", 151, "2026-07-22 09:15:00"],
-        ["animal", "Hewan baru ditambahkan", "Data hewan siap adopsi berhasil dipublikasikan.", "animal", 46, "2026-07-22 09:28:00"],
-        ["request", "Pengajuan adopsi baru", "Form pengajuan baru menunggu verifikasi superadmin.", "adoption_request", 33, "2026-07-22 09:40:00"],
-        ["adoption", "Adopsi baru disetujui", "Satu pengajuan adopsi telah berubah menjadi berhasil.", "adoption", 21, "2026-07-22 10:05:00"],
-      ]],
-    )
+    await insertRows("settings", ["setting_key", "setting_value"], defaultSettings)
   }
 }
 
-// Export a getter for the pool to ensure it's initialized
 async function getPool() {
   if (!pool) {
     await ensureDatabaseExists()
@@ -242,7 +255,6 @@ async function getPool() {
   return pool
 }
 
-// Also export pool as a promise-based getter
 module.exports = {
   get pool() {
     if (!pool) {

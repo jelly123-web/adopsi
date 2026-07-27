@@ -1,51 +1,58 @@
-const dashboardData = {
-  stats: [
-    { label: "Total User", value: 150, tone: "blue" },
-    { label: "Total Hewan", value: 45, tone: "green" },
-    { label: "Total Pengajuan", value: 32, tone: "amber" },
-    { label: "Adopsi Berhasil", value: 20, tone: "success" },
-  ],
-  monthlyAdoptions: [
-    { month: "Jan", total: 8 },
-    { month: "Feb", total: 10 },
-    { month: "Mar", total: 12 },
-    { month: "Apr", total: 15 },
-    { month: "Mei", total: 18 },
-    { month: "Jun", total: 20 },
-  ],
-  animalTypes: [
-    { type: "Kucing", total: 21 },
-    { type: "Anjing", total: 12 },
-    { type: "Kelinci", total: 7 },
-    { type: "Burung", total: 3 },
-    { type: "Hamster", total: 2 },
-  ],
-  activities: [
-    {
-      title: "User baru mendaftar",
-      description: "Akun adopter baru masuk ke sistem.",
-      time: "5 menit lalu",
-    },
-    {
-      title: "Hewan baru ditambahkan",
-      description: "Data hewan siap adopsi berhasil dipublikasikan.",
-      time: "18 menit lalu",
-    },
-    {
-      title: "Pengajuan adopsi baru",
-      description: "Form pengajuan baru menunggu verifikasi superadmin.",
-      time: "42 menit lalu",
-    },
-    {
-      title: "Adopsi baru disetujui",
-      description: "Satu pengajuan adopsi telah berubah menjadi berhasil.",
-      time: "1 jam lalu",
-    },
-  ],
-}
+const { getPool } = require("../config/database")
 
-function getDashboardData() {
-  return dashboardData
+const monthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+
+async function getDashboardData() {
+  const pool = await getPool()
+  const { rows: [summary] } = await pool.query(`
+    SELECT
+      (SELECT COUNT(*) FROM users WHERE deleted = FALSE) AS total_user,
+      (SELECT COUNT(*) FROM animals WHERE deleted = FALSE) AS total_hewan,
+      (SELECT COUNT(*) FROM adoption_requests WHERE deleted = FALSE) AS total_pengajuan,
+      (SELECT COUNT(*) FROM adoptions WHERE status = 'berhasil' AND deleted = FALSE) AS adopsi_berhasil
+  `)
+
+  const { rows: monthlyRows } = await pool.query(`
+    SELECT EXTRACT(MONTH FROM approved_at) AS month_number, COUNT(*) AS total
+    FROM adoptions
+    WHERE status = 'berhasil' AND deleted = FALSE
+    GROUP BY EXTRACT(MONTH FROM approved_at)
+    ORDER BY EXTRACT(MONTH FROM approved_at)
+  `)
+
+  const { rows: animalRows } = await pool.query(`
+    SELECT species AS type, COUNT(*) AS total
+    FROM animals
+    WHERE deleted = FALSE
+    GROUP BY species
+    ORDER BY species ASC
+  `)
+
+  const { rows: activityRows } = await pool.query(`
+    SELECT title, description, created_at AS time
+    FROM activities
+    WHERE deleted = FALSE
+    ORDER BY created_at DESC, id DESC
+    LIMIT 4
+  `)
+
+  return {
+    stats: [
+      { label: "Total User", value: Number(summary.total_user), tone: "blue" },
+      { label: "Total Hewan", value: Number(summary.total_hewan), tone: "green" },
+      { label: "Total Pengajuan", value: Number(summary.total_pengajuan), tone: "amber" },
+      { label: "Adopsi Berhasil", value: Number(summary.adopsi_berhasil), tone: "success" },
+    ],
+    monthlyAdoptions: monthlyRows.map((row) => ({
+      month: monthLabels[Number(row.month_number) - 1] || String(row.month_number),
+      total: Number(row.total),
+    })),
+    animalTypes: animalRows.map((row) => ({
+      type: row.type,
+      total: Number(row.total),
+    })),
+    activities: activityRows,
+  }
 }
 
 module.exports = {

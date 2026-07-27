@@ -1,0 +1,317 @@
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+import { Link } from 'react-router-dom'
+
+function HistoryLogs() {
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth > 768 : true
+  )
+  const [activityLogs, setActivityLogs] = useState([])
+  const [userLocation, setUserLocation] = useState(null)
+  const [locationError, setLocationError] = useState(null)
+  const [loadingLocation, setLoadingLocation] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Browser tidak mendukung Geolocation.')
+      return
+    }
+    setLoadingLocation(true)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }
+        setUserLocation(coords)
+        setLocationError(null)
+        setLoadingLocation(false)
+
+        axios.post('http://localhost:3000/api/superadmin/activity-logs', {
+          type: 'location',
+          title: 'Izin Lokasi Diberikan',
+          description: `Superadmin memberikan izin lokasi browser. Lat: ${coords.lat.toFixed(4)}, Lng: ${coords.lng.toFixed(4)}`,
+          user_name: 'Super Admin',
+          user_email: 'admin@adopsi.test',
+          user_role: 'superadmin',
+          latitude: coords.lat,
+          longitude: coords.lng,
+          location_name: `Lat: ${coords.lat.toFixed(4)}, Lng: ${coords.lng.toFixed(4)}`,
+        }).then(() => fetchLogs()).catch(() => {})
+      },
+      (error) => {
+        setLoadingLocation(false)
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError('Izin lokasi ditolak oleh pengguna.')
+        } else {
+          setLocationError('Gagal mengambil lokasi.')
+        }
+      }
+    )
+  }
+
+  const fetchLogs = () => {
+    setLoading(true)
+    axios
+      .get('http://localhost:3000/api/superadmin/activity-logs')
+      .then((response) => {
+        setActivityLogs(response.data?.data || [])
+      })
+      .catch(() => setActivityLogs([]))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchLogs()
+    requestLocation()
+  }, [])
+
+  const formatDate = (value) => {
+    if (!value) return '-'
+    const date = new Date(value)
+    return date.toLocaleDateString('id-ID', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+  }
+
+  return (
+    <div className="dashboard-layout">
+      {/* Sidebar */}
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-brand">
+          <div className="sidebar-logo">A</div>
+          <div className="sidebar-brand-text">
+            <div className="sidebar-brand-name">Adopsi Hewan</div>
+            <div className="sidebar-brand-role">Superadmin</div>
+          </div>
+        </div>
+
+        <nav className="sidebar-nav">
+          <div className="nav-section-title">MENU</div>
+          <a href="/dashboard" className="nav-item">
+            <i className="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="/dashboard/users" className="nav-item">
+            <i className="fas fa-users"></i>
+            <span>Kelola User</span>
+          </a>
+          <a href="/dashboard/categories" className="nav-item">
+            <i className="fas fa-tags"></i>
+            <span>Kelola Kategori</span>
+          </a>
+          <a href="/dashboard/animals" className="nav-item">
+            <i className="fas fa-paw"></i>
+            <span>Kelola Hewan</span>
+          </a>
+          <a href="/dashboard/questionnaire-character" className="nav-item">
+            <i className="fas fa-clipboard-list"></i>
+            <span>Kuisioner Karakter</span>
+          </a>
+          <a href="/dashboard/adoptions" className="nav-item">
+            <i className="fas fa-file-alt"></i>
+            <span>Kelola Pengajuan Adopsi</span>
+          </a>
+          <a href="/dashboard/reports" className="nav-item">
+            <i className="fas fa-chart-line"></i>
+            <span>Laporan</span>
+          </a>
+          <a href="/dashboard/logs" className="nav-item active">
+            <i className="fas fa-history"></i>
+            <span>History Logs</span>
+          </a>
+          <a href="/dashboard/restore" className="nav-item">
+            <i className="fas fa-undo"></i>
+            <span>Pulihkan Data</span>
+          </a>
+        </nav>
+
+        <div className="sidebar-footer">
+          <Link to="/dashboard/profile" className="sidebar-user">
+            <div className="sidebar-avatar">SA</div>
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">Super Admin</div>
+              <div className="sidebar-user-email">admin@adopsi.test</div>
+            </div>
+          </Link>
+          <button 
+            className="sidebar-logout-btn"
+            onClick={() => { window.location.href = '/'; }}
+          >
+            <i className="fas fa-sign-out-alt"></i> Keluar
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
+        <header className="topbar">
+          <div className="topbar-left">
+            <button
+              className="topbar-hamburger"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              <i className="fas fa-bars"></i>
+            </button>
+            <div className="topbar-title">
+              <button 
+                className="topbar-toggle" 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                aria-label="Toggle sidebar"
+              >
+                {sidebarOpen ? '≪' : '≫'}
+              </button>
+              <div className="topbar-page-title">History Logs</div>
+            </div>
+          </div>
+
+          <div className="topbar-right">
+            <button className="topbar-btn" title="Notifikasi">
+              <i className="fas fa-bell"></i>
+              <span className="notif-dot"></span>
+            </button>
+            <button 
+              className="topbar-btn" 
+              title="Pengaturan Sistem"
+              onClick={() => { window.location.href = '/dashboard/settings'; }}
+            >
+              <i className="fas fa-cog"></i>
+            </button>
+            <div className="live-indicator">
+              <span className="live-dot"></span>
+              LIVE LOGS
+            </div>
+          </div>
+        </header>
+
+        <div className="page-body">
+          <div className="page-header">
+            <h1 className="page-header-title">
+              <i className="fas fa-history"></i>
+              History Audit Logs
+            </h1>
+            <p className="page-header-desc">
+              Catatan riwayat aktivitas pengguna lengkap dengan lokasi koordinat dan IP address.
+            </p>
+          </div>
+
+          {/* Geolocation Banner */}
+          <div className="panel" style={{ marginBottom: '24px', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(99, 102, 241, 0.08))', border: '1px solid rgba(14, 165, 233, 0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'var(--accent)', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                <i className="fas fa-location-arrow"></i>
+              </div>
+              <div>
+                <strong style={{ fontSize: '15px' }}>Audit Pelacak Lokasi & IP User</strong>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--muted)' }}>
+                  {userLocation 
+                    ? `Lokasi Terdeteksi: Latitude ${userLocation.lat.toFixed(4)}, Longitude ${userLocation.lng.toFixed(4)}`
+                    : locationError || 'Perizinan lokasi browser digunakan untuk mencatat koordinat dan IP di history log.'}
+                </p>
+              </div>
+            </div>
+            <button 
+              className="primary-link"
+              onClick={requestLocation}
+              disabled={loadingLocation}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <i className={`fas ${loadingLocation ? 'fa-spinner fa-spin' : 'fa-crosshairs'}`}></i>
+              {userLocation ? 'Perbarui Lokasi Saya' : 'Izinkan Akses Lokasi'}
+            </button>
+          </div>
+
+          {/* History Audit Logs Table */}
+          <div className="panel">
+            <div className="panel-head">
+              <h2><i className="fas fa-history"></i> History Audit Logs</h2>
+              <span>{activityLogs.length} entri</span>
+            </div>
+
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Ngapain</th>
+                    <th>Kapan</th>
+                    <th>Dimana</th>
+                    <th>IP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activityLogs.map((log) => (
+                    <tr key={log.id}>
+                      {/* User */}
+                      <td>
+                        <div className="user-cell">
+                          <div className="user-avatar" style={{ background: log.user_role === 'superadmin' ? 'linear-gradient(135deg, var(--accent), var(--indigo))' : 'var(--blue)' }}>
+                            {log.user_name?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          <div>
+                            <strong>{log.user_name || 'User'}</strong>
+                            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                              {log.user_email || '-'} ({log.user_role || 'user'})
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Ngapain */}
+                      <td>
+                        <div>
+                          <strong style={{ color: 'var(--fg)' }}>{log.title}</strong>
+                          <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '2px' }}>
+                            {log.description}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Kapan */}
+                      <td>
+                        <span style={{ fontSize: '13px', fontWeight: 600 }}>
+                          {formatDate(log.created_at)}
+                        </span>
+                      </td>
+
+                      {/* Dimana */}
+                      <td>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <i className="fas fa-map-marker-alt" style={{ color: 'var(--red)' }}></i>
+                            <strong style={{ fontSize: '13px' }}>{log.location_name || 'Jakarta, Indonesia'}</strong>
+                          </div>
+                          {log.latitude && log.longitude && (
+                            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                              Lat: {Number(log.latitude).toFixed(4)}, Lng: {Number(log.longitude).toFixed(4)}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* IP */}
+                      <td>
+                        <code style={{ background: 'var(--bg)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                          {log.ip_address || '127.0.0.1'}
+                        </code>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+export default HistoryLogs

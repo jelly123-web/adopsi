@@ -1,50 +1,17 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
 
 const defaultDashboardData = {
   stats: [
-    { label: 'Total User', value: 150, tone: 'blue', icon: 'fa-users' },
-    { label: 'Total Hewan', value: 45, tone: 'green', icon: 'fa-paw' },
-    { label: 'Total Pengajuan', value: 32, tone: 'amber', icon: 'fa-file-alt' },
-    { label: 'Adopsi Berhasil', value: 20, tone: 'teal', icon: 'fa-check-circle' },
+    { label: 'Total User', value: 0, tone: 'blue', icon: 'fa-users' },
+    { label: 'Total Hewan', value: 0, tone: 'green', icon: 'fa-paw' },
+    { label: 'Total Pengajuan', value: 0, tone: 'amber', icon: 'fa-file-alt' },
+    { label: 'Adopsi Berhasil', value: 0, tone: 'teal', icon: 'fa-check-circle' },
   ],
-  monthlyAdoptions: [
-    { month: 'Jan', total: 3 },
-    { month: 'Feb', total: 3 },
-    { month: 'Mar', total: 3 },
-    { month: 'Apr', total: 3 },
-    { month: 'Mei', total: 4 },
-    { month: 'Jun', total: 4 },
-  ],
-  animalTypes: [
-    { type: 'Kucing', total: 21 },
-    { type: 'Anjing', total: 12 },
-    { type: 'Kelinci', total: 7 },
-    { type: 'Burung', total: 3 },
-    { type: 'Hamster', total: 2 },
-  ],
-  activities: [
-    {
-      title: 'User baru mendaftar',
-      description: 'Akun adopter baru masuk ke sistem.',
-      time: '5 menit lalu',
-    },
-    {
-      title: 'Hewan baru ditambahkan',
-      description: 'Data hewan siap adopsi berhasil dipublikasikan.',
-      time: '18 menit lalu',
-    },
-    {
-      title: 'Pengajuan adopsi baru',
-      description: 'Form pengajuan baru menunggu verifikasi superadmin.',
-      time: '42 menit lalu',
-    },
-    {
-      title: 'Adopsi baru disetujui',
-      description: 'Satu pengajuan adopsi telah berubah menjadi berhasil.',
-      time: '1 jam lalu',
-    },
-  ],
+  monthlyAdoptions: [],
+  animalTypes: [],
+  activities: [],
 }
 
 function formatActivityTime(value) {
@@ -72,10 +39,11 @@ function Dashboard() {
     axios
       .get('http://localhost:3000/api/superadmin/dashboard')
       .then((response) => {
-        const data = response.data.data
+        const data = response.data?.data || defaultDashboardData
         setDashboardData({
+          ...defaultDashboardData,
           ...data,
-          stats: data.stats.map((stat, i) => ({
+          stats: (data.stats || defaultDashboardData.stats).map((stat, i) => ({
             ...stat,
             tone: ['blue', 'green', 'amber', 'teal'][i],
             icon: ['fa-users', 'fa-paw', 'fa-file-alt', 'fa-check-circle'][i],
@@ -88,8 +56,8 @@ function Dashboard() {
   }, [])
 
   const { stats, monthlyAdoptions, animalTypes, activities } = dashboardData
-  const highestMonthly = Math.max(...monthlyAdoptions.map((item) => item.total))
-  const highestAnimalType = Math.max(...animalTypes.map((item) => item.total))
+  const highestMonthly = Math.max(...monthlyAdoptions.map((item) => item.total), 1)
+  const highestAnimalType = Math.max(...animalTypes.map((item) => item.total), 1)
 
   return (
     <div className="dashboard-layout">
@@ -113,20 +81,50 @@ function Dashboard() {
             <i className="fas fa-users"></i>
             <span>Kelola User</span>
           </a>
+          <a href="/dashboard/categories" className="nav-item">
+            <i className="fas fa-tags"></i>
+            <span>Kelola Kategori</span>
+          </a>
           <a href="/dashboard/animals" className="nav-item">
             <i className="fas fa-paw"></i>
             <span>Kelola Hewan</span>
           </a>
+          <a href="/dashboard/questionnaire-character" className="nav-item">
+            <i className="fas fa-clipboard-list"></i>
+            <span>Kuisioner Karakter</span>
+          </a>
+          <a href="/dashboard/adoptions" className="nav-item">
+            <i className="fas fa-file-alt"></i>
+            <span>Kelola Pengajuan Adopsi</span>
+          </a>
+          <a href="/dashboard/reports" className="nav-item">
+            <i className="fas fa-chart-line"></i>
+            <span>Laporan</span>
+          </a>
+          <a href="/dashboard/logs" className="nav-item">
+            <i className="fas fa-history"></i>
+            <span>History Logs</span>
+          </a>
+          <a href="/dashboard/restore" className="nav-item">
+            <i className="fas fa-undo"></i>
+            <span>Pulihkan Data</span>
+          </a>
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-user">
+          <Link to="/dashboard/profile" className="sidebar-user">
             <div className="sidebar-avatar">SA</div>
             <div className="sidebar-user-info">
               <div className="sidebar-user-name">Super Admin</div>
               <div className="sidebar-user-email">admin@adopsi.test</div>
             </div>
-          </div>
+          </Link>
+          <button 
+            className="sidebar-logout-btn"
+            onClick={() => { window.location.href = '/'; }}
+          >
+            <i className="fas fa-sign-out-alt"></i> Keluar
+          </button>
         </div>
       </aside>
 
@@ -142,17 +140,27 @@ function Dashboard() {
               <i className="fas fa-bars"></i>
             </button>
             <div className="topbar-title">
-              <div className="topbar-kicker">Dashboard</div>
-              <div className="topbar-page-title">Ringkasan Adopsi Hewan</div>
+              <button 
+                className="topbar-toggle" 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                aria-label="Toggle sidebar"
+              >
+                {sidebarOpen ? '≪' : '≫'}
+              </button>
+              <div className="topbar-page-title">Dashboard</div>
             </div>
           </div>
 
           <div className="topbar-right">
-            <button className="topbar-btn">
+            <button className="topbar-btn" title="Notifikasi">
               <i className="fas fa-bell"></i>
               <span className="notif-dot"></span>
             </button>
-            <button className="topbar-btn">
+            <button 
+              className="topbar-btn" 
+              title="Pengaturan Sistem"
+              onClick={() => { window.location.href = '/dashboard/settings'; }}
+            >
               <i className="fas fa-cog"></i>
             </button>
             <div className="live-indicator">

@@ -4,13 +4,10 @@ import { Link } from 'react-router-dom'
 
 const emptyForm = {
   name: '',
-  email: '',
-  role: 'user',
-  status: 'aktif',
 }
 
-function ManageUsers() {
-  const [users, setUsers] = useState([])
+function ManageCategories() {
+  const [categories, setCategories] = useState([])
   const [form, setForm] = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -18,12 +15,12 @@ function ManageUsers() {
     typeof window !== 'undefined' ? window.innerWidth > 768 : true
   )
 
-  const loadUsers = async () => {
+  const loadCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/superadmin/users')
-      setUsers(response.data.data || [])
+      const response = await axios.get('http://localhost:3000/api/superadmin/categories')
+      setCategories(response.data.data || [])
     } catch {
-      setUsers([])
+      setCategories([])
     }
   }
 
@@ -31,13 +28,13 @@ function ManageUsers() {
     let active = true
     ;(async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/superadmin/users')
+        const response = await axios.get('http://localhost:3000/api/superadmin/categories')
         if (active) {
-          setUsers(response.data.data || [])
+          setCategories(response.data.data || [])
         }
       } catch {
         if (active) {
-          setUsers([])
+          setCategories([])
         }
       }
     })()
@@ -55,14 +52,14 @@ function ManageUsers() {
     event.preventDefault()
     try {
       if (editingId) {
-        await axios.put(`http://localhost:3000/api/superadmin/users/${editingId}`, form)
+        await axios.put(`http://localhost:3000/api/superadmin/categories/${editingId}`, form)
       } else {
-        await axios.post('http://localhost:3000/api/superadmin/users', form)
+        await axios.post('http://localhost:3000/api/superadmin/categories', form)
       }
-      await loadUsers()
+      await loadCategories()
       closeDrawer()
     } catch (error) {
-      window.alert(error.response?.data?.message || 'Gagal menyimpan user.')
+      window.alert(error.response?.data?.message || 'Gagal menyimpan kategori.')
     }
   }
 
@@ -72,13 +69,10 @@ function ManageUsers() {
     setDrawerOpen(true)
   }
 
-  const openEditDrawer = (user) => {
-    setEditingId(user.id)
+  const openEditDrawer = (category) => {
+    setEditingId(category.id)
     setForm({
-      name: user.name || '',
-      email: user.email || '',
-      role: user.role || 'user',
-      status: user.status || 'aktif',
+      name: category.name || '',
     })
     setDrawerOpen(true)
   }
@@ -90,43 +84,16 @@ function ManageUsers() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Hapus user ini?')) return
+    if (!window.confirm('Hapus kategori ini?')) return
     try {
-      await axios.delete(`http://localhost:3000/api/superadmin/users/${id}`)
-      await loadUsers()
+      await axios.delete(`http://localhost:3000/api/superadmin/categories/${id}`)
+      await loadCategories()
       if (editingId === id) {
         closeDrawer()
       }
     } catch (error) {
-      window.alert(error.response?.data?.message || 'Gagal menghapus user.')
+      window.alert(error.response?.data?.message || 'Gagal menghapus kategori.')
     }
-  }
-
-  const renderInitials = (name = '') =>
-    name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase() || 'U'
-
-  const formatDate = (value) => {
-    if (!value) return '-'
-    const date = new Date(value)
-    return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('id-ID')
-  }
-
-  const getRoleTagClass = (role) => {
-    switch (role) {
-      case 'superadmin': return 'tag-superadmin'
-      case 'admin': return 'tag-admin'
-      default: return 'tag-muted'
-    }
-  }
-
-  const getStatusTagClass = (status) => {
-    return status === 'aktif' ? 'tag-success' : 'tag-muted'
   }
 
   return (
@@ -147,11 +114,11 @@ function ManageUsers() {
             <i className="fas fa-tachometer-alt"></i>
             <span>Dashboard</span>
           </a>
-          <a href="/dashboard/users" className="nav-item active">
+          <a href="/dashboard/users" className="nav-item">
             <i className="fas fa-users"></i>
             <span>Kelola User</span>
           </a>
-          <a href="/dashboard/categories" className="nav-item">
+          <a href="/dashboard/categories" className="nav-item active">
             <i className="fas fa-tags"></i>
             <span>Kelola Kategori</span>
           </a>
@@ -217,7 +184,7 @@ function ManageUsers() {
               >
                 {sidebarOpen ? '≪' : '≫'}
               </button>
-              <div className="topbar-page-title">Kelola User</div>
+              <div className="topbar-page-title">Kelola Kategori</div>
             </div>
           </div>
 
@@ -240,92 +207,57 @@ function ManageUsers() {
         <div className="page-body">
           <div className="page-header">
             <h1 className="page-header-title">
-              <i className="fas fa-users"></i>
-              Daftar Pengguna
+              <i className="fas fa-tags"></i>
+              Daftar Kategori Hewan
             </h1>
             <p className="page-header-desc">
-              Kelola semua pengguna yang terdaftar di sistem.
+              Kelola semua kategori hewan yang tersedia untuk diadopsi.
             </p>
           </div>
 
           <div className="content-toolbar">
             <div className="search-box">
-              <input type="text" placeholder="Cari nama atau email..." />
+              <input type="text" placeholder="Cari nama kategori..." />
               <button><i className="fas fa-search"></i> Cari</button>
             </div>
             <button className="primary-link" onClick={openAddDrawer}>
-              <i className="fas fa-plus"></i> Tambah User
+              <i className="fas fa-plus"></i> Tambah Kategori
             </button>
           </div>
 
           {/* Panel / Table */}
           <div className="panel">
             <div className="panel-head">
-              <h2><i className="fas fa-table"></i> Semua Pengguna</h2>
-              <span>{users.length} pengguna</span>
+              <h2><i className="fas fa-table"></i> Semua Kategori</h2>
+              <span>{categories.length} kategori</span>
             </div>
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Pengguna</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Terdaftar</th>
+                    <th>Nama Kategori</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td>{user.id}</td>
+                  {categories.map((category) => (
+                    <tr key={category.id}>
+                      <td>{category.id}</td>
                       <td>
-                        <div className="user-cell">
-                          <div 
-                            className="user-avatar"
-                            style={{
-                              background: user.role === 'superadmin' 
-                                ? 'linear-gradient(135deg, var(--purple), var(--blue))' 
-                                : 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'white',
-                              fontWeight: '700',
-                            }}
-                          >
-                            {renderInitials(user.name)}
-                          </div>
-                          <strong>{user.name}</strong>
-                        </div>
+                        <strong>{category.name}</strong>
                       </td>
-                      <td>{user.email}</td>
-                      <td>
-                        <span className={`tag ${getRoleTagClass(user.role)}`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`tag ${getStatusTagClass(user.status)}`}>
-                          <span className="status-dot"></span>
-                          {user.status}
-                        </span>
-                      </td>
-                      <td>{formatDate(user.created_at)}</td>
                       <td>
                         <div className="actions">
                           <button 
                             className="btn-open-edit" 
-                            onClick={() => openEditDrawer(user)}
+                            onClick={() => openEditDrawer(category)}
                           >
                             <i className="fas fa-pen"></i> Edit
                           </button>
                           <button 
                             className="btn-delete-user" 
-                            onClick={() => handleDelete(user.id)}
-                            disabled={user.role === 'superadmin'}
+                            onClick={() => handleDelete(category.id)}
                           >
                             <i className="fas fa-trash"></i> Hapus
                           </button>
@@ -348,8 +280,8 @@ function ManageUsers() {
       <div className={`user-drawer ${drawerOpen ? 'open' : ''}`}>
         <div className="drawer-head">
           <h3>
-            <i className="fas fa-user"></i>
-            {editingId ? 'Edit Pengguna' : 'Tambah Pengguna'}
+            <i className="fas fa-tags"></i>
+            {editingId ? 'Edit Kategori' : 'Tambah Kategori'}
           </h3>
           <button className="drawer-close" onClick={closeDrawer}>
             <i className="fas fa-times"></i> Tutup
@@ -358,7 +290,7 @@ function ManageUsers() {
         <div className="drawer-body">
           <form className="user-form" onSubmit={handleSubmit}>
             <div className="drawer-field">
-              <label htmlFor="name">Nama Lengkap</label>
+              <label htmlFor="name">Nama Kategori</label>
               <input
                 type="text"
                 id="name"
@@ -366,54 +298,13 @@ function ManageUsers() {
                 value={form.name}
                 onChange={handleChange}
                 required
-                placeholder="Masukkan nama lengkap"
+                placeholder="Masukkan nama kategori"
               />
-            </div>
-
-            <div className="drawer-field">
-              <label htmlFor="email">Email</label>
-              <input
-                type="text"
-                id="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                placeholder="email@contoh.com"
-              />
-            </div>
-
-            <div className="form-grid">
-              <div className="drawer-field">
-                <label htmlFor="role">Role</label>
-                <select
-                  id="role"
-                  name="role"
-                  value={form.role}
-                  onChange={handleChange}
-                >
-                  <option value="user">User</option>
-                  <option value="superadmin">Superadmin</option>
-                </select>
-              </div>
-
-              <div className="drawer-field">
-                <label htmlFor="status">Status</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                >
-                  <option value="aktif">Aktif</option>
-                  <option value="nonaktif">Nonaktif</option>
-                </select>
-              </div>
             </div>
 
             <div className="drawer-buttons">
               <button type="submit" className="primary-link">
-                {editingId ? 'Simpan Perubahan' : 'Tambah Pengguna'}
+                {editingId ? 'Simpan Perubahan' : 'Tambah Kategori'}
               </button>
               <button 
                 type="button" 
@@ -430,4 +321,4 @@ function ManageUsers() {
   )
 }
 
-export default ManageUsers
+export default ManageCategories
