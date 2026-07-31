@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
+import SuperadminSidebar from '../components/SuperadminSidebar'
+import { subscribeLiveData } from '../utils/liveDataEvents'
 
 const defaultDashboardData = {
   stats: [
@@ -12,6 +13,26 @@ const defaultDashboardData = {
   monthlyAdoptions: [],
   animalTypes: [],
   activities: [],
+}
+
+const fallbackAnimalTypes = ['Kucing', 'Anjing', 'Kelinci', 'Burung', 'Hamster'].map((type) => ({
+  type,
+  total: 0,
+}))
+
+const ALL_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+
+function getMonthsForRange(range) {
+  if (range === '1y') {
+    return ALL_MONTHS.map((month) => ({ month, total: 0 }))
+  }
+  const currentMonthIndex = new Date().getMonth()
+  const months = []
+  for (let i = 5; i >= 0; i--) {
+    const mIdx = (currentMonthIndex - i + 12) % 12
+    months.push({ month: ALL_MONTHS[mIdx], total: 0 })
+  }
+  return months
 }
 
 function formatActivityTime(value) {
@@ -29,15 +50,19 @@ function formatActivityTime(value) {
   })
 }
 
+
+/* ── Dashboard Page ── */
 function Dashboard() {
+  const authRole = localStorage.getItem('authRole') || 'superadmin'
   const [dashboardData, setDashboardData] = useState(defaultDashboardData)
+  const [chartRange, setChartRange] = useState('6m')
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth > 768 : true
   )
 
-  useEffect(() => {
+  const loadDashboard = useCallback(() => {
     axios
-      .get('http://localhost:3000/api/superadmin/dashboard')
+      .get(`http://localhost:3000/api/superadmin/dashboard?role=${encodeURIComponent(authRole)}`)
       .then((response) => {
         const data = response.data?.data || defaultDashboardData
         setDashboardData({
@@ -53,99 +78,43 @@ function Dashboard() {
       .catch(() => {
         setDashboardData(defaultDashboardData)
       })
-  }, [])
+  }, [authRole])
+
+  useEffect(() => {
+    loadDashboard()
+    return subscribeLiveData('dashboard', loadDashboard)
+  }, [loadDashboard])
 
   const { stats, monthlyAdoptions, animalTypes, activities } = dashboardData
-  const highestMonthly = Math.max(...monthlyAdoptions.map((item) => item.total), 1)
-  const highestAnimalType = Math.max(...animalTypes.map((item) => item.total), 1)
+  const activityTitle = authRole === 'petugas'
+    ? 'Aktivitas Petugas'
+    : authRole === 'admin'
+      ? 'Lihat Aktivitas Admin'
+      : 'Aktivitas Superadmin'
+  const baseMonths = getMonthsForRange(chartRange)
+  const monthlyByLabel = new Map((monthlyAdoptions || []).map((item) => [String(item.month).trim(), Number(item.total) || 0]))
+  const chartMonthlyAdoptions = baseMonths.map((item) => ({
+    ...item,
+    total: monthlyByLabel.get(item.month) ?? item.total,
+  }))
+  const chartAnimalTypes = animalTypes.length > 0 ? animalTypes : fallbackAnimalTypes
+  const highestMonthly = Math.max(...chartMonthlyAdoptions.map((item) => Number(item.total) || 0), 1)
+  const highestAnimalType = Math.max(...chartAnimalTypes.map((item) => Number(item.total) || 0), 1)
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-brand">
-          <div className="sidebar-logo">A</div>
-          <div className="sidebar-brand-text">
-            <div className="sidebar-brand-name">Adopsi Hewan</div>
-            <div className="sidebar-brand-role">Superadmin</div>
-          </div>
-        </div>
+      <SuperadminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <nav className="sidebar-nav">
-          <div className="nav-section-title">MENU</div>
-          <a href="/dashboard" className="nav-item active">
-            <i className="fas fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-          </a>
-          <a href="/dashboard/users" className="nav-item">
-            <i className="fas fa-users"></i>
-            <span>Kelola User</span>
-          </a>
-          <a href="/dashboard/categories" className="nav-item">
-            <i className="fas fa-tags"></i>
-            <span>Kelola Kategori</span>
-          </a>
-          <a href="/dashboard/animals" className="nav-item">
-            <i className="fas fa-paw"></i>
-            <span>Kelola Hewan</span>
-          </a>
-          <a href="/dashboard/questionnaire-character" className="nav-item">
-            <i className="fas fa-clipboard-list"></i>
-            <span>Kuisioner Karakter</span>
-          </a>
-          <a href="/dashboard/adoptions" className="nav-item">
-            <i className="fas fa-file-alt"></i>
-            <span>Kelola Pengajuan Adopsi</span>
-          </a>
-          <a href="/dashboard/reports" className="nav-item">
-            <i className="fas fa-chart-line"></i>
-            <span>Laporan</span>
-          </a>
-          <a href="/dashboard/logs" className="nav-item">
-            <i className="fas fa-history"></i>
-            <span>History Logs</span>
-          </a>
-          <a href="/dashboard/restore" className="nav-item">
-            <i className="fas fa-undo"></i>
-            <span>Pulihkan Data</span>
-          </a>
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/dashboard/profile" className="sidebar-user">
-            <div className="sidebar-avatar">SA</div>
-            <div className="sidebar-user-info">
-              <div className="sidebar-user-name">Super Admin</div>
-              <div className="sidebar-user-email">admin@adopsi.test</div>
-            </div>
-          </Link>
-          <button 
-            className="sidebar-logout-btn"
-            onClick={() => { window.location.href = '/'; }}
-          >
-            <i className="fas fa-sign-out-alt"></i> Keluar
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
       <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
         {/* Topbar */}
         <header className="topbar">
           <div className="topbar-left">
-            <button
-              className="topbar-hamburger"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
+            <button className="topbar-hamburger" onClick={() => setSidebarOpen(!sidebarOpen)}>
               <i className="fas fa-bars"></i>
             </button>
             <div className="topbar-title">
-              <button 
-                className="topbar-toggle" 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label="Toggle sidebar"
-              >
-                {sidebarOpen ? '≪' : '≫'}
+              <button className="topbar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle sidebar">
+                <i className={`fas ${sidebarOpen ? 'fa-angle-double-left' : 'fa-angle-double-right'}`}></i>
               </button>
               <div className="topbar-page-title">Dashboard</div>
             </div>
@@ -156,11 +125,7 @@ function Dashboard() {
               <i className="fas fa-bell"></i>
               <span className="notif-dot"></span>
             </button>
-            <button 
-              className="topbar-btn" 
-              title="Pengaturan Sistem"
-              onClick={() => { window.location.href = '/dashboard/settings'; }}
-            >
+            <button className="topbar-btn" title="Pengaturan Sistem" onClick={() => { window.location.href = '/dashboard/settings'; }}>
               <i className="fas fa-cog"></i>
             </button>
             <div className="live-indicator">
@@ -201,48 +166,32 @@ function Dashboard() {
                   Adopsi Bulanan
                 </div>
                 <div className="filter-pills">
-                  <button className="filter-pill active">6 Bulan</button>
-                  <button className="filter-pill">1 Tahun</button>
+                  <button type="button" className={`filter-pill ${chartRange === '6m' ? 'active' : ''}`} onClick={() => setChartRange('6m')}>6 Bulan</button>
+                  <button type="button" className={`filter-pill ${chartRange === '1y' ? 'active' : ''}`} onClick={() => setChartRange('1y')}>1 Tahun</button>
                 </div>
               </div>
               <div className="section-card-body">
                 <div style={{ padding: '22px' }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-end',
-                    height: '200px',
-                    gap: '16px'
-                  }}>
-                    {monthlyAdoptions.map((item) => (
-                      <div key={item.month} style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}>
-                        <div style={{ fontWeight: 700, fontSize: '13px' }}>{item.total}</div>
-                        <div style={{
-                          width: '100%',
-                          height: '100%',
-                          background: 'var(--bg)',
-                          borderRadius: '8px 8px 0 0',
-                          overflow: 'hidden',
-                          display: 'flex',
-                          alignItems: 'flex-end'
-                        }}>
-                          <div style={{
-                            width: '100%',
-                            height: `${(item.total / highestMonthly) * 100}%`,
-                            background: 'linear-gradient(180deg, var(--accent) 0%, var(--accent-dark) 100%)',
-                            borderRadius: '8px 8px 0 0',
-                            transition: 'height 0.6s ease'
-                          }}></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'stretch', height: '190px', gap: '12px' }}>
+                    {chartMonthlyAdoptions.map((item, index) => {
+                      const total = Number(item.total) || 0
+                      const barHeight = total > 0 ? Math.max((total / highestMonthly) * 100, 15) : 12
+                      return (
+                        <div key={`${item.month}-${index}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                          <div style={{ fontWeight: 700, fontSize: '13px', color: '#334155', marginBottom: '6px' }}>{total}</div>
+                          <div style={{ flex: 1, width: '100%', maxWidth: '38px', background: '#f1f5f9', borderRadius: '8px 8px 0 0', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', border: '1px solid #e2e8f0' }}>
+                            <div style={{
+                              width: '100%',
+                              height: `${barHeight}%`,
+                              background: total > 0 ? 'linear-gradient(180deg, #0ea5e9 0%, #2563eb 100%)' : 'linear-gradient(180deg, #38bdf8 0%, #60a5fa 100%)',
+                              borderRadius: '6px 6px 0 0',
+                              transition: 'height 0.6s ease'
+                            }}></div>
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, marginTop: '8px' }}>{item.month}</div>
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>{item.month}</div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               </div>
@@ -258,33 +207,27 @@ function Dashboard() {
               </div>
               <div className="section-card-body">
                 <div style={{ padding: '22px' }}>
-                  {animalTypes.map((item) => (
-                    <div key={item.type} style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px',
-                      marginBottom: '16px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                        <span style={{ fontWeight: 600 }}>{item.type}</span>
-                        <span style={{ fontWeight: 700 }}>{item.total}</span>
+                  {chartAnimalTypes.map((item) => {
+                    const total = Number(item.total) || 0
+                    const width = total > 0 ? Math.max((total / highestAnimalType) * 100, 8) : 5
+                    return (
+                      <div key={item.type} style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                          <span style={{ fontWeight: 600 }}>{item.type}</span>
+                          <span style={{ fontWeight: 700 }}>{total}</span>
+                        </div>
+                        <div style={{ height: '8px', background: '#eef2f7', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{
+                            height: '100%',
+                            width: `${width}%`,
+                            background: total > 0 ? 'linear-gradient(90deg, #10b981 0%, #14b8a6 100%)' : 'linear-gradient(90deg, #ccfbf1 0%, #dbeafe 100%)',
+                            borderRadius: '4px',
+                            transition: 'width 0.6s ease'
+                          }}></div>
+                        </div>
                       </div>
-                      <div style={{
-                        height: '8px',
-                        background: 'var(--bg)',
-                        borderRadius: '4px',
-                        overflow: 'hidden'
-                      }}>
-                        <div style={{
-                          height: '100%',
-                          width: `${(item.total / highestAnimalType) * 100}%`,
-                          background: 'linear-gradient(90deg, var(--green) 0%, var(--teal) 100%)',
-                          borderRadius: '4px',
-                          transition: 'width 0.6s ease'
-                        }}></div>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -295,7 +238,7 @@ function Dashboard() {
             <div className="section-card-header">
               <div className="section-card-title">
                 <i className="fas fa-history"></i>
-                Aktivitas Terbaru
+                {activityTitle}
               </div>
             </div>
             <div className="section-card-body">

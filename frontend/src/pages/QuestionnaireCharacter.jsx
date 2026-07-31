@@ -54,7 +54,19 @@ function QuestionnaireCharacter() {
   }, [])
 
   useEffect(() => {
-    loadQuestions()
+    let active = true
+    axios.get('http://localhost:3000/api/superadmin/questionnaire-questions')
+      .then((response) => {
+        if (active) setItems(response.data.data || [])
+      })
+      .catch((error) => {
+        if (!active) return
+        window.alert(error.response?.data?.message || 'Gagal memuat data kuisioner.')
+        setItems([])
+      })
+    return () => {
+      active = false
+    }
   }, [])
 
   const handleChange = (event) => {
@@ -126,16 +138,15 @@ function QuestionnaireCharacter() {
   }
 
   return (
-    <>
-      <SuperadminNavbar
-        pageKicker="Kelola Kuisioner"
-        pageTitle="Pertanyaan Karakter"
-        onToggleSidebar={() => setSidebarOpen((current) => !current)}
-        sidebarOpen={sidebarOpen}
-      />
-
+    <div className="dashboard-layout">
+      <SuperadminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className={`main-content questionnaire-page ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
-        <SuperadminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <SuperadminNavbar
+          pageTitle="Pertanyaan Karakter"
+          onToggleSidebar={() => setSidebarOpen((current) => !current)}
+          sidebarOpen={sidebarOpen}
+          offsetForSidebar={false}
+        />
 
         <section className="content page-body">
           <header className="questionnaire-hero">
@@ -177,7 +188,7 @@ function QuestionnaireCharacter() {
                     <th>Pertanyaan</th>
                     <th>Tipe</th>
                     <th>Status</th>
-                    <th>Aksi</th>
+                    <th style={{ textAlign: 'center' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -285,7 +296,7 @@ function QuestionnaireCharacter() {
           </button>
         </div>
       </aside>
-    </>
+    </div>
   )
 }
 

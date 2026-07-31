@@ -9,15 +9,15 @@ async function getDashboardData() {
       (SELECT COUNT(*) FROM users WHERE deleted = FALSE) AS total_user,
       (SELECT COUNT(*) FROM animals WHERE deleted = FALSE) AS total_hewan,
       (SELECT COUNT(*) FROM adoption_requests WHERE deleted = FALSE) AS total_pengajuan,
-      (SELECT COUNT(*) FROM adoptions WHERE status = 'berhasil' AND deleted = FALSE) AS adopsi_berhasil
+      (SELECT COUNT(*) FROM adoption_requests WHERE status = 'disetujui' AND deleted = FALSE) AS adopsi_berhasil
   `)
 
   const { rows: monthlyRows } = await pool.query(`
-    SELECT EXTRACT(MONTH FROM approved_at) AS month_number, COUNT(*) AS total
-    FROM adoptions
-    WHERE status = 'berhasil' AND deleted = FALSE
-    GROUP BY EXTRACT(MONTH FROM approved_at)
-    ORDER BY EXTRACT(MONTH FROM approved_at)
+    SELECT EXTRACT(MONTH FROM created_at) AS month_number, COUNT(*) AS total
+    FROM adoption_requests
+    WHERE status = 'disetujui' AND deleted = FALSE
+    GROUP BY EXTRACT(MONTH FROM created_at)
+    ORDER BY EXTRACT(MONTH FROM created_at)
   `)
 
   const { rows: animalRows } = await pool.query(`

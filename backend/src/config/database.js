@@ -1,4 +1,5 @@
 const { Pool } = require("pg")
+const crypto = require("crypto")
 
 const resolvedHost = process.env.DB_HOST || "127.0.0.1"
 
@@ -71,9 +72,10 @@ async function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       name VARCHAR(120) NOT NULL,
-      email VARCHAR(190) NOT NULL UNIQUE,
-      password VARCHAR(255) NULL,
-      role VARCHAR(30) NOT NULL DEFAULT 'user',
+    email VARCHAR(190) NOT NULL UNIQUE,
+    password VARCHAR(255) NULL,
+    profile_photo TEXT NULL,
+    role VARCHAR(30) NOT NULL DEFAULT 'costumer',
       status VARCHAR(30) NOT NULL DEFAULT 'aktif',
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -85,6 +87,10 @@ async function initializeDatabase() {
   `)
 
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255) NULL`)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_photo TEXT NULL`)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(120) NULL`)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_expires_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE users ALTER COLUMN role SET DEFAULT 'costumer'`)
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
@@ -97,7 +103,10 @@ async function initializeDatabase() {
       species VARCHAR(60) NOT NULL,
       gender VARCHAR(20) NOT NULL,
       age INTEGER NOT NULL DEFAULT 0,
+      activity_preference VARCHAR(60) NOT NULL DEFAULT 'Suka di rumah',
       status VARCHAR(30) NOT NULL DEFAULT 'tersedia',
+      condition VARCHAR(40) NOT NULL DEFAULT 'Sehat',
+      photo TEXT NULL,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       deleted BOOLEAN NOT NULL DEFAULT FALSE,
@@ -106,6 +115,9 @@ async function initializeDatabase() {
       deleted_ip VARCHAR(45) NULL
     )
   `)
+  await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS activity_preference VARCHAR(60) NOT NULL DEFAULT 'Suka di rumah'`)
+  await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS photo TEXT NULL`)
+  await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS condition VARCHAR(40) NOT NULL DEFAULT 'Sehat'`)
   await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE`)
   await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
   await pool.query(`ALTER TABLE animals ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
@@ -148,6 +160,16 @@ async function initializeDatabase() {
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS deleted_by VARCHAR(255) NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS deleted_ip VARCHAR(45) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS full_name VARCHAR(160) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS phone VARCHAR(40) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS address TEXT NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS job VARCHAR(120) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS family_count VARCHAR(60) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS housing_type VARCHAR(120) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pet_experience VARCHAR(120) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS reason TEXT NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS document_url TEXT NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS rejection_reason TEXT NULL`)
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS adoptions (
@@ -235,17 +257,71 @@ async function initializeDatabase() {
   `)
   await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
 
+  const defaultSettings = [
+    ["nama_apk", "Adopsi Hewan"],
+    ["warna_apk", "#0EA5E9"],
+    ["logo_apk", "A"],
+    ["hero_bg_apk", ""],
+    ["login_hero_title", "Setiap Hewan\nLayak\nDicintai"],
+    ["login_hero_title_1", "Setiap Hewan"],
+    ["login_hero_title_2", "Layak"],
+    ["login_hero_highlight", "Dicintai"],
+    ["login_hero_description", "Jangan beli, adopsi. Berikan mereka kesempatan kedua untuk merasakan kehangatan keluarga."],
+    ["login_hero_badge_text", "hewan sedang menunggu rumah baru"],
+    ["login_hero_primary_button", "Masuk & Adopsi"],
+    ["login_hero_secondary_button", "Jelajahi"],
+    ["dashboard_bg_apk", ""],
+    ["admin_name", "Super Admin"],
+    ["admin_email", "admin@adopsi.test"],
+  ]
   const { rows: [settingsCountRow] } = await pool.query("SELECT COUNT(*) AS count FROM settings")
   if (Number(settingsCountRow.count) === 0) {
-    const defaultSettings = [
-      ["nama_apk", "Adopsi Hewan"],
-      ["warna_apk", "#0EA5E9"],
-      ["logo_apk", "A"],
-      ["admin_name", "Super Admin"],
-      ["admin_email", "admin@adopsi.test"],
-    ]
     await insertRows("settings", ["setting_key", "setting_value"], defaultSettings)
   }
+  for (const [key, value] of defaultSettings) {
+    await pool.query(
+      "INSERT INTO settings (setting_key, setting_value) VALUES ($1, $2) ON CONFLICT (setting_key) DO NOTHING",
+      [key, value],
+    )
+  }
+
+  const defaultSuperadminPassword = `sha256:${crypto.createHash("sha256").update("123456").digest("hex")}`
+  await pool.query(
+    `
+      INSERT INTO users (name, email, password, role, status, deleted)
+      VALUES ('Super Admin', 'superadmin@adopsi.test', $1, 'superadmin', 'aktif', FALSE)
+      ON CONFLICT (email)
+      DO UPDATE SET
+        name = 'Super Admin',
+        password = COALESCE(users.password, EXCLUDED.password),
+        role = 'superadmin',
+        status = 'aktif',
+        deleted = FALSE,
+        deleted_by = NULL,
+        deleted_at = NULL,
+        deleted_ip = NULL
+    `,
+    [defaultSuperadminPassword],
+  )
+
+  const gmailSuperadminPassword = `sha256:${crypto.createHash("sha256").update("superadmin").digest("hex")}`
+  await pool.query(
+    `
+      INSERT INTO users (name, email, password, role, status, deleted)
+      VALUES ('Super Admin', 'superadmin@gmail.com', $1, 'superadmin', 'aktif', FALSE)
+      ON CONFLICT (email)
+      DO UPDATE SET
+        name = 'Super Admin',
+        password = EXCLUDED.password,
+        role = 'superadmin',
+        status = 'aktif',
+        deleted = FALSE,
+        deleted_by = NULL,
+        deleted_at = NULL,
+        deleted_ip = NULL
+    `,
+    [gmailSuperadminPassword],
+  )
 }
 
 async function getPool() {

@@ -62,9 +62,57 @@ function HistoryLogs() {
       .finally(() => setLoading(false))
   }
 
+  const recordPageVisit = async () => {
+    try {
+      await axios.post('http://localhost:3000/api/superadmin/activity-logs', {
+        type: 'navigation',
+        title: 'Membuka History Logs',
+        description: 'Superadmin membuka halaman History Logs.',
+        user_name: localStorage.getItem('authName') || 'Super Admin',
+        user_email: localStorage.getItem('authEmail') || 'admin@adopsi.test',
+        user_role: localStorage.getItem('authRole') || 'superadmin',
+        location_name: userLocation
+          ? `Lat: ${userLocation.lat.toFixed(4)}, Lng: ${userLocation.lng.toFixed(4)}`
+          : 'Lokasi belum tersedia',
+        latitude: userLocation?.lat || null,
+        longitude: userLocation?.lng || null,
+      })
+    } catch {
+      // Log halaman tidak boleh mengganggu tampilan history.
+    }
+  }
+
+  const handleDeleteAllLogs = async () => {
+    if (activityLogs.length === 0) {
+      window.alert('Tidak ada history log untuk dihapus.')
+      return
+    }
+
+    if (!window.confirm(`Hapus semua history logs? Aksi ini akan menghapus ${activityLogs.length} entri dari database.`)) {
+      return
+    }
+
+    try {
+      await axios.delete('http://localhost:3000/api/superadmin/activity-logs')
+      setActivityLogs([])
+      window.alert('Semua history logs berhasil dihapus.')
+    } catch (error) {
+      window.alert(error.response?.data?.message || 'Gagal menghapus history logs.')
+    }
+  }
+
   useEffect(() => {
-    fetchLogs()
-    requestLocation()
+    let active = true
+    ;(async () => {
+      await recordPageVisit()
+      if (active) {
+        fetchLogs()
+        requestLocation()
+      }
+    })()
+    return () => {
+      active = false
+    }
   }, [])
 
   const formatDate = (value) => {
@@ -119,6 +167,14 @@ function HistoryLogs() {
             <i className="fas fa-file-alt"></i>
             <span>Kelola Pengajuan Adopsi</span>
           </a>
+          <a href="/dashboard/adoptions/verify" className="nav-item">
+            <i className="fas fa-check-circle"></i>
+            <span>Verifikasi Adopsi</span>
+          </a>
+          <a href="/dashboard/customers" className="nav-item">
+            <i className="fas fa-address-book"></i>
+            <span>Data Customer</span>
+          </a>
           <a href="/dashboard/reports" className="nav-item">
             <i className="fas fa-chart-line"></i>
             <span>Laporan</span>
@@ -143,7 +199,14 @@ function HistoryLogs() {
           </Link>
           <button 
             className="sidebar-logout-btn"
-            onClick={() => { window.location.href = '/'; }}
+            onClick={() => {
+              localStorage.removeItem('authUserId')
+              localStorage.removeItem('authName')
+              localStorage.removeItem('authRole')
+              localStorage.removeItem('authEmail')
+              localStorage.removeItem('authRemember')
+              window.location.href = '/login'
+            }}
           >
             <i className="fas fa-sign-out-alt"></i> Keluar
           </button>
@@ -231,8 +294,24 @@ function HistoryLogs() {
           {/* History Audit Logs Table */}
           <div className="panel">
             <div className="panel-head">
-              <h2><i className="fas fa-history"></i> History Audit Logs</h2>
-              <span>{activityLogs.length} entri</span>
+              <div>
+                <h2><i className="fas fa-history"></i> History Audit Logs</h2>
+                <p style={{ margin: '6px 0 0', fontSize: '13px', color: 'var(--muted)', maxWidth: '560px' }}>
+                  Catatan lengkap aktivitas pengguna dengan lokasi, IP, dan status browser.
+                </p>
+              </div>
+              <div className="history-panel-actions">
+                <span style={{ color: 'var(--muted)', fontSize: '13px' }}>{activityLogs.length} entri</span>
+                <button
+                  type="button"
+                  className="history-delete-all"
+                  onClick={handleDeleteAllLogs}
+                  disabled={activityLogs.length === 0}
+                >
+                  <i className="fas fa-trash-alt"></i>
+                  Hapus Semua
+                </button>
+              </div>
             </div>
 
             <div className="table-wrap">
@@ -247,7 +326,13 @@ function HistoryLogs() {
                   </tr>
                 </thead>
                 <tbody>
-                  {activityLogs.map((log) => (
+                  {activityLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '32px 0' }}>
+                        Tidak ada history log untuk ditampilkan.
+                      </td>
+                    </tr>
+                  ) : activityLogs.map((log) => (
                     <tr key={log.id}>
                       {/* User */}
                       <td>
@@ -257,8 +342,8 @@ function HistoryLogs() {
                           </div>
                           <div>
                             <strong>{log.user_name || 'User'}</strong>
-                            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                              {log.user_email || '-'} ({log.user_role || 'user'})
+                            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                              {log.user_email || '-'} • {log.user_role || 'user'}
                             </div>
                           </div>
                         </div>
@@ -268,7 +353,7 @@ function HistoryLogs() {
                       <td>
                         <div>
                           <strong style={{ color: 'var(--fg)' }}>{log.title}</strong>
-                          <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '2px' }}>
+                          <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px', lineHeight: 1.5 }}>
                             {log.description}
                           </div>
                         </div>
@@ -276,7 +361,7 @@ function HistoryLogs() {
 
                       {/* Kapan */}
                       <td>
-                        <span style={{ fontSize: '13px', fontWeight: 600 }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
                           {formatDate(log.created_at)}
                         </span>
                       </td>
@@ -289,7 +374,7 @@ function HistoryLogs() {
                             <strong style={{ fontSize: '13px' }}>{log.location_name || 'Jakarta, Indonesia'}</strong>
                           </div>
                           {log.latitude && log.longitude && (
-                            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
                               Lat: {Number(log.latitude).toFixed(4)}, Lng: {Number(log.longitude).toFixed(4)}
                             </div>
                           )}
@@ -298,7 +383,7 @@ function HistoryLogs() {
 
                       {/* IP */}
                       <td>
-                        <code style={{ background: 'var(--bg)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                        <code style={{ display: 'block', background: 'var(--bg)', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '12px', color: 'var(--fg-secondary)' }}>
                           {log.ip_address || '127.0.0.1'}
                         </code>
                       </td>

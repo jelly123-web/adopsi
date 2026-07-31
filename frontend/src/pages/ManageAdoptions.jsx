@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
+import SuperadminNavbar from '../components/SuperadminNavbar'
+import SuperadminSidebar from '../components/SuperadminSidebar'
+import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
 
 function ManageAdoptions() {
   const [requests, setRequests] = useState([])
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [editingId, setEditingId] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth > 768 : true
   )
@@ -29,8 +29,30 @@ function ManageAdoptions() {
     try {
       const response = await axios.get('http://localhost:3000/api/superadmin/adoption-requests')
       setRequests(response.data.data || [])
+      setCurrentPage(1)
     } catch {
       setRequests([])
+      setCurrentPage(1)
+    }
+  }
+
+  const handleDeleteAll = async () => {
+    if (requests.length === 0) {
+      window.alert('Tidak ada pengajuan untuk dihapus.')
+      return
+    }
+
+    if (!window.confirm(`Hapus semua pengajuan adopsi? Aksi ini akan menghapus ${requests.length} pengajuan.`)) {
+      return
+    }
+
+    try {
+      await axios.post('http://localhost:3000/api/superadmin/adoption-requests/delete-all')
+      await loadRequests()
+      publishLiveData('adoptions')
+      window.alert(`${requests.length} pengajuan berhasil dihapus.`)
+    } catch (error) {
+      window.alert(error.response?.data?.message || 'Gagal menghapus semua pengajuan')
     }
   }
 
@@ -38,6 +60,7 @@ function ManageAdoptions() {
     try {
       await axios.put(`http://localhost:3000/api/superadmin/adoption-requests/${id}`, { status })
       await loadRequests()
+      publishLiveData('adoptions')
     } catch (error) {
       window.alert(error.response?.data?.message || 'Gagal mengupdate status')
     }
@@ -48,6 +71,7 @@ function ManageAdoptions() {
     try {
       await axios.delete(`http://localhost:3000/api/superadmin/adoption-requests/${id}`)
       await loadRequests()
+      publishLiveData('adoptions')
     } catch (error) {
       window.alert(error.response?.data?.message || 'Gagal menghapus pengajuan')
     }
@@ -77,7 +101,7 @@ function ManageAdoptions() {
       case 'disetujui':
         return 'Disetujui'
       case 'pending':
-        return 'Pending'
+        return 'Menunggu'
       case 'ditolak':
         return 'Ditolak'
       default:
@@ -86,20 +110,18 @@ function ManageAdoptions() {
   }
 
   useEffect(() => {
-    setCurrentPage(1)
-  }, [selectedStatus, requests])
-
-  useEffect(() => {
     let active = true
     ;(async () => {
       try {
         const response = await axios.get('http://localhost:3000/api/superadmin/adoption-requests')
         if (active) {
           setRequests(response.data.data || [])
+          setCurrentPage(1)
         }
       } catch {
         if (active) {
           setRequests([])
+          setCurrentPage(1)
         }
       }
     })()
@@ -108,109 +130,20 @@ function ManageAdoptions() {
     }
   }, [])
 
+  useEffect(() => {
+    return subscribeLiveData('adoptions', loadRequests)
+  }, [])
+
   return (
     <div className="dashboard-layout">
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-brand">
-          <div className="sidebar-logo">A</div>
-          <div className="sidebar-brand-text">
-            <div className="sidebar-brand-name">Adopsi Hewan</div>
-            <div className="sidebar-brand-role">Superadmin</div>
-          </div>
-        </div>
-
-        <nav className="sidebar-nav">
-          <div className="nav-section-title">MENU</div>
-          <a href="/dashboard" className="nav-item">
-            <i className="fas fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-          </a>
-          <a href="/dashboard/users" className="nav-item">
-            <i className="fas fa-users"></i>
-            <span>Kelola User</span>
-          </a>
-          <a href="/dashboard/categories" className="nav-item">
-            <i className="fas fa-tags"></i>
-            <span>Kelola Kategori</span>
-          </a>
-          <a href="/dashboard/animals" className="nav-item">
-            <i className="fas fa-paw"></i>
-            <span>Kelola Hewan</span>
-          </a>
-          <a href="/dashboard/questionnaire-character" className="nav-item">
-            <i className="fas fa-clipboard-list"></i>
-            <span>Kuisioner Karakter</span>
-          </a>
-          <a href="/dashboard/adoptions" className="nav-item active">
-            <i className="fas fa-file-alt"></i>
-            <span>Kelola Pengajuan Adopsi</span>
-          </a>
-          <a href="/dashboard/reports" className="nav-item">
-            <i className="fas fa-chart-line"></i>
-            <span>Laporan</span>
-          </a>
-          <a href="/dashboard/settings" className="nav-item">
-            <i className="fas fa-cog"></i>
-            <span>Pengaturan Sistem</span>
-          </a>
-          <a href="/dashboard/restore" className="nav-item">
-            <i className="fas fa-undo"></i>
-            <span>Pulihkan Data</span>
-          </a>
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/dashboard/profile" className="sidebar-user">
-            <div className="sidebar-avatar">SA</div>
-            <div className="sidebar-user-info">
-              <div className="sidebar-user-name">Super Admin</div>
-              <div className="sidebar-user-email">admin@adopsi.test</div>
-            </div>
-          </Link>
-          <button 
-            className="sidebar-logout-btn"
-            onClick={() => { window.location.href = '/'; }}
-          >
-            <i className="fas fa-sign-out-alt"></i> Keluar
-          </button>
-        </div>
-      </aside>
-
+      <SuperadminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
-        <header className="topbar">
-          <div className="topbar-left">
-            <button
-              className="topbar-hamburger"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              <i className="fas fa-bars"></i>
-            </button>
-            <div className="topbar-title">
-              <button 
-                className="topbar-toggle" 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label="Toggle sidebar"
-              >
-                {sidebarOpen ? '≪' : '≫'}
-              </button>
-              <div className="topbar-page-title">Kelola Pengajuan Adopsi</div>
-            </div>
-          </div>
-
-          <div className="topbar-right">
-            <button className="topbar-btn">
-              <i className="fas fa-bell"></i>
-              <span className="notif-dot"></span>
-            </button>
-            <button className="topbar-btn">
-              <i className="fas fa-cog"></i>
-            </button>
-            <div className="live-indicator">
-              <span className="live-dot"></span>
-              LIVE
-            </div>
-          </div>
-        </header>
+        <SuperadminNavbar
+          pageTitle="Kelola Pengajuan Adopsi"
+          sidebarOpen={sidebarOpen}
+          offsetForSidebar={false}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+        />
 
         <div className="page-body">
           <div className="page-header">
@@ -223,10 +156,21 @@ function ManageAdoptions() {
             </p>
           </div>
 
-          <div className="content-toolbar">
-            <div className="search-box">
+          <div className="content-toolbar" style={{ gap: '12px', flexWrap: 'wrap' }}>
+            <div className="search-box" style={{ flex: '1 1 320px' }}>
               <input type="text" placeholder="Cari nama atau hewan..." />
               <button><i className="fas fa-search"></i> Cari</button>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button
+                type="button"
+                className="danger-link"
+                onClick={handleDeleteAll}
+                disabled={requests.length === 0}
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                <i className="fas fa-trash"></i> Hapus Semua
+              </button>
             </div>
           </div>
 
@@ -235,7 +179,10 @@ function ManageAdoptions() {
               <button
                 key={status}
                 className={`filter-pill ${selectedStatus === status ? 'active' : ''}`}
-                onClick={() => setSelectedStatus(status)}
+                onClick={() => {
+                  setSelectedStatus(status)
+                  setCurrentPage(1)
+                }}
               >
                 {status === 'Semua' ? 'Semua' : getStatusText(status)}
               </button>
@@ -256,7 +203,7 @@ function ManageAdoptions() {
                     <th>Hewan</th>
                     <th>Status</th>
                     <th>Tanggal</th>
-                    <th>Aksi</th>
+                    <th style={{ textAlign: 'center' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -310,23 +257,17 @@ function ManageAdoptions() {
                       </td>
                       <td>{formatDate(req.created_at)}</td>
                       <td>
-                        <div className="actions">
-                          {req.status === 'pending' && (
-                            <>
-                              <button 
-                                className="btn-open-edit" 
-                                onClick={() => handleUpdateStatus(req.id, 'disetujui')}
-                              >
-                                <i className="fas fa-check"></i> Setujui
-                              </button>
-                              <button 
-                                className="btn-delete-user" 
-                                onClick={() => handleUpdateStatus(req.id, 'ditolak')}
-                              >
-                                <i className="fas fa-times"></i> Tolak
-                              </button>
-                            </>
-                          )}
+                        <div className="actions" style={{ justifyContent: 'flex-end' }}>
+                          <select
+                            value={req.status}
+                            onChange={(event) => handleUpdateStatus(req.id, event.target.value)}
+                            className="status-select"
+                            aria-label={`Ubah status pengajuan ${req.id}`}
+                          >
+                            <option value="pending">Menunggu</option>
+                            <option value="disetujui">Disetujui</option>
+                            <option value="ditolak">Ditolak</option>
+                          </select>
                           <button 
                             className="btn-delete-user" 
                             onClick={() => handleDelete(req.id)}
@@ -383,3 +324,4 @@ function ManageAdoptions() {
 }
 
 export default ManageAdoptions
+

@@ -1,3 +1,6 @@
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+
 function IconBell() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -41,6 +44,10 @@ function IconSettings() {
 }
 
 function SuperadminTopbar({ title, onToggleSidebar, statusLabel = 'LIVE' }) {
+  const navigate = useNavigate()
+  const role = useMemo(() => localStorage.getItem('authRole') || 'superadmin', [])
+  const isSuperadmin = role === 'superadmin'
+
   return (
     <header className="superadmin-navbar">
       <div className="superadmin-navbar-left">
@@ -56,9 +63,16 @@ function SuperadminTopbar({ title, onToggleSidebar, statusLabel = 'LIVE' }) {
       </div>
 
       <div className="superadmin-navbar-right">
-        <button type="button" className="icon-button" aria-label="Pengaturan">
-          <IconSettings />
-        </button>
+        {isSuperadmin ? (
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Pengaturan"
+            onClick={() => navigate('/dashboard/settings')}
+          >
+            <IconSettings />
+          </button>
+        ) : null}
         <button type="button" className="icon-button" aria-label="Notifikasi">
           <IconBell />
           <span className="icon-badge" aria-hidden="true" />

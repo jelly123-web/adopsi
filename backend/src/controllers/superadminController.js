@@ -1,8 +1,166 @@
 const superadminModel = require("../models/superadminModel")
 
+const authRoles = ["costumer", "superadmin", "admin", "petugas"]
+
+function normalizeRole(role = "costumer") {
+  if (role === "customer" || role === "user") return "costumer"
+  return authRoles.includes(role) ? role : "costumer"
+}
+
+async function register(req, res, next) {
+  try {
+    const { name, email, password, role = "costumer" } = req.body || {}
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Nama, email, dan password wajib diisi.",
+      })
+    }
+
+    const user = await superadminModel.registerUser({
+      name,
+      email,
+      password,
+      role: normalizeRole(role),
+    })
+
+    res.status(201).json({
+      success: true,
+      message: "Akun berhasil dibuat.",
+      data: user,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function login(req, res, next) {
+  try {
+    const { email, password, role } = req.body || {}
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email dan password wajib diisi.",
+      })
+    }
+
+    const user = await superadminModel.loginUser({
+      email,
+      password,
+      role: role ? normalizeRole(role) : undefined,
+    })
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Email atau password tidak sesuai.",
+      })
+    }
+
+    res.json({
+      success: true,
+      message: "Login berhasil.",
+      data: user,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function googleLogin(req, res, next) {
+  try {
+    const { email, name } = req.body || {}
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email Google wajib diisi.",
+      })
+    }
+
+    const user = await superadminModel.loginOrRegisterGoogleUser({ email, name })
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Akun Google tidak aktif.",
+      })
+    }
+
+    res.json({
+      success: true,
+      message: "Login Google berhasil.",
+      data: user,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function forgotPassword(req, res, next) {
+  try {
+    const { email } = req.body || {}
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email wajib diisi.",
+      })
+    }
+
+    const reset = await superadminModel.requestPasswordReset(email)
+    const resetUrl = reset
+      ? `${req.protocol}://${req.get("host").replace(":3000", ":5173")}/login?reset_token=${reset.token}#panel`
+      : null
+
+    if (resetUrl) {
+      console.log(`[PASSWORD RESET] ${email}: ${resetUrl}`)
+    }
+
+    res.json({
+      success: true,
+      message: "Jika email terdaftar, link reset password sudah dibuat dan dikirim ke email.",
+      data: resetUrl ? { reset_url: resetUrl, expires_at: reset.expires_at } : null,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function resetPassword(req, res, next) {
+  try {
+    const { token, password } = req.body || {}
+
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Token dan password baru wajib diisi.",
+      })
+    }
+
+    const user = await superadminModel.resetPasswordByToken({ token, password })
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Token reset password tidak valid atau sudah kedaluwarsa.",
+      })
+    }
+
+    res.json({
+      success: true,
+      message: "Password berhasil diganti. Silakan login.",
+      data: user,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 async function getDashboard(req, res, next) {
   try {
-    const data = await superadminModel.getDashboardData()
+    const role = req.query.role ? normalizeRole(req.query.role) : ''
+    const data = await superadminModel.getDashboardData(role)
     res.json({ success: true, data })
   } catch (error) {
     next(error)
@@ -11,8 +169,11 @@ async function getDashboard(req, res, next) {
 
 async function getUsers(req, res, next) {
   try {
-    const users = await superadminModel.listUsers()
-    res.json({ success: true, data: users })
+    const page = Math.max(1, parseInt(req.query.page) || 1)
+    const limit = Math.max(1, parseInt(req.query.limit) || 6)
+    const role = req.query.role ? normalizeRole(req.query.role) : ''
+    const result = await superadminModel.listUsers(page, limit, role)
+    res.json({ success: true, ...result })
   } catch (error) {
     next(error)
   }
@@ -20,7 +181,7 @@ async function getUsers(req, res, next) {
 
 async function createUser(req, res, next) {
   try {
-    const { name, email, role = "user", status = "aktif" } = req.body || {}
+    const { name, email, password = "", role = "costumer", status = "aktif" } = req.body || {}
 
     if (!name || !email) {
       return res.status(400).json({
@@ -29,7 +190,7 @@ async function createUser(req, res, next) {
       })
     }
 
-    const id = await superadminModel.createUser({ name, email, role, status })
+    const id = await superadminModel.createUser({ name, email, password, role: normalizeRole(role), status })
     res.status(201).json({ success: true, message: "User berhasil dibuat.", data: { id } })
   } catch (error) {
     next(error)
@@ -39,7 +200,7 @@ async function createUser(req, res, next) {
 async function updateUser(req, res, next) {
   try {
     const id = Number(req.params.id)
-    const { name, email, role = "user", status = "aktif" } = req.body || {}
+    const { name, email, password = "", role = "costumer", status = "aktif" } = req.body || {}
 
     if (!Number.isInteger(id)) {
       return res.status(400).json({ success: false, message: "ID user tidak valid." })
@@ -52,7 +213,7 @@ async function updateUser(req, res, next) {
       })
     }
 
-    const affectedRows = await superadminModel.updateUser(id, { name, email, role, status })
+    const affectedRows = await superadminModel.updateUser(id, { name, email, password, role: normalizeRole(role), status })
     if (!affectedRows) {
       return res.status(404).json({ success: false, message: "User tidak ditemukan." })
     }
@@ -97,6 +258,22 @@ async function deleteUser(req, res, next) {
   }
 }
 
+async function deleteAllCustomers(req, res, next) {
+  try {
+    const deletedBy = "Super Admin"
+    const deletedIp = req.ip || req.connection.remoteAddress || "unknown"
+    const affectedRows = await superadminModel.softDeleteUsersByRole("costumer", { deletedBy, deletedIp })
+
+    res.json({
+      success: true,
+      message: affectedRows ? "Semua data customer berhasil dihapus." : "Tidak ada data customer untuk dihapus.",
+      deleted: affectedRows,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 async function getDeletedUsers(req, res, next) {
   try {
     const users = await superadminModel.listDeletedUsers()
@@ -122,10 +299,54 @@ async function restoreUser(req, res, next) {
   }
 }
 
+async function deleteUserPermanently(req, res, next) {
+  try {
+    const id = Number(req.params.id)
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ success: false, message: "ID user tidak valid." })
+    }
+
+    const existingUser = await superadminModel.findDeletedUserById(id)
+    if (!existingUser) {
+      return res.status(404).json({ success: false, message: "User tidak ditemukan atau tidak dihapus." })
+    }
+
+    if (existingUser.role === "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Akun superadmin tidak bisa dihapus permanen.",
+      })
+    }
+
+    const affectedRows = await superadminModel.deleteUserPermanently(id)
+    if (!affectedRows) {
+      return res.status(404).json({ success: false, message: "User tidak ditemukan atau tidak dihapus." })
+    }
+    res.json({ success: true, message: "User berhasil dihapus permanen." })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function deleteAllDeletedUsers(req, res, next) {
+  try {
+    const deletedSuperadmins = await superadminModel.countDeletedSuperadmins()
+    const affectedRows = await superadminModel.deleteAllDeletedUsers()
+    const superadminNotice = deletedSuperadmins > 0 ? " Akun superadmin tidak dihapus permanen." : ""
+    res.json({ success: true, message: `${affectedRows} user berhasil dihapus permanen.${superadminNotice}` })
+  } catch (error) {
+    next(error)
+  }
+}
+
 async function getAnimals(req, res, next) {
   try {
-    const animals = await superadminModel.listAnimals()
-    res.json({ success: true, data: animals })
+    const page = Math.max(1, parseInt(req.query.page) || 1)
+    const limit = Math.max(1, parseInt(req.query.limit) || 10)
+    const search = req.query.search || ''
+    const species = req.query.species || ''
+    const result = await superadminModel.listAnimals(page, limit, search, species)
+    res.json({ success: true, ...result })
   } catch (error) {
     next(error)
   }
@@ -133,7 +354,7 @@ async function getAnimals(req, res, next) {
 
 async function createAnimal(req, res, next) {
   try {
-    const { name, species, gender, age, status = "tersedia" } = req.body || {}
+    const { name, species, gender, age, activity_preference = "Suka di rumah", status = "tersedia", condition = "Sehat", photo = null } = req.body || {}
     const parsedAge = Number(age)
 
     if (!name || !species || !gender || Number.isNaN(parsedAge)) {
@@ -148,7 +369,10 @@ async function createAnimal(req, res, next) {
       species,
       gender,
       age: parsedAge,
+      activity_preference,
       status,
+      condition,
+      photo,
     })
 
     res.status(201).json({ success: true, message: "Hewan berhasil dibuat.", data: { id } })
@@ -157,10 +381,31 @@ async function createAnimal(req, res, next) {
   }
 }
 
+async function uploadPhoto(req, res, next) {
+  try {
+    const { image } = req.body || {}
+
+    if (!image || typeof image !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Data gambar wajib diisi.",
+      })
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Foto siap disimpan ke database.",
+      url: image,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 async function updateAnimal(req, res, next) {
   try {
     const id = Number(req.params.id)
-    const { name, species, gender, age, status = "tersedia" } = req.body || {}
+    const { name, species, gender, age, activity_preference = "Suka di rumah", status = "tersedia", condition = "Sehat", photo = null } = req.body || {}
     const parsedAge = Number(age)
 
     if (!Number.isInteger(id)) {
@@ -179,7 +424,10 @@ async function updateAnimal(req, res, next) {
       species,
       gender,
       age: parsedAge,
+      activity_preference,
       status,
+      condition,
+      photo,
     })
     if (!affectedRows) {
       return res.status(404).json({ success: false, message: "Hewan tidak ditemukan." })
@@ -213,6 +461,17 @@ async function deleteAnimal(req, res, next) {
   }
 }
 
+async function deleteAllAnimals(req, res, next) {
+  try {
+    const deletedBy = 'Super Admin'
+    const deletedIp = req.ip || req.connection.remoteAddress || 'unknown'
+    const affected = await superadminModel.softDeleteAllAnimals({ deletedBy, deletedIp })
+    res.json({ success: true, message: `${affected} hewan berhasil dihapus.` })
+  } catch (error) {
+    next(error)
+  }
+}
+
 async function getDeletedAnimals(req, res, next) {
   try {
     const animals = await superadminModel.listDeletedAnimals()
@@ -238,11 +497,39 @@ async function restoreAnimal(req, res, next) {
   }
 }
 
+async function deleteAnimalPermanently(req, res, next) {
+  try {
+    const id = Number(req.params.id)
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ success: false, message: "ID hewan tidak valid." })
+    }
+    const affectedRows = await superadminModel.deleteAnimalPermanently(id)
+    if (!affectedRows) {
+      return res.status(404).json({ success: false, message: "Hewan tidak ditemukan atau tidak dihapus." })
+    }
+    res.json({ success: true, message: "Hewan berhasil dihapus permanen." })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function deleteAllDeletedAnimals(req, res, next) {
+  try {
+    const affectedRows = await superadminModel.deleteAllDeletedAnimals()
+    res.json({ success: true, message: `${affectedRows} hewan yang dihapus permanen berhasil dihapus.` })
+  } catch (error) {
+    next(error)
+  }
+}
+
 // Category handlers
 async function getCategories(req, res, next) {
   try {
-    const categories = await superadminModel.listCategories()
-    res.json({ success: true, data: categories })
+    const page = Math.max(1, parseInt(req.query.page) || 1)
+    const limit = Math.max(1, parseInt(req.query.limit) || 6)
+    const search = req.query.search || ''
+    const result = await superadminModel.listCategories(page, limit, search)
+    res.json({ success: true, ...result })
   } catch (error) {
     next(error)
   }
@@ -340,11 +627,86 @@ async function restoreCategory(req, res, next) {
   }
 }
 
+async function deleteCategoryPermanently(req, res, next) {
+  try {
+    const id = Number(req.params.id)
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ success: false, message: "ID kategori tidak valid." })
+    }
+    const affectedRows = await superadminModel.deleteCategoryPermanently(id)
+    if (!affectedRows) {
+      return res.status(404).json({ success: false, message: "Kategori tidak ditemukan atau tidak dihapus." })
+    }
+    res.json({ success: true, message: "Kategori berhasil dihapus permanen." })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function deleteAllDeletedCategories(req, res, next) {
+  try {
+    const affectedRows = await superadminModel.deleteAllDeletedCategories()
+    res.json({ success: true, message: `${affectedRows} kategori terhapus permanen.` })
+  } catch (error) {
+    next(error)
+  }
+}
+
 async function getAdoptionRequests(req, res, next) {
   try {
     const requests = await superadminModel.listAdoptionRequests()
     res.json({ success: true, data: requests })
   } catch (error) {
+    next(error)
+  }
+}
+
+async function createAdoptionRequest(req, res, next) {
+  try {
+    const {
+      user_id,
+      animal_id,
+      full_name = "",
+      phone = "",
+      address = "",
+      job = "",
+      family_count = "",
+      housing_type = "",
+      pet_experience = "",
+      reason = "",
+      document_url = "",
+    } = req.body || {}
+
+    if (!user_id || !animal_id || !full_name || !phone || !address || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Nama lengkap, telepon, alamat, alasan, dan hewan wajib diisi.",
+      })
+    }
+
+    const id = await superadminModel.createAdoptionRequest({
+      user_id: Number(user_id),
+      animal_id: Number(animal_id),
+      full_name,
+      phone,
+      address,
+      job,
+      family_count,
+      housing_type,
+      pet_experience,
+      reason,
+      document_url,
+    })
+
+    res.status(201).json({
+      success: true,
+      message: "Pengajuan adopsi berhasil dikirim.",
+      data: { id },
+    })
+  } catch (error) {
+    if (error.code === "DUPLICATE_ADOPTION_REQUEST") {
+      return res.status(409).json({ success: false, message: error.message })
+    }
     next(error)
   }
 }
@@ -395,6 +757,22 @@ async function deleteAdoptionRequest(req, res, next) {
   }
 }
 
+async function deleteAllAdoptionRequests(req, res, next) {
+  try {
+    const deletedBy = "Super Admin"
+    const deletedIp = req.ip || req.connection.remoteAddress || "unknown"
+    const affectedRows = await superadminModel.softDeleteAllAdoptionRequests({ deletedBy, deletedIp })
+
+    if (!affectedRows) {
+      return res.status(404).json({ success: false, message: "Tidak ada pengajuan untuk dihapus." })
+    }
+
+    res.json({ success: true, message: `${affectedRows} pengajuan berhasil dihapus.` })
+  } catch (error) {
+    next(error)
+  }
+}
+
 async function getDeletedAdoptionRequests(req, res, next) {
   try {
     const requests = await superadminModel.listDeletedAdoptionRequests()
@@ -415,6 +793,31 @@ async function restoreAdoptionRequest(req, res, next) {
       return res.status(404).json({ success: false, message: "Pengajuan tidak ditemukan atau tidak dihapus." })
     }
     res.json({ success: true, message: "Pengajuan berhasil dipulihkan." })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function deleteAdoptionRequestPermanently(req, res, next) {
+  try {
+    const id = Number(req.params.id)
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ success: false, message: "ID pengajuan tidak valid." })
+    }
+    const affectedRows = await superadminModel.deleteAdoptionRequestPermanently(id)
+    if (!affectedRows) {
+      return res.status(404).json({ success: false, message: "Pengajuan tidak ditemukan atau tidak dihapus." })
+    }
+    res.json({ success: true, message: "Pengajuan berhasil dihapus permanen." })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function deleteAllDeletedAdoptionRequests(req, res, next) {
+  try {
+    const affectedRows = await superadminModel.deleteAllDeletedAdoptionRequests()
+    res.json({ success: true, message: `${affectedRows} pengajuan terhapus permanen.` })
   } catch (error) {
     next(error)
   }
@@ -586,6 +989,36 @@ async function updateProfile(req, res, next) {
   }
 }
 
+async function getAccountProfile(req, res, next) {
+  try {
+    const profile = await superadminModel.getAccountProfile(req.params.id)
+    res.json({ success: true, data: profile })
+  } catch (error) {
+    const status = error.message?.includes("tidak ditemukan") ? 404 : 400
+    res.status(status).json({
+      success: false,
+      message: error.message || "Gagal memuat profil.",
+    })
+  }
+}
+
+async function updateAccountProfile(req, res, next) {
+  try {
+    const profile = await superadminModel.updateAccountProfile(req.params.id, req.body || {})
+    res.json({
+      success: true,
+      message: "Profil berhasil diperbarui.",
+      data: profile,
+    })
+  } catch (error) {
+    const status = error.message?.includes("tidak ditemukan") ? 404 : 400
+    res.status(status).json({
+      success: false,
+      message: error.message || "Gagal memperbarui profil.",
+    })
+  }
+}
+
 
 async function getReports(req, res, next) {
   try {
@@ -639,6 +1072,18 @@ async function createActivityLog(req, res, next) {
     next(error)
   }
 }
+
+async function deleteAllActivityLogs(req, res, next) {
+  try {
+    const affectedRows = await superadminModel.deleteAllActivityLogs()
+    res.json({
+      success: true,
+      message: `${affectedRows} history log berhasil dihapus.`,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 async function exportBackup(req, res, next) {
   try {
     const backup = await superadminModel.exportDatabaseBackup()
@@ -665,28 +1110,46 @@ async function importBackup(req, res, next) {
 }
 
 module.exports = {
+  register,
+  login,
+  googleLogin,
+  forgotPassword,
+  resetPassword,
   getDashboard,
   getUsers,
   createUser,
   updateUser,
   deleteUser,
+  deleteAllCustomers,
   getDeletedUsers,
   restoreUser,
+  deleteUserPermanently,
+  deleteAllDeletedUsers,
   getAnimals,
+  uploadPhoto,
   createAnimal,
   updateAnimal,
   deleteAnimal,
+  deleteAllAnimals,
+  deleteAnimalPermanently,
   getDeletedAnimals,
   restoreAnimal,
+  deleteAllDeletedAnimals,
   getCategories,
   createCategory,
   updateCategory,
   deleteCategory,
+  deleteCategoryPermanently,
   getDeletedCategories,
   restoreCategory,
+  deleteAllDeletedCategories,
   getAdoptionRequests,
+  createAdoptionRequest,
   updateAdoptionRequest,
   deleteAdoptionRequest,
+  deleteAllAdoptionRequests,
+  deleteAdoptionRequestPermanently,
+  deleteAllDeletedAdoptionRequests,
   getDeletedAdoptionRequests,
   restoreAdoptionRequest,
   getQuestionnaireQuestions,
@@ -699,9 +1162,12 @@ module.exports = {
   updateSettings,
   getProfile,
   updateProfile,
+  getAccountProfile,
+  updateAccountProfile,
   getReports,
   getActivityLogs,
   createActivityLog,
+  deleteAllActivityLogs,
   exportBackup,
   importBackup,
 }

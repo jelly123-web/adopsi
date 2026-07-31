@@ -5,9 +5,10 @@ function SuperadminNavbar({
   statusLabel = 'LIVE',
   onToggleSidebar,
   sidebarOpen = true,
+  offsetForSidebar = true,
 }) {
   return (
-    <header className={`topbar superadmin-navbar ${sidebarOpen ? 'shifted' : ''}`}>
+    <header className={`topbar superadmin-navbar ${offsetForSidebar && sidebarOpen ? 'shifted' : ''}`}>
       <div className="topbar-left">
         <div className="topbar-title">
           <button

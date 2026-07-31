@@ -193,7 +193,7 @@ export default function BackupRestore() {
             <th>Keterangan</th>
             <th>Tanggal</th>
             <th>Ukuran</th>
-            <th>Aksi</th>
+            <th style={{ textAlign: 'center' }}>Aksi</th>
 
           </tr>
 
