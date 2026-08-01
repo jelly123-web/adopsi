@@ -110,10 +110,24 @@ export default function CustomerLayout({ children }) {
       const rows = Array.isArray(response.data?.data) ? response.data.data : []
       rows
         .filter((row) => String(row.user_id || '') === String(currentUserId) || (currentEmail && String(row.email || row.user_email || '').toLowerCase() === currentEmail))
-        .filter((row) => isFinalAdoptionStatus(row.status))
         .forEach((row) => {
-          const status = getStatusLabel(row.status)
           const animalName = row.animal_name || row.petName || row.animal?.name || 'Hewan'
+          if (row.pickup_date) {
+            const scheduleTime = row.pickup_updated_at || row.pickup_notified_at || row.pickup_date
+            items.push({
+              id: `visit-${row.id}-${row.pickup_date}-${row.pickup_status || ''}`,
+              type: 'schedule',
+              icon: 'fa-calendar-check',
+              title: `Jadwal pengambilan ${animalName}`,
+              text: `${formatNotifTime(row.pickup_date)} - ${row.pickup_status || 'Belum Dikonfirmasi Customer'}`,
+              time: scheduleTime,
+              sortTime: parseTime(scheduleTime),
+              to: '/customer/status'
+            })
+          }
+
+          if (!isFinalAdoptionStatus(row.status)) return
+          const status = getStatusLabel(row.status)
           const time = row.updated_at || row.created_at || row.date || ''
           items.push({
             id: `adoption-${row.id}-${String(row.status).toLowerCase()}`,

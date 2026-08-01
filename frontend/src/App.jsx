@@ -33,6 +33,7 @@ const adminNavTargets = new Map([
   ['Verifikasi Adopsi', '/admin/adoptions/verify'],
   ['Data Customer', '/admin/customers'],
   ['Chat Customer', '/admin/chat'],
+  ['Jadwal Kunjungan', '/admin/visits'],
   ['Laporan', '/admin/reports'],
 ])
 
@@ -363,6 +364,7 @@ function App() {
           <Route path="/admin/adoptions/verify" element={<RequireRole roles={['admin']}><VerifyAdoptions /></RequireRole>} />
           <Route path="/admin/customers" element={<RequireRole roles={['admin']}><DataCustomers /></RequireRole>} />
           <Route path="/admin/chat" element={<RequireRole roles={['admin']}><PetugasChat /></RequireRole>} />
+          <Route path="/admin/visits" element={<RequireRole roles={['admin']}><PetugasVisits /></RequireRole>} />
           <Route path="/admin/reports" element={<RequireRole roles={['admin']}><Reports /></RequireRole>} />
           <Route path="/admin/profile" element={<RequireRole roles={['admin']}><Profile /></RequireRole>} />
           <Route path="/petugas" element={<RequireRole roles={['petugas']}><Navigate to="/petugas/dashboard" replace /></RequireRole>} />

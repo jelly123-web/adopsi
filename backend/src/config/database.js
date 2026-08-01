@@ -172,6 +172,10 @@ async function initializeDatabase() {
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS reason TEXT NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS document_url TEXT NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS rejection_reason TEXT NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pickup_date TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pickup_status VARCHAR(80) NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pickup_notified_at TIMESTAMP NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pickup_updated_at TIMESTAMP NULL`)
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS adoptions (

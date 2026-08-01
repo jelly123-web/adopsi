@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import CustomerLayout from '../components/CustomerLayout'
-import { subscribeLiveData } from '../utils/liveDataEvents'
+import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
 
 const API_BASE_URL = 'http://localhost:3000/api'
 
@@ -22,6 +22,14 @@ const formatDate = (v) => {
   if (!v) return '-'
   const d = new Date(v)
   return isNaN(d) ? '-' : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+const formatDateTime = (v) => {
+  if (!v) return '-'
+  const d = new Date(v)
+  return Number.isNaN(d.getTime())
+    ? '-'
+    : d.toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' })
 }
 
 export default function CustomerStatus() {
@@ -45,6 +53,24 @@ export default function CustomerStatus() {
     const unsub = subscribeLiveData('adoptions', load)
     return () => { active = false; unsub() }
   }, [])
+
+  const confirmSchedule = async (requestId) => {
+    const now = new Date().toISOString()
+    try {
+      await axios.put(`${API_BASE_URL}/superadmin/adoption-requests/${requestId}`, {
+        pickup_status: 'Dikonfirmasi',
+        pickup_updated_at: now,
+      })
+      setRequests((prev) => prev.map((row) => (
+        row.id === requestId
+          ? { ...row, pickup_status: 'Dikonfirmasi', pickup_updated_at: now }
+          : row
+      )))
+      publishLiveData('adoptions', { action: 'schedule-confirmed', requestId })
+    } catch {
+      window.alert('Gagal konfirmasi jadwal. Coba lagi.')
+    }
+  }
 
   return (
     <CustomerLayout>
@@ -70,7 +96,10 @@ export default function CustomerStatus() {
                 </Link>
               </div>
             ) : (
-              myRequests.map((r) => (
+              myRequests.map((r) => {
+                const schedule = { date: r.pickup_date, status: r.pickup_status }
+                const needsConfirm = schedule.date && schedule.status !== 'Dikonfirmasi' && schedule.status !== 'Selesai'
+                return (
                 <div key={r.id} className="customer-order-card">
                   <div className="customer-order-icon">
                     {r.animal_photo ? (
@@ -92,12 +121,28 @@ export default function CustomerStatus() {
                         Catatan: {r.rejection_reason}
                       </div>
                     )}
+                    {schedule.date && (
+                      <div className="customer-schedule-note">
+                        <i className="fas fa-calendar-check" />
+                        <div>
+                          <strong>Jadwal Pengambilan Hewan</strong>
+                          <p>{formatDateTime(schedule.date)}</p>
+                          <span>{schedule.status || 'Belum Dikonfirmasi Customer'}</span>
+                          {needsConfirm && (
+                            <button type="button" onClick={() => confirmSchedule(r.id)}>
+                              Konfirmasi Jadwal
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <span className={`customer-status ${getStatusCls(r.status)}`}>
                     {getStatusLabel(r.status)}
                   </span>
                 </div>
-              ))
+                )
+              })
             )}
           </div>
         </div>

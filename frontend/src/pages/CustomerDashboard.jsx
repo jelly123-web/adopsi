@@ -34,6 +34,12 @@ const formatDate = (v) => {
   return isNaN(d) ? '-' : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+const formatDateTime = (v) => {
+  if (!v) return '-'
+  const d = new Date(v)
+  return isNaN(d) ? '-' : d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
 export default function CustomerDashboard() {
   const [requests, setRequests] = useState([])
   const [animals, setAnimals] = useState([])
@@ -176,10 +182,24 @@ export default function CustomerDashboard() {
             ) : myRequests.slice(0, 4).map((r) => (
               <div key={r.id} className="customer-order-card">
                 <div className="customer-order-icon">
-                  <i className="fas fa-paw" />
+                  {r.animal_photo ? (
+                    <PetMedia src={r.animal_photo} name={r.animal_name || 'Hewan Adopsi'} />
+                  ) : (
+                    <i className="fas fa-paw" />
+                  )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <strong>{r.animal_name || 'Hewan Adopsi'}</strong>
+                  {r.pickup_date ? (
+                    <div className="customer-schedule-note compact">
+                      <i className="fas fa-calendar-check" />
+                      <div>
+                        <strong>Jadwal ambil hewan</strong>
+                        <p>{formatDateTime(r.pickup_date)}</p>
+                        <span>{r.pickup_status || 'Belum Dikonfirmasi Customer'}</span>
+                      </div>
+                    </div>
+                  ) : null}
                   <p>{r.animal_species || '-'} · Diajukan {formatDate(r.created_at)}</p>
                 </div>
                 <span className={`customer-status ${getStatusStyle(r.status)}`}>

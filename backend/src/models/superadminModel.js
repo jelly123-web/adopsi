@@ -664,8 +664,13 @@ async function listAdoptionRequests() {
       ar.reason,
       ar.document_url,
       ar.rejection_reason,
+      ar.pickup_date,
+      ar.pickup_status,
+      ar.pickup_notified_at,
+      ar.pickup_updated_at,
       ar.status,
-      ar.created_at
+      ar.created_at,
+      ar.updated_at
     FROM adoption_requests ar
     LEFT JOIN users u ON ar.user_id = u.id
     LEFT JOIN animals a ON ar.animal_id = a.id
@@ -735,15 +740,47 @@ async function createAdoptionRequest(input) {
   return result.rows[0].id
 }
 
-async function updateAdoptionRequest(id, { status }) {
+async function updateAdoptionRequest(id, input = {}) {
   const pool = await getPool()
+  const allowedFields = {
+    status: "status",
+    pickup_date: "pickup_date",
+    pickup_status: "pickup_status",
+    pickup_notified_at: "pickup_notified_at",
+    pickup_updated_at: "pickup_updated_at",
+  }
+  const setClauses = []
+  const values = []
+
+  for (const [key, column] of Object.entries(allowedFields)) {
+    if (Object.prototype.hasOwnProperty.call(input, key)) {
+      values.push(input[key] === "" ? null : input[key])
+      setClauses.push(`${column} = $${values.length}`)
+    }
+  }
+
+  if (!setClauses.length) return 0
+
+  setClauses.push("updated_at = CURRENT_TIMESTAMP")
+  values.push(id)
+
   const result = await pool.query(
-    "UPDATE adoption_requests SET status = $1 WHERE id = $2 AND deleted = FALSE",
-    [status, id],
+    `
+      UPDATE adoption_requests
+      SET ${setClauses.join(", ")}
+      WHERE id = $${values.length} AND deleted = FALSE
+    `,
+    values,
   )
-  if (result.rowCount && status === "disetujui") {
+
+  if (
+    result.rowCount &&
+    Object.prototype.hasOwnProperty.call(input, "status") &&
+    input.status === "disetujui"
+  ) {
     await pool.query("UPDATE animals SET status = 'diadopsi' WHERE id = (SELECT animal_id FROM adoption_requests WHERE id = $1 AND deleted = FALSE)", [id])
   }
+
   return result.rowCount
 }
 

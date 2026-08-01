@@ -714,22 +714,33 @@ async function createAdoptionRequest(req, res, next) {
 async function updateAdoptionRequest(req, res, next) {
   try {
     const id = Number(req.params.id)
-    const { status } = req.body || {}
+    const body = req.body || {}
 
     if (!Number.isInteger(id)) {
       return res.status(400).json({ success: false, message: "ID pengajuan tidak valid." })
     }
 
-    if (!status) {
-      return res.status(400).json({ success: false, message: "Status harus diisi." })
+    const payload = {}
+    if (typeof body.status === "string" && body.status.trim()) {
+      payload.status = body.status.trim()
     }
 
-    const affectedRows = await superadminModel.updateAdoptionRequest(id, { status })
+    ;["pickup_date", "pickup_status", "pickup_notified_at", "pickup_updated_at"].forEach((key) => {
+      if (Object.prototype.hasOwnProperty.call(body, key)) {
+        payload[key] = body[key] || null
+      }
+    })
+
+    if (!Object.keys(payload).length) {
+      return res.status(400).json({ success: false, message: "Data pembaruan harus diisi." })
+    }
+
+    const affectedRows = await superadminModel.updateAdoptionRequest(id, payload)
     if (!affectedRows) {
       return res.status(404).json({ success: false, message: "Pengajuan tidak ditemukan." })
     }
 
-    res.json({ success: true, message: "Status pengajuan berhasil diupdate." })
+    res.json({ success: true, message: "Pengajuan berhasil diperbarui." })
   } catch (error) {
     next(error)
   }
