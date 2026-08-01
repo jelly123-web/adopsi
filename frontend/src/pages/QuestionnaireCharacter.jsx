@@ -9,6 +9,28 @@ const emptyForm = {
   status: 'aktif',
 }
 
+function QuestionnaireTitleIcon() {
+  return (
+    <svg className="questionnaire-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <path d="M9 3h6v4H9zM8.5 11h7M8.5 15h7M8.5 19h4" />
+    </svg>
+  )
+}
+
+function QuestActionIcon({ type }) {
+  const paths = {
+    edit: <path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20zM13.5 6.5l4 4" />,
+    trash: <path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" />,
+  }
+
+  return (
+    <svg className="quest-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {paths[type]}
+    </svg>
+  )
+}
+
 function QuestionnaireCharacter() {
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth > 768 : true,

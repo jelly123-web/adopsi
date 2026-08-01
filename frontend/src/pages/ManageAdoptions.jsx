@@ -2,7 +2,35 @@
 import axios from 'axios'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
+import MediaAvatar, { DEFAULT_ANIMAL_PHOTO, DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
 import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
+
+const getRequestUserPhoto = (req) => pickMedia(
+  req.user_photo,
+  req.user_profile_photo,
+  req.user_avatar,
+  req.customer_photo,
+  req.customer_profile_photo,
+  req.customer_avatar,
+  req.profile_photo,
+  req.avatar,
+  req.user?.profile_photo,
+  req.user?.avatar,
+)
+
+const getRequestAnimalPhoto = (req) => pickMedia(
+  req.animal_photo,
+  req.animal_image,
+  req.animal_image_url,
+  req.animal_avatar,
+  req.photo,
+  req.image,
+  req.image_url,
+  req.animal?.photo,
+  req.animal?.image,
+  req.animal?.image_url,
+  req.animal?.photos,
+)
 
 function ManageAdoptions() {
   const [requests, setRequests] = useState([])
@@ -212,37 +240,21 @@ function ManageAdoptions() {
                       <td>{req.id}</td>
                       <td>
                         <div className="user-cell">
-                          <div 
-                            className="user-avatar"
-                            style={{
-                              background: 'var(--accent)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'white',
-                              fontWeight: '700',
-                            }}
-                          >
-                            {req.user_name?.charAt(0)?.toUpperCase() || '?'}
-                          </div>
+                          <MediaAvatar
+                            src={getRequestUserPhoto(req)}
+                            fallbackSrc={DEFAULT_USER_PHOTO}
+                            alt={req.user_name || 'Adopter'}
+                          />
                           <strong>{req.user_name}</strong>
                         </div>
                       </td>
                       <td>
                         <div className="user-cell">
-                          <div 
-                            className="user-avatar"
-                            style={{
-                              background: 'linear-gradient(135deg, var(--green), var(--teal))',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'white',
-                              fontWeight: '700',
-                            }}
-                          >
-                            {req.animal_species?.charAt(0)?.toUpperCase() || '?'}
-                          </div>
+                          <MediaAvatar
+                            src={getRequestAnimalPhoto(req)}
+                            fallbackSrc={DEFAULT_ANIMAL_PHOTO}
+                            alt={req.animal_name || 'Hewan'}
+                          />
                           <strong>{req.animal_name}</strong>
                           <span style={{ color: 'var(--muted)', fontSize: '13px', marginLeft: '8px' }}>
                             ({req.animal_species})

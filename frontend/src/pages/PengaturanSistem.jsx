@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 import CropModal from '../components/CropModal'
+import SuperadminNavbar from '../components/SuperadminNavbar'
 import { publishLiveData } from '../utils/liveDataEvents'
 
 const API_BASE_URL = 'http://localhost:3000/api'
@@ -353,41 +354,12 @@ function PengaturanSistem() {
 
       {/* Main Content */}
       <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
-        {/* Topbar */}
-        <header className="topbar">
-          <div className="topbar-left">
-            <button
-              className="topbar-hamburger"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              <i className="fas fa-bars"></i>
-            </button>
-            <div className="topbar-title">
-              <button 
-                className="topbar-toggle" 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label="Toggle sidebar"
-              >
-                {sidebarOpen ? '≪' : '≫'}
-              </button>
-              <div className="topbar-page-title">Pengaturan Sistem</div>
-            </div>
-          </div>
-
-          <div className="topbar-right">
-            <button className="topbar-btn">
-              <i className="fas fa-bell"></i>
-              <span className="notif-dot"></span>
-            </button>
-            <a href="/dashboard/settings" className="topbar-btn active">
-              <i className="fas fa-cog"></i>
-            </a>
-            <div className="live-indicator">
-              <span className="live-dot"></span>
-              LIVE
-            </div>
-          </div>
-        </header>
+        <SuperadminNavbar
+          pageTitle="Pengaturan Sistem"
+          sidebarOpen={sidebarOpen}
+          offsetForSidebar={false}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+        />
 
         {/* Page Body */}
         <div className="page-body">

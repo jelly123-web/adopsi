@@ -75,6 +75,7 @@ async function initializeDatabase() {
     email VARCHAR(190) NOT NULL UNIQUE,
     password VARCHAR(255) NULL,
     profile_photo TEXT NULL,
+    profile_bg_photo TEXT NULL,
     role VARCHAR(30) NOT NULL DEFAULT 'costumer',
       status VARCHAR(30) NOT NULL DEFAULT 'aktif',
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -88,6 +89,7 @@ async function initializeDatabase() {
 
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255) NULL`)
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_photo TEXT NULL`)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_bg_photo TEXT NULL`)
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_token VARCHAR(120) NULL`)
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_password_expires_at TIMESTAMP NULL`)
   await pool.query(`ALTER TABLE users ALTER COLUMN role SET DEFAULT 'costumer'`)
@@ -314,15 +316,31 @@ async function initializeDatabase() {
         name = 'Super Admin',
         password = EXCLUDED.password,
         role = 'superadmin',
-        status = 'aktif',
-        deleted = FALSE,
-        deleted_by = NULL,
         deleted_at = NULL,
         deleted_ip = NULL
     `,
     [gmailSuperadminPassword],
   )
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id SERIAL PRIMARY KEY,
+      msg_id VARCHAR(120) NOT NULL UNIQUE,
+      user_id INTEGER NULL,
+      sender VARCHAR(60) NOT NULL,
+      sender_name VARCHAR(120) NULL,
+      target_role VARCHAR(60) NULL,
+      text TEXT NOT NULL,
+      topic VARCHAR(255) NULL,
+      is_read BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+  await pool.query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS target_role VARCHAR(60) NULL`)
+  await pool.query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS is_read BOOLEAN NOT NULL DEFAULT FALSE`)
+  await pool.query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS topic VARCHAR(255) NULL`)
 }
+
 
 async function getPool() {
   if (!pool) {

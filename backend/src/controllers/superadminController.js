@@ -1170,4 +1170,34 @@ module.exports = {
   deleteAllActivityLogs,
   exportBackup,
   importBackup,
+  getChatMessages: async (req, res, next) => {
+    try {
+      const { userId } = req.query
+      const messages = await superadminModel.getChatMessages(userId || null)
+      res.json({ success: true, data: messages })
+    } catch (err) {
+      next(err)
+    }
+  },
+  createChatMessage: async (req, res, next) => {
+    try {
+      const { msgId, userId, sender, senderName, targetRole, text, topic } = req.body
+      const newMsg = await superadminModel.createChatMessage({ msgId, userId, sender, senderName, targetRole, text, topic })
+      res.json({ success: true, data: newMsg })
+    } catch (err) {
+      next(err)
+    }
+  },
+  deleteChatMessage: async (req, res, next) => {
+    try {
+      const { msgId } = req.params
+      if (!msgId) {
+        return res.status(400).json({ success: false, message: "ID pesan wajib diisi." })
+      }
+      await superadminModel.deleteChatMessage(msgId)
+      res.json({ success: true, message: "Pesan berhasil dihapus." })
+    } catch (err) {
+      next(err)
+    }
+  },
 }

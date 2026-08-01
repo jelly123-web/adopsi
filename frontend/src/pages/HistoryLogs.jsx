@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
+import SuperadminNavbar from '../components/SuperadminNavbar'
 
 function HistoryLogs() {
   const [sidebarOpen, setSidebarOpen] = useState(() =>
@@ -215,44 +216,13 @@ function HistoryLogs() {
 
       {/* Main Content */}
       <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
-        <header className="topbar">
-          <div className="topbar-left">
-            <button
-              className="topbar-hamburger"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              <i className="fas fa-bars"></i>
-            </button>
-            <div className="topbar-title">
-              <button 
-                className="topbar-toggle" 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label="Toggle sidebar"
-              >
-                {sidebarOpen ? '≪' : '≫'}
-              </button>
-              <div className="topbar-page-title">History Logs</div>
-            </div>
-          </div>
-
-          <div className="topbar-right">
-            <button className="topbar-btn" title="Notifikasi">
-              <i className="fas fa-bell"></i>
-              <span className="notif-dot"></span>
-            </button>
-            <button 
-              className="topbar-btn" 
-              title="Pengaturan Sistem"
-              onClick={() => { window.location.href = '/dashboard/settings'; }}
-            >
-              <i className="fas fa-cog"></i>
-            </button>
-            <div className="live-indicator">
-              <span className="live-dot"></span>
-              LIVE LOGS
-            </div>
-          </div>
-        </header>
+        <SuperadminNavbar
+          pageTitle="History Logs"
+          statusLabel="LIVE LOGS"
+          sidebarOpen={sidebarOpen}
+          offsetForSidebar={false}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+        />
 
         <div className="page-body">
           <div className="page-header">

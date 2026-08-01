@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
+import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
+import MediaAvatar, { DEFAULT_ANIMAL_PHOTO, DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
 import { subscribeLiveData } from '../utils/liveDataEvents'
 
 const defaultDashboardData = {
@@ -52,9 +55,56 @@ function formatActivityTime(value) {
 
 
 /* ── Dashboard Page ── */
+const getRoleAdoptionPath = (role) => {
+  if (role === 'admin') return '/admin/adoptions'
+  if (role === 'petugas') return '/petugas/adoptions'
+  return '/dashboard/adoptions'
+}
+
+const getRequestUserPhoto = (req) => pickMedia(
+  req.user_photo,
+  req.user_profile_photo,
+  req.user_avatar,
+  req.customer_photo,
+  req.customer_profile_photo,
+  req.customer_avatar,
+  req.profile_photo,
+  req.avatar,
+)
+
+const getRequestAnimalPhoto = (req) => pickMedia(
+  req.animal_photo,
+  req.animal_image,
+  req.animal_image_url,
+  req.animal_avatar,
+  req.photo,
+  req.image,
+  req.image_url,
+)
+
+function formatRequestDate(value) {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function getStatusText(status) {
+  if (status === 'disetujui') return 'Disetujui'
+  if (status === 'ditolak') return 'Ditolak'
+  return 'Menunggu'
+}
+
+function getStatusClass(status) {
+  if (status === 'disetujui') return 'tag-success'
+  if (status === 'ditolak') return 'tag-kitchen'
+  return 'tag-muted'
+}
+
 function Dashboard() {
   const authRole = localStorage.getItem('authRole') || 'superadmin'
   const [dashboardData, setDashboardData] = useState(defaultDashboardData)
+  const [latestRequests, setLatestRequests] = useState([])
   const [chartRange, setChartRange] = useState('6m')
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth > 768 : true
@@ -78,6 +128,18 @@ function Dashboard() {
       .catch(() => {
         setDashboardData(defaultDashboardData)
       })
+
+    axios
+      .get('http://localhost:3000/api/superadmin/adoption-requests')
+      .then((response) => {
+        const waitingRequests = (response.data?.data || []).filter((request) =>
+          ['pending', 'menunggu', 'Menunggu'].includes(request.status)
+        )
+        setLatestRequests(waitingRequests.slice(0, 5))
+      })
+      .catch(() => {
+        setLatestRequests([])
+      })
   }, [authRole])
 
   useEffect(() => {
@@ -100,40 +162,19 @@ function Dashboard() {
   const chartAnimalTypes = animalTypes.length > 0 ? animalTypes : fallbackAnimalTypes
   const highestMonthly = Math.max(...chartMonthlyAdoptions.map((item) => Number(item.total) || 0), 1)
   const highestAnimalType = Math.max(...chartAnimalTypes.map((item) => Number(item.total) || 0), 1)
+  const adoptionPath = getRoleAdoptionPath(authRole)
 
   return (
     <div className="dashboard-layout">
       <SuperadminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
-        {/* Topbar */}
-        <header className="topbar">
-          <div className="topbar-left">
-            <button className="topbar-hamburger" onClick={() => setSidebarOpen(!sidebarOpen)}>
-              <i className="fas fa-bars"></i>
-            </button>
-            <div className="topbar-title">
-              <button className="topbar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle sidebar">
-                <i className={`fas ${sidebarOpen ? 'fa-angle-double-left' : 'fa-angle-double-right'}`}></i>
-              </button>
-              <div className="topbar-page-title">Dashboard</div>
-            </div>
-          </div>
-
-          <div className="topbar-right">
-            <button className="topbar-btn" title="Notifikasi">
-              <i className="fas fa-bell"></i>
-              <span className="notif-dot"></span>
-            </button>
-            <button className="topbar-btn" title="Pengaturan Sistem" onClick={() => { window.location.href = '/dashboard/settings'; }}>
-              <i className="fas fa-cog"></i>
-            </button>
-            <div className="live-indicator">
-              <span className="live-dot"></span>
-              LIVE
-            </div>
-          </div>
-        </header>
+        <SuperadminNavbar
+          pageTitle="Dashboard"
+          sidebarOpen={sidebarOpen}
+          offsetForSidebar={false}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+        />
 
         {/* Page Body */}
         <div className="page-body">
@@ -230,6 +271,57 @@ function Dashboard() {
                   })}
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className="section-card dashboard-adoption-requests">
+            <div className="section-card-header">
+              <div className="section-card-title">
+                <i className="fas fa-file-signature"></i>
+                Orang yang Mau Adopsi
+              </div>
+              <Link to={adoptionPath} className="section-card-link">
+                Lihat Semua <i className="fas fa-arrow-right"></i>
+              </Link>
+            </div>
+            <div className="section-card-body">
+              {latestRequests.length === 0 ? (
+                <div className="dashboard-empty-state">Belum ada pengajuan adopsi masuk.</div>
+              ) : (
+                <div className="dashboard-request-list">
+                  {latestRequests.map((request) => (
+                    <Link to={adoptionPath} className="dashboard-request-item" key={request.id}>
+                      <div className="dashboard-request-person">
+                        <MediaAvatar
+                          src={getRequestUserPhoto(request)}
+                          fallbackSrc={DEFAULT_USER_PHOTO}
+                          alt={request.user_name || request.full_name || 'Customer'}
+                        />
+                        <div>
+                          <strong>{request.user_name || request.full_name || 'Customer'}</strong>
+                          <span>{request.user_email || request.phone || 'Customer adopsi'}</span>
+                        </div>
+                      </div>
+                      <div className="dashboard-request-animal">
+                        <MediaAvatar
+                          src={getRequestAnimalPhoto(request)}
+                          fallbackSrc={DEFAULT_ANIMAL_PHOTO}
+                          alt={request.animal_name || 'Hewan'}
+                        />
+                        <div>
+                          <strong>{request.animal_name || 'Hewan'}</strong>
+                          <span>{request.animal_species || 'Hewan adopsi'}</span>
+                        </div>
+                      </div>
+                      <span className={`tag ${getStatusClass(request.status)}`}>
+                        <span className="status-dot"></span>
+                        {getStatusText(request.status)}
+                      </span>
+                      <span className="dashboard-request-date">{formatRequestDate(request.created_at)}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

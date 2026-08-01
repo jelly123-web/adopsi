@@ -57,7 +57,7 @@ function SuperadminTopbar({ title, onToggleSidebar, statusLabel = 'LIVE' }) {
           aria-label="Buka tutup sidebar"
           onClick={onToggleSidebar}
         >
-          ≪
+          <i className="fas fa-bars" aria-hidden="true" />
         </button>
         {title ? <div className="topbar-page-title">{title}</div> : null}
       </div>

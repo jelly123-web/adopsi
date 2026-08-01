@@ -13,7 +13,6 @@ import DataCustomers from './pages/DataCustomers'
 import Reports from './pages/Reports'
 import PengaturanSistem from './pages/PengaturanSistem'
 import Profile from './pages/Profile'
-import QuestionnaireCharacter from './pages/QuestionnaireCharacter'
 import Restore from './pages/Restore'
 import HistoryLogs from './pages/HistoryLogs'
 import PetugasChat from './pages/PetugasChat'
@@ -22,6 +21,7 @@ import CustomerDashboard from './pages/CustomerDashboard'
 import CustomerAnimals from './pages/CustomerAnimals'
 import CustomerAdoption from './pages/CustomerAdoption'
 import CustomerStatus from './pages/CustomerStatus'
+import CustomerChat from './pages/CustomerChat'
 import './App.css'
 
 const API_BASE_URL = 'http://localhost:3000/api'
@@ -32,6 +32,7 @@ const adminNavTargets = new Map([
   ['Kelola Pengajuan Adopsi', '/admin/adoptions'],
   ['Verifikasi Adopsi', '/admin/adoptions/verify'],
   ['Data Customer', '/admin/customers'],
+  ['Chat Customer', '/admin/chat'],
   ['Laporan', '/admin/reports'],
 ])
 
@@ -49,6 +50,8 @@ const customerNavTargets = new Map([
   ['Jelajahi Hewan', '/customer/animals'],
   ['Pengajuan Adopsi', '/customer/adoptions'],
   ['Status Pengajuan', '/customer/status'],
+  ['Chat Petugas & Admin', '/customer/chat'],
+  ['Chat Petugas', '/customer/chat'],
 ])
 
 const defaultAppSettings = {
@@ -351,6 +354,7 @@ function App() {
           <Route path="/customer/animals" element={<RequireRole roles={['costumer']}><CustomerAnimals /></RequireRole>} />
           <Route path="/customer/adoptions" element={<RequireRole roles={['costumer']}><CustomerAdoption /></RequireRole>} />
           <Route path="/customer/status" element={<RequireRole roles={['costumer']}><CustomerStatus /></RequireRole>} />
+          <Route path="/customer/chat" element={<RequireRole roles={['costumer']}><CustomerChat /></RequireRole>} />
           <Route path="/admin" element={<RequireRole roles={['admin']}><Navigate to="/admin/dashboard" replace /></RequireRole>} />
           <Route path="/admin/dashboard" element={<RequireRole roles={['admin']}><Dashboard /></RequireRole>} />
           <Route path="/admin/animals" element={<RequireRole roles={['admin']}><ManageAnimals /></RequireRole>} />
@@ -358,6 +362,7 @@ function App() {
           <Route path="/admin/adoptions" element={<RequireRole roles={['admin']}><ManageAdoptions /></RequireRole>} />
           <Route path="/admin/adoptions/verify" element={<RequireRole roles={['admin']}><VerifyAdoptions /></RequireRole>} />
           <Route path="/admin/customers" element={<RequireRole roles={['admin']}><DataCustomers /></RequireRole>} />
+          <Route path="/admin/chat" element={<RequireRole roles={['admin']}><PetugasChat /></RequireRole>} />
           <Route path="/admin/reports" element={<RequireRole roles={['admin']}><Reports /></RequireRole>} />
           <Route path="/admin/profile" element={<RequireRole roles={['admin']}><Profile /></RequireRole>} />
           <Route path="/petugas" element={<RequireRole roles={['petugas']}><Navigate to="/petugas/dashboard" replace /></RequireRole>} />
@@ -376,11 +381,12 @@ function App() {
           <Route path="/dashboard/adoptions" element={<RequireRole roles={['superadmin']}><ManageAdoptions /></RequireRole>} />
           <Route path="/dashboard/adoptions/verify" element={<RequireRole roles={['superadmin']}><VerifyAdoptions /></RequireRole>} />
           <Route path="/dashboard/customers" element={<RequireRole roles={['superadmin']}><DataCustomers /></RequireRole>} />
+          <Route path="/dashboard/chat" element={<RequireRole roles={['superadmin']}><PetugasChat /></RequireRole>} />
           <Route path="/dashboard/reports" element={<RequireRole roles={['superadmin']}><Reports /></RequireRole>} />
           <Route path="/dashboard/logs" element={<RequireRole roles={['superadmin']}><HistoryLogs /></RequireRole>} />
           <Route path="/dashboard/settings" element={<RequireRole roles={['superadmin']}><PengaturanSistem /></RequireRole>} />
           <Route path="/dashboard/profile" element={<RequireRole roles={['superadmin']}><Profile /></RequireRole>} />
-          <Route path="/dashboard/questionnaire-character" element={<RequireRole roles={['superadmin']}><QuestionnaireCharacter /></RequireRole>} />
+          <Route path="/dashboard/questionnaire-character" element={<RequireRole roles={['superadmin']}><Navigate to="/dashboard" replace /></RequireRole>} />
           <Route path="/dashboard/restore" element={<RequireRole roles={['superadmin']}><Restore /></RequireRole>} />
         </Routes>
       </RouteErrorBoundaryWithLocation>

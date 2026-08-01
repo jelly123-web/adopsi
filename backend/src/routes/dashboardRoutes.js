@@ -67,4 +67,8 @@ router.delete("/superadmin/activity-logs", superadminController.deleteAllActivit
 router.get("/superadmin/backup/export", superadminController.exportBackup)
 router.post("/superadmin/backup/import", superadminController.importBackup)
 
+router.get("/chat-messages", superadminController.getChatMessages)
+router.post("/chat-messages", superadminController.createChatMessage)
+router.delete("/chat-messages/:msgId", superadminController.deleteChatMessage)
+
 module.exports = router

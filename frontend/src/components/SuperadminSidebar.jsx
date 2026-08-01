@@ -3,10 +3,10 @@ import { Link, NavLink } from 'react-router-dom'
 
 const superadminMenu = [
   { to: '/dashboard', label: 'Dashboard', icon: 'fa-tachometer-alt', end: true },
+  { to: '/dashboard/chat', label: 'Chat Customer', icon: 'fa-comments' },
   { to: '/dashboard/users', label: 'Kelola User', icon: 'fa-users' },
   { to: '/dashboard/categories', label: 'Kelola Kategori', icon: 'fa-tags' },
   { to: '/dashboard/animals', label: 'Kelola Hewan', icon: 'fa-paw' },
-  { to: '/dashboard/questionnaire-character', label: 'Kuisioner Karakter', icon: 'fa-clipboard-list' },
   { to: '/dashboard/adoptions', label: 'Kelola Pengajuan Adopsi', icon: 'fa-file-alt', end: true },
   { to: '/dashboard/adoptions/verify', label: 'Verifikasi Adopsi', icon: 'fa-check-circle' },
   { to: '/dashboard/customers', label: 'Data Customer', icon: 'fa-address-book' },
@@ -17,6 +17,7 @@ const superadminMenu = [
 
 const adminMenu = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: 'fa-tachometer-alt', end: true },
+  { to: '/admin/chat', label: 'Chat Customer', icon: 'fa-comments' },
   { to: '/admin/categories', label: 'Kelola Kategori', icon: 'fa-tags' },
   { to: '/admin/animals', label: 'Kelola Hewan', icon: 'fa-paw' },
   { to: '/admin/adoptions', label: 'Kelola Pengajuan Adopsi', icon: 'fa-file-alt', end: true },
@@ -27,9 +28,9 @@ const adminMenu = [
 
 const petugasMenu = [
   { to: '/petugas/dashboard', label: 'Dashboard', icon: 'fa-tachometer-alt', end: true },
+  { to: '/petugas/chat', label: 'Chat Customer', icon: 'fa-comments' },
   { to: '/petugas/animals', label: 'Data Hewan', icon: 'fa-paw', end: true },
   { to: '/petugas/adoptions', label: 'Kelola Pengajuan Adopsi', icon: 'fa-file-alt', end: true },
-  { to: '/petugas/chat', label: 'Chat Customer', icon: 'fa-comments' },
   { to: '/petugas/visits', label: 'Jadwal Kunjungan', icon: 'fa-calendar-check' },
 ]
 
@@ -38,47 +39,11 @@ const customerMenu = [
   { to: '/customer/animals', label: 'Jelajahi Hewan', icon: 'fa-paw' },
   { to: '/customer/adoptions', label: 'Pengajuan Adopsi', icon: 'fa-heart' },
   { to: '/customer/status', label: 'Status Pengajuan', icon: 'fa-clipboard-list' },
+  { to: '/customer/chat', label: 'Chat Petugas & Admin', icon: 'fa-comments' },
 ]
 
 function MenuIcon({ icon }) {
-  const common = {
-    width: 18,
-    height: 18,
-    viewBox: '0 0 24 24',
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 2,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-    'aria-hidden': true,
-  }
-
-  const paths = {
-    'fa-tachometer-alt': <path d="M4 13a8 8 0 0 1 16 0M12 13l4-4M5 19h14M7 13h.01M17 13h.01" />,
-    'fa-users': <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" />,
-    'fa-tags': <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01" />,
-    'fa-paw': (
-      <>
-        <circle cx="5.5" cy="10" r="2" fill="currentColor" stroke="none" />
-        <circle cx="10" cy="6" r="2" fill="currentColor" stroke="none" />
-        <circle cx="14" cy="6" r="2" fill="currentColor" stroke="none" />
-        <circle cx="18.5" cy="10" r="2" fill="currentColor" stroke="none" />
-        <path d="M7.5 17.2c0-3 2.1-5.2 4.5-5.2s4.5 2.2 4.5 5.2c0 2.2-1.5 3.4-3.1 2.7a3.4 3.4 0 0 0-2.8 0c-1.6.7-3.1-.5-3.1-2.7z" fill="currentColor" stroke="none" />
-      </>
-    ),
-    'fa-clipboard-list': <path d="M9 5h6M9 12h6M9 16h6M7 5h.01M7 12h.01M7 16h.01M8 3h8l1 2h2v16H5V5h2l1-2z" />,
-    'fa-file-alt': <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h6" />,
-    'fa-check-circle': <path d="M22 11.1V12a10 10 0 1 1-5.9-9.1M22 4 12 14.01l-3-3" />,
-    'fa-address-book': <path d="M6 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8 2v4M16 2v4M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0zM8 20a5 5 0 0 1 8 0" />,
-    'fa-chart-line': <path d="M3 3v18h18M7 15l4-4 3 3 5-7" />,
-    'fa-history': <path d="M3 12a9 9 0 1 0 3-6.7M3 4v6h6M12 7v5l3 2" />,
-    'fa-undo': <path d="M3 7v6h6M3.8 13A8 8 0 1 0 6 5.3L3 7" />,
-    'fa-comments': <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4zM8 9h8M8 13h5" />,
-    'fa-calendar-check': <path d="M8 2v4M16 2v4M3 9h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2zM9 16l2 2 4-5" />,
-    'fa-heart': <path d="M20.8 8.6c0 5.4-8.8 10.2-8.8 10.2S3.2 14 3.2 8.6A4.6 4.6 0 0 1 12 6.7a4.6 4.6 0 0 1 8.8 1.9z" />,
-  }
-
-  return <svg className="nav-svg-icon" {...common}>{paths[icon] || paths['fa-paw']}</svg>
+  return <i className={`nav-fa-icon fas ${icon}`} aria-hidden="true" />
 }
 
 const getAuthSnapshot = () => ({
@@ -88,8 +53,27 @@ const getAuthSnapshot = () => ({
   avatar: localStorage.getItem('authAvatar') || '',
 })
 
+const hasUnreadCustomerChat = (role) => {
+  try {
+    const chatData = JSON.parse(localStorage.getItem('petugasChatReplies') || '{}')
+    return Object.values(chatData).some((messages) => (
+      Array.isArray(messages)
+      && messages.some((message) => (
+        message.sender === 'customer'
+        && !message.isRead
+        && (role === 'superadmin' || !message.targetRole || message.targetRole === role)
+      ))
+    ))
+  } catch {
+    return false
+  }
+}
+
 function SuperadminSidebar({ open = true, onClose }) {
   const [authSnapshot, setAuthSnapshot] = useState(getAuthSnapshot)
+  const [hasUnreadChat, setHasUnreadChat] = useState(() =>
+    hasUnreadCustomerChat(getAuthSnapshot().role)
+  )
 
   useEffect(() => {
     const refreshAuth = () => setAuthSnapshot(getAuthSnapshot())
@@ -100,6 +84,21 @@ function SuperadminSidebar({ open = true, onClose }) {
     return () => {
       window.removeEventListener('auth-profile-updated', refreshAuth)
       window.removeEventListener('storage', refreshAuth)
+    }
+  }, [])
+
+  useEffect(() => {
+    const refreshUnread = () => setHasUnreadChat(hasUnreadCustomerChat(getAuthSnapshot().role))
+
+    refreshUnread()
+    window.addEventListener('chat-updated', refreshUnread)
+    window.addEventListener('storage', refreshUnread)
+    const interval = setInterval(refreshUnread, 3000)
+
+    return () => {
+      window.removeEventListener('chat-updated', refreshUnread)
+      window.removeEventListener('storage', refreshUnread)
+      clearInterval(interval)
     }
   }, [])
 
@@ -137,17 +136,21 @@ function SuperadminSidebar({ open = true, onClose }) {
 
         <nav className="sidebar-nav">
           <div className="nav-section-title">MENU</div>
-          {menuItems.map((item) => (
+          {menuItems.map((item) => {
+            const showChatUnread = item.to.includes('/chat') && !isCustomer && hasUnreadChat
+            return (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
             >
-              <i className={`fas ${item.icon}`} />
+              <MenuIcon icon={item.icon} />
               <span>{item.label}</span>
+              {showChatUnread && <span className="sidebar-chat-dot" aria-label="Ada chat baru" />}
             </NavLink>
-          ))}
+            )
+          })}
         </nav>
 
         <div className="sidebar-footer">

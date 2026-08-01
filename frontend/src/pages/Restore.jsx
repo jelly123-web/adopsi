@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
+import SuperadminNavbar from '../components/SuperadminNavbar'
 import { publishLiveData } from '../utils/liveDataEvents'
 
 const publishRestoredType = (type) => {
@@ -255,6 +256,10 @@ function Restore() {
             <i className="fas fa-address-book"></i>
             <span>Data Customer</span>
           </a>
+          <a href="/dashboard/chat" className="nav-item">
+            <i className="fas fa-comments"></i>
+            <span>Chat Customer</span>
+          </a>
           <a href="/dashboard/reports" className="nav-item">
             <i className="fas fa-chart-line"></i>
             <span>Laporan</span>
@@ -295,40 +300,12 @@ function Restore() {
       </aside>
 
       <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
-        <header className="topbar">
-          <div className="topbar-left">
-            <button
-              className="topbar-hamburger"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              <i className="fas fa-bars"></i>
-            </button>
-            <div className="topbar-title">
-              <button
-                className="topbar-toggle"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label="Toggle sidebar"
-              >
-                {sidebarOpen ? '≪' : '≫'}
-              </button>
-              <div className="topbar-page-title">Pulihkan Data</div>
-            </div>
-          </div>
-
-          <div className="topbar-right">
-            <button className="topbar-btn">
-              <i className="fas fa-bell"></i>
-              <span className="notif-dot"></span>
-            </button>
-            <Link to="/dashboard/settings" className="topbar-btn" aria-label="Pengaturan Sistem">
-              <i className="fas fa-cog"></i>
-            </Link>
-            <div className="live-indicator">
-              <span className="live-dot"></span>
-              LIVE
-            </div>
-          </div>
-        </header>
+        <SuperadminNavbar
+          pageTitle="Pulihkan Data"
+          sidebarOpen={sidebarOpen}
+          offsetForSidebar={false}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+        />
 
         <div className="page-body restore-page">
           <div className="page-header">

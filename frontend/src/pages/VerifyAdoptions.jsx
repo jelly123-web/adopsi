@@ -2,7 +2,35 @@ import { useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
+import MediaAvatar, { DEFAULT_ANIMAL_PHOTO, DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
 import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
+
+const getRequestUserPhoto = (request) => pickMedia(
+  request.user_photo,
+  request.user_profile_photo,
+  request.user_avatar,
+  request.customer_photo,
+  request.customer_profile_photo,
+  request.customer_avatar,
+  request.profile_photo,
+  request.avatar,
+  request.user?.profile_photo,
+  request.user?.avatar,
+)
+
+const getRequestAnimalPhoto = (request) => pickMedia(
+  request.animal_photo,
+  request.animal_image,
+  request.animal_image_url,
+  request.animal_avatar,
+  request.photo,
+  request.image,
+  request.image_url,
+  request.animal?.photo,
+  request.animal?.image,
+  request.animal?.image_url,
+  request.animal?.photos,
+)
 
 function VerifyAdoptions() {
   const [requests, setRequests] = useState([])
@@ -181,15 +209,26 @@ function VerifyAdoptions() {
                       <td>#{request.id}</td>
                       <td>
                         <div className="user-cell">
-                          <div className="user-avatar">{request.user_name?.charAt(0)?.toUpperCase() || '?'}</div>
+                          <MediaAvatar
+                            src={getRequestUserPhoto(request)}
+                            fallbackSrc={DEFAULT_USER_PHOTO}
+                            alt={request.user_name || 'Customer'}
+                          />
                           <strong>{request.user_name || '-'}</strong>
                         </div>
                       </td>
                       <td>
-                        <strong>{request.animal_name || '-'}</strong>
-                        <span style={{ color: 'var(--muted)', fontSize: '13px', marginLeft: '8px' }}>
-                          {request.animal_species ? `(${request.animal_species})` : ''}
-                        </span>
+                        <div className="user-cell">
+                          <MediaAvatar
+                            src={getRequestAnimalPhoto(request)}
+                            fallbackSrc={DEFAULT_ANIMAL_PHOTO}
+                            alt={request.animal_name || 'Hewan'}
+                          />
+                          <strong>{request.animal_name || '-'}</strong>
+                          <span style={{ color: 'var(--muted)', fontSize: '13px', marginLeft: '2px' }}>
+                            {request.animal_species ? `(${request.animal_species})` : ''}
+                          </span>
+                        </div>
                       </td>
                       <td>{formatDate(request.created_at)}</td>
                       <td>

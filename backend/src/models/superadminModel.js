@@ -182,7 +182,7 @@ async function loginUser({ email, password, role }) {
   const pool = await getPool()
   const { rows: [user] } = await pool.query(
     `
-      SELECT id, name, email, password, role, status, profile_photo
+      SELECT id, name, email, password, role, status, profile_photo, profile_bg_photo
       FROM users
       WHERE email = $1 AND deleted = FALSE
       LIMIT 1
@@ -650,6 +650,7 @@ async function listAdoptionRequests() {
       ar.animal_id,
       u.name AS user_name,
       u.email AS user_email,
+      u.profile_photo AS user_profile_photo,
       a.name AS animal_name,
       a.species AS animal_species,
       a.photo AS animal_photo,
@@ -1093,9 +1094,11 @@ async function getAccountProfile(userId) {
     role: normalizeRole(user.role),
     status: user.status,
     profile_photo: user.profile_photo || "",
+    profile_bg_photo: user.profile_bg_photo || "",
     admin_name: user.name,
     admin_email: user.email,
     admin_avatar: user.profile_photo || "",
+    admin_background: user.profile_bg_photo || "",
     password_set: Boolean(user.password),
   }
 }
@@ -1106,6 +1109,7 @@ async function updateAccountProfile(userId, input = {}) {
   const name = String(input.admin_name || input.name || "").trim()
   const email = String(input.admin_email || input.email || "").trim()
   const photo = input.admin_avatar ?? input.profile_photo ?? ""
+  const background = input.admin_background ?? input.profile_bg_photo ?? input.profile_background ?? ""
   const currentPassword = input.current_password || ""
   const newPassword = input.new_password || ""
   const confirmPassword = input.confirm_password || ""
@@ -1150,12 +1154,13 @@ async function updateAccountProfile(userId, input = {}) {
         SET name = $1,
             email = $2,
             profile_photo = $3,
-            password = $4,
+            profile_bg_photo = $4,
+            password = $5,
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $5 AND deleted = FALSE
-        RETURNING id, name, email, role, status, profile_photo, password
+        WHERE id = $6 AND deleted = FALSE
+        RETURNING id, name, email, role, status, profile_photo, profile_bg_photo, password
       `,
-      [name, email, photo || null, nextPassword, id],
+      [name, email, photo || null, background || null, nextPassword, id],
     )
 
     if (normalizeRole(updated.role) === "superadmin") {
@@ -1163,6 +1168,7 @@ async function updateAccountProfile(userId, input = {}) {
         ["admin_name", name],
         ["admin_email", email],
         ["admin_avatar", photo || ""],
+        ["admin_background", background || ""],
       ]
 
       for (const [key, value] of profileSettings) {
@@ -1187,9 +1193,11 @@ async function updateAccountProfile(userId, input = {}) {
       role: normalizeRole(updated.role),
       status: updated.status,
       profile_photo: updated.profile_photo || "",
+      profile_bg_photo: updated.profile_bg_photo || "",
       admin_name: updated.name,
       admin_email: updated.email,
       admin_avatar: updated.profile_photo || "",
+      admin_background: updated.profile_bg_photo || "",
       password_set: Boolean(updated.password),
     }
   } catch (error) {
@@ -1446,4 +1454,33 @@ module.exports = {
   getReportsData,
   exportDatabaseBackup,
   importDatabaseBackup,
+  async getChatMessages(userId = null) {
+    const pool = await getPool()
+    let query = "SELECT * FROM chat_messages ORDER BY created_at ASC"
+    let params = []
+    if (userId) {
+      query = "SELECT * FROM chat_messages WHERE user_id = $1 ORDER BY created_at ASC"
+      params = [userId]
+    }
+    const { rows } = await pool.query(query, params)
+    return rows
+  },
+  async createChatMessage({ msgId, userId, sender, senderName, targetRole, text, topic }) {
+    const pool = await getPool()
+    const { rows } = await pool.query(
+      `INSERT INTO chat_messages (msg_id, user_id, sender, sender_name, target_role, text, topic)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [msgId, userId, sender, senderName, targetRole, text, topic]
+    )
+    return rows[0]
+  },
+  async deleteChatMessage(msgId) {
+    const pool = await getPool()
+    const result = await pool.query(
+      `DELETE FROM chat_messages WHERE msg_id = $1`,
+      [msgId]
+    )
+    return result.rowCount
+  },
 }

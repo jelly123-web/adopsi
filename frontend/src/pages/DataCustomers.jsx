@@ -2,7 +2,21 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
+import MediaAvatar, { DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
 import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
+
+const getCustomerPhoto = (customer) => pickMedia(
+  customer.profile_photo,
+  customer.admin_avatar,
+  customer.avatar,
+  customer.photo,
+  customer.image,
+  customer.profile_image,
+  customer.avatar_url,
+  customer.photo_url,
+  customer.foto,
+  customer.gambar,
+)
 
 function DataCustomers() {
   const [customers, setCustomers] = useState([])
@@ -30,15 +44,6 @@ function DataCustomers() {
       setTotalPages(1)
     }
   }
-
-  const renderInitials = (name = '') =>
-    name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase() || 'C'
 
   const formatDate = (value) => {
     if (!value) return '-'
@@ -147,7 +152,11 @@ function DataCustomers() {
                       <td>{(currentPage - 1) * pageSize + index + 1}</td>
                       <td>
                         <div className="user-cell">
-                          <div className="user-avatar">{renderInitials(customer.name)}</div>
+                          <MediaAvatar
+                            src={getCustomerPhoto(customer)}
+                            fallbackSrc={DEFAULT_USER_PHOTO}
+                            alt={customer.name || 'Customer'}
+                          />
                           <strong>{customer.name}</strong>
                         </div>
                       </td>

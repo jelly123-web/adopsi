@@ -8,6 +8,20 @@
     <title>Dashboard Superadmin</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Tailwind CDN for customer pages -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { inter: ['Inter', 'sans-serif'] },
+            colors: {
+              brand: { blue: '#60A5FA', blueHover: '#3B82F6', blueDark: '#2563EB' }
+            }
+          }
+        }
+      }
+    </script>
   </head>
   <body class="notranslate">
     <div id="root"></div>

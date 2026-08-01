@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import { Link, useLocation } from 'react-router-dom'
 import CropModal from '../components/CropModal'
+import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
 
@@ -451,41 +452,12 @@ function ManageAnimals() {
 
       {/* Main Content */}
       <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>
-        {/* Topbar */}
-        <header className="topbar">
-          <div className="topbar-left">
-            <button
-              className="topbar-hamburger"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              <i className="fas fa-bars"></i>
-            </button>
-            <div className="topbar-title">
-              <button 
-                className="topbar-toggle" 
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                aria-label="Toggle sidebar"
-              >
-                {sidebarOpen ? '≪' : '≫'}
-              </button>
-              <div className="topbar-page-title">Kelola Hewan</div>
-            </div>
-          </div>
-
-          <div className="topbar-right">
-            <button className="topbar-btn">
-              <i className="fas fa-bell"></i>
-              <span className="notif-dot"></span>
-            </button>
-            <Link to="/dashboard/settings" className="topbar-btn" aria-label="Pengaturan Sistem">
-              <i className="fas fa-cog"></i>
-            </Link>
-            <div className="live-indicator">
-              <span className="live-dot"></span>
-              LIVE
-            </div>
-          </div>
-        </header>
+        <SuperadminNavbar
+          pageTitle="Kelola Hewan"
+          sidebarOpen={sidebarOpen}
+          offsetForSidebar={false}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+        />
 
         {/* Page Body */}
         <div className="page-body">
