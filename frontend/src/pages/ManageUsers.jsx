@@ -217,6 +217,10 @@ function ManageUsers() {
             <i className="fas fa-tachometer-alt"></i>
             <span>Dashboard</span>
           </a>
+          <a href="/dashboard/chat" className="nav-item">
+            <i className="fas fa-comments"></i>
+            <span>Chat Customer</span>
+          </a>
           <a href="/dashboard/users" className="nav-item active">
             <i className="fas fa-users"></i>
             <span>Kelola User</span>
@@ -228,10 +232,6 @@ function ManageUsers() {
           <a href="/dashboard/animals" className="nav-item">
             <i className="fas fa-paw"></i>
             <span>Kelola Hewan</span>
-          </a>
-          <a href="/dashboard/questionnaire-character" className="nav-item">
-            <i className="fas fa-clipboard-list"></i>
-            <span>Kuisioner Karakter</span>
           </a>
           <a href="/dashboard/adoptions" className="nav-item">
             <i className="fas fa-file-alt"></i>

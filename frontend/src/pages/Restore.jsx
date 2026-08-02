@@ -240,10 +240,6 @@ function Restore() {
             <i className="fas fa-paw"></i>
             <span>Kelola Hewan</span>
           </a>
-          <a href="/dashboard/questionnaire-character" className="nav-item">
-            <i className="fas fa-clipboard-list"></i>
-            <span>Kuisioner Karakter</span>
-          </a>
           <a href="/dashboard/adoptions" className="nav-item">
             <i className="fas fa-file-alt"></i>
             <span>Kelola Pengajuan Adopsi</span>

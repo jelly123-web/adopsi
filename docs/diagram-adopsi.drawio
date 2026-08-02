@@ -1,541 +1,433 @@
 <mxfile host="app.diagrams.net" agent="Codex" pages="4">
   <diagram name="DFD Level 1" id="0">
-    <mxGraphModel dx="4175" dy="2505" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="d1_cust" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" value="Customer" vertex="1">
-          <mxGeometry height="65" width="160" x="10" y="20" as="geometry" />
+        <mxCell id="d1_title" value="DFD Level 1 - Sistem Adopsi Hewan" style="text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="20" width="460" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="d1_super" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Superadmin" vertex="1">
-          <mxGeometry height="65" width="160" y="310" as="geometry" />
+        <mxCell id="d1_cust" value="Customer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="205" y="75" width="160" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="d1_admin" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Admin" vertex="1">
-          <mxGeometry height="65" width="160" x="1020" y="2.5" as="geometry" />
+        <mxCell id="d1_super" value="Superadmin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="35" y="520" width="160" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="d1_petugas" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" value="Petugas" vertex="1">
-          <mxGeometry height="65" width="160" x="235" y="-410" as="geometry" />
+        <mxCell id="d1_admin" value="Admin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="975" y="545" width="160" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="d1_p1" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" value="1.1&lt;br&gt;Input&lt;br&gt;Pengajuan" vertex="1">
-          <mxGeometry height="130" width="130" x="420" y="-12.5" as="geometry" />
+        <mxCell id="d1_petugas" value="Petugas" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="105" width="160" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="d1_p2" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" value="1.2&lt;br&gt;Verifikasi&lt;br&gt;Adopsi" vertex="1">
-          <mxGeometry height="130" width="130" x="735" y="-30" as="geometry" />
+        <mxCell id="d1_p1" value="1.1&lt;br&gt;Input&lt;br&gt;Pengajuan" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="635" y="35" width="130" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="d1_p3" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" value="1.3&lt;br&gt;Kelola&lt;br&gt;Master Data" vertex="1">
-          <mxGeometry height="130" width="130" x="350" y="277.5" as="geometry" />
+        <mxCell id="d1_p2" value="1.2&lt;br&gt;Verifikasi&lt;br&gt;Adopsi" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="410" width="130" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="d1_p4" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" value="1.4&lt;br&gt;Chat &amp;&lt;br&gt;Konsultasi" vertex="1">
-          <mxGeometry height="130" width="130" x="250" y="-270" as="geometry" />
+        <mxCell id="d1_p3" value="1.3&lt;br&gt;Kelola&lt;br&gt;Master Data" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="395" y="335" width="130" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="9pLmrggAErbfHk5BMjSi-3" edge="1" parent="1" source="d1_p5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="d1_cust">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="510.07" y="960.07" />
-              <mxPoint x="-39.93" y="960.07" />
-              <mxPoint x="-39.93" y="52.47" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="d1_p4" value="1.4&lt;br&gt;Chat &amp;&lt;br&gt;Konsultasi" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="950" y="225" width="130" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="d1_p5" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" value="1.5&lt;br&gt;Kelola&lt;br&gt;Jadwal Pickup" vertex="1">
-          <mxGeometry height="130" width="130" x="510" y="890" as="geometry" />
+        <mxCell id="d1_p5" value="1.5&lt;br&gt;Kelola&lt;br&gt;Jadwal Pickup" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="505" y="825" width="130" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="d1_p6" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" value="1.6&lt;br&gt;Laporan &amp;&lt;br&gt;Monitoring" vertex="1">
-          <mxGeometry height="130" width="130" x="300" y="590" as="geometry" />
+        <mxCell id="d1_p6" value="1.6&lt;br&gt;Laporan &amp;&lt;br&gt;Monitoring" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="300" y="680" width="130" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="d1_e1" edge="1" parent="1" source="d1_cust" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p1" value="lihat hewan / s&lt;div&gt;tatus pengajuan&lt;/div&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="300" y="80" />
-              <mxPoint x="300" y="80" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="d1_users" value="Data&lt;br&gt;User" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="575" y="470" width="130" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d1_e2" edge="1" parent="1" source="d1_p1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_cust" value="info hewan&lt;div&gt;&amp;nbsp;/ status adopsi&lt;/div&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="280" y="40" />
-              <mxPoint x="280" y="40" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="d1_master" value="Data Hewan&lt;br&gt;Kategori" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="625" y="225" width="150" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d1_e3" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p1" value="data hewan">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
-            <mxPoint x="600" y="177.47368421052624" as="sourcePoint" />
-          </mxGeometry>
+        <mxCell id="d1_req" value="Data Pengajuan&lt;br&gt;Adopsi" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="225" width="155" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d1_e4" edge="1" parent="1" source="d1_p1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;entryX=0.52;entryY=0.004;entryDx=0;entryDy=0;entryPerimeter=0;" target="r7Xxv2MKtRKsrwUftnOx-2" value="data pengajuan">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="490.01" y="-139.99" />
-              <mxPoint x="1317.59" y="-139.99" />
-            </Array>
-            <mxPoint x="1317.4406779661017" y="-100" as="targetPoint" />
-          </mxGeometry>
+        <mxCell id="d1_chat" value="Data&lt;br&gt;Chat" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="475" width="145" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d1_e5" edge="1" parent="1" source="d1_super" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p3" value="kelola user, hewan,&amp;nbsp;&lt;div&gt;kategori, setting&lt;/div&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="280" y="360" />
-              <mxPoint x="280" y="360" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="d1_logs" value="Data Aktivitas&lt;br&gt;Settings" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="275" y="495" width="170" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d1_e6" edge="1" parent="1" source="d1_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_super" value="info master data">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="280" y="330" />
-              <mxPoint x="280" y="330" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="d1_backup" value="Data Backup&lt;br&gt;Restore" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="945" y="835" width="170" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d1_e7" edge="1" parent="1" source="d1_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" value="data user">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
-            <mxPoint x="650" y="342.5" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e8" edge="1" parent="1" source="d1_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" value="data master">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="455" y="260" />
-              <mxPoint x="680" y="260" />
-            </Array>
-            <mxPoint x="680.0000000000005" y="214.99999999999977" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e9" edge="1" parent="1" source="d1_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" value="log aktivitas / pengaturan">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
-            <mxPoint x="415" y="480" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e10" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p2" value="review pengajuan">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1270" y="130" />
-              <mxPoint x="800" y="130" />
-            </Array>
-            <mxPoint x="1270.016949152542" y="-25" as="sourcePoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e11" edge="1" parent="1" source="d1_admin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p2" value="setujui / t&lt;div&gt;olak pengajuan&lt;/div&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="940" y="30" />
-              <mxPoint x="940" y="30" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e12" edge="1" parent="1" source="d1_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;entryX=-0.006;entryY=0.507;entryDx=0;entryDy=0;entryPerimeter=0;" target="r7Xxv2MKtRKsrwUftnOx-2" value="update status adopsi">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="800.01" y="-59.4" />
-            </Array>
-            <mxPoint x="1240" y="-59.98305084745766" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e13" edge="1" parent="1" source="d1_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" value="update status&amp;nbsp;&lt;div&gt;hewan&lt;/div&gt;">
-          <mxGeometry relative="1" x="0.3099" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="680" y="52.53" />
-            </Array>
-            <mxPoint x="680.0000000000005" y="139.99999999999977" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e14" edge="1" parent="1" source="d1_cust" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" value="pesan customer">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="90.03" y="-199.97" />
-              <mxPoint x="249.9" y="-199.97" />
-            </Array>
-            <mxPoint x="249.87" y="-200" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e15" edge="1" parent="1" source="d1_petugas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p4" value="balasan chat">
+        <mxCell id="d1_e1" value="lihat hewan / status pengajuan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_cust" target="d1_p1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d1_e16" edge="1" parent="1" source="d1_p4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" value="riwayat chat">
+        <mxCell id="d1_e2" value="info hewan / status adopsi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p1" target="d1_cust">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
-            <mxPoint x="540" y="-205" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d1_e17" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p5" value="jadwal kunjungan / pickup">
+        <mxCell id="d1_e3" value="data hewan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_master" target="d1_p1">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1350" y="860.14" />
-              <mxPoint x="575.14" y="860.14" />
-            </Array>
-            <mxPoint x="1350.016949152542" y="-25" as="sourcePoint" />
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d1_e18" edge="1" parent="1" source="d1_p5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;entryX=1.008;entryY=0.466;entryDx=0;entryDy=0;entryPerimeter=0;" target="r7Xxv2MKtRKsrwUftnOx-2" value="update jadwal pickup">
-          <mxGeometry relative="1" x="0.1503" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="1480.07" y="960.07" />
-              <mxPoint x="1480.07" y="-62.7" />
-            </Array>
-            <mxPoint x="1395" y="-62.45762711864427" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d1_e20" edge="1" parent="1" source="d1_super" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p6" value="permintaan laporan">
+        <mxCell id="d1_e4" value="data pengajuan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p1" target="d1_req">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="120" y="640" />
-            </Array>
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d1_e21" edge="1" parent="1" source="d1_p6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_super" value="laporan / dashboard">
+        <mxCell id="d1_e5" value="kelola user, hewan, kategori, setting" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_super" target="d1_p3">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="320" y="770" />
-              <mxPoint x="40" y="770" />
-            </Array>
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d1_e22" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p6" value="ringkasan adopsi">
+        <mxCell id="d1_e6" value="info master data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p3" target="d1_super">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1300" y="740" />
-              <mxPoint x="400" y="740" />
-            </Array>
-            <mxPoint x="1300.016949152542" y="-25" as="sourcePoint" />
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d1_e23" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d1_p6" value="data user/hewan">
+        <mxCell id="d1_e7" value="data user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p3" target="d1_users">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="715" y="670" />
-            </Array>
-            <mxPoint x="715" y="380" as="sourcePoint" />
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d1_e24" edge="1" parent="1" source="d1_p6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" value="backup / restore">
+        <mxCell id="d1_e8" value="data master" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p3" target="d1_master">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="360" y="790" />
-              <mxPoint x="360" y="790" />
-            </Array>
-            <mxPoint x="360" y="850" as="targetPoint" />
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="r7Xxv2MKtRKsrwUftnOx-1" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" value="data&lt;div&gt;chat&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="145" x="540" y="-245" as="geometry" />
+        <mxCell id="d1_e9" value="log aktivitas / pengaturan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p3" target="d1_logs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="r7Xxv2MKtRKsrwUftnOx-2" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" value="data pengajuan&lt;div&gt;adopsi&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="130" x="1250" y="-100" as="geometry" />
+        <mxCell id="d1_e10" value="review pengajuan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_req" target="d1_p2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="r7Xxv2MKtRKsrwUftnOx-3" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" value="data hewan&lt;div&gt;kategori&lt;/div&gt;" vertex="1">
-          <mxGeometry height="75" width="130" x="600" y="140" as="geometry" />
+        <mxCell id="d1_e11" value="setujui / tolak pengajuan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_admin" target="d1_p2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="r7Xxv2MKtRKsrwUftnOx-4" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" value="data user" vertex="1">
-          <mxGeometry height="80" width="140" x="650" y="300" as="geometry" />
+        <mxCell id="d1_e12" value="update status adopsi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p2" target="d1_req">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="r7Xxv2MKtRKsrwUftnOx-5" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" value="data aktivitas&lt;div&gt;settings&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="130" x="350" y="480" as="geometry" />
+        <mxCell id="d1_e13" value="update status hewan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p2" target="d1_master">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="r7Xxv2MKtRKsrwUftnOx-6" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" value="data backup&lt;div&gt;restore&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="130" x="290" y="850" as="geometry" />
+        <mxCell id="d1_e14" value="pesan customer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_cust" target="d1_p4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e15" value="balasan chat" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_petugas" target="d1_p4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e16" value="riwayat chat" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p4" target="d1_chat">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e17" value="jadwal kunjungan / pickup" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_req" target="d1_p5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e18" value="update jadwal pickup" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p5" target="d1_req">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e19" value="info jadwal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p5" target="d1_cust">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e20" value="permintaan laporan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_super" target="d1_p6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e21" value="laporan / dashboard" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p6" target="d1_super">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e22" value="ringkasan adopsi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_req" target="d1_p6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e23" value="data user/hewan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_users" target="d1_p6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d1_e24" value="backup / restore" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d1_p6" target="d1_backup">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram name="DFD Level 2" id="1">
-    <mxGraphModel dx="3185" dy="1965" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="d2_cust" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" value="Customer" vertex="1">
-          <mxGeometry height="60" width="150" x="40" y="150" as="geometry" />
+        <mxCell id="d2_title" value="DFD Level 2 - Sistem Adopsi Hewan" style="text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="20" width="460" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="d2_super" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" value="Superadmin" vertex="1">
-          <mxGeometry height="60" width="150" x="40" y="-160" as="geometry" />
+        <mxCell id="d2_cust" value="Customer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="150" width="150" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="d2_admin" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;" value="Admin" vertex="1">
-          <mxGeometry height="60" width="150" x="1200" y="580" as="geometry" />
+        <mxCell id="d2_super" value="Superadmin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="150" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="d2_petugas" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" value="Petugas" vertex="1">
-          <mxGeometry height="60" width="150" x="1310" y="325" as="geometry" />
+        <mxCell id="d2_admin" value="Admin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="740" width="150" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="d2_p1" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5ead0;strokeColor=#82b366;fontSize=14;" value="2.1&lt;br&gt;Kelola Akun&lt;br&gt;&amp; Hak Akses" vertex="1">
-          <mxGeometry height="125" width="125" x="220" y="-55" as="geometry" />
+        <mxCell id="d2_petugas" value="Petugas" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5ead0;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="300" width="150" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="d2_p3" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" value="2.3&lt;br&gt;Input &amp; Proses&lt;br&gt;Pengajuan" vertex="1">
-          <mxGeometry height="140" width="140" x="300" y="260" as="geometry" />
+        <mxCell id="d2_p1" value="2.1&lt;br&gt;Kelola Akun&lt;br&gt;&amp; Hak Akses" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5ead0;strokeColor=#82b366;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="360" y="65" width="125" height="125" as="geometry" />
         </mxCell>
-        <mxCell id="d2_p4" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5ead0;strokeColor=#82b366;fontSize=14;" value="2.4&lt;br&gt;Verifikasi&lt;br&gt;Adopsi" vertex="1">
-          <mxGeometry height="130" width="130" x="475" y="410" as="geometry" />
+        <mxCell id="d2_p2" value="2.2&lt;br&gt;Kelola Master&lt;br&gt;Hewan &amp; Kategori" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="360" y="690" width="140" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="d2_p5" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" value="2.5&lt;br&gt;Jadwal Kunjungan&lt;br&gt;&amp; Pickup" vertex="1">
-          <mxGeometry height="145" width="145" x="1030" y="282.5" as="geometry" />
+        <mxCell id="d2_p3" value="2.3&lt;br&gt;Input &amp; Proses&lt;br&gt;Pengajuan" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#b7d7f0;strokeColor=#6b93c8;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="360" y="260" width="140" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="d2_p6" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5ead0;strokeColor=#82b366;fontSize=14;" value="2.6&lt;br&gt;Chat Customer" vertex="1">
-          <mxGeometry height="125" width="125" x="480" y="117.5" as="geometry" />
+        <mxCell id="d2_p4" value="2.4&lt;br&gt;Verifikasi&lt;br&gt;Adopsi" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5ead0;strokeColor=#82b366;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="650" y="315" width="130" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="d2_p7" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" value="2.7&lt;br&gt;Laporan &amp;&lt;br&gt;Monitoring" vertex="1">
-          <mxGeometry height="140" width="140" x="870" y="540" as="geometry" />
+        <mxCell id="d2_p5" value="2.5&lt;br&gt;Jadwal Kunjungan&lt;br&gt;&amp; Pickup" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="910" y="315" width="145" height="145" as="geometry" />
         </mxCell>
-        <mxCell id="d2_p8" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" value="2.8&lt;br&gt;Backup,&lt;br&gt;Restore &amp; Log" vertex="1">
-          <mxGeometry height="140" width="140" x="420" y="-200" as="geometry" />
+        <mxCell id="d2_p6" value="2.6&lt;br&gt;Chat Customer" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5ead0;strokeColor=#82b366;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="910" y="95" width="125" height="125" as="geometry" />
         </mxCell>
-        <mxCell id="d2_users" parent="1" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" value="Data User&lt;br&gt;&amp; Hak Akses" vertex="1">
-          <mxGeometry height="75" width="160" x="480" y="-30" as="geometry" />
+        <mxCell id="d2_p7" value="2.7&lt;br&gt;Laporan &amp;&lt;br&gt;Monitoring" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="620" width="140" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="d2_master" parent="1" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" value="Data Hewan&lt;br&gt;&amp; Kategori" vertex="1">
-          <mxGeometry height="75" width="160" x="530" y="880" as="geometry" />
+        <mxCell id="d2_p8" value="2.8&lt;br&gt;Backup,&lt;br&gt;Restore &amp; Log" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="650" y="760" width="140" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="d2_req" parent="1" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" value="Data Pengajuan&lt;br&gt;&amp; Adopsi" vertex="1">
-          <mxGeometry height="75" width="175" x="670" y="310" as="geometry" />
+        <mxCell id="d2_users" value="Data User&lt;br&gt;&amp; Hak Akses" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="585" y="70" width="160" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d2_chat" parent="1" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" value="Data Chat" vertex="1">
-          <mxGeometry height="70" width="145" x="760" y="145" as="geometry" />
+        <mxCell id="d2_master" value="Data Hewan&lt;br&gt;&amp; Kategori" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="585" y="690" width="160" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d2_logs" parent="1" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" value="Data Aktivitas&lt;br&gt;&amp; Settings" vertex="1">
-          <mxGeometry height="75" width="175" x="760" y="-167.5" as="geometry" />
+        <mxCell id="d2_req" value="Data Pengajuan&lt;br&gt;&amp; Adopsi" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="840" y="255" width="175" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d2_e1" edge="1" parent="1" source="d2_super" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p1" value="kelola akun">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="60" y="10" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="d2_chat" value="Data Chat" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="95" width="145" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="d2_e2" edge="1" parent="1" source="d2_p1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_super" value="info akun&lt;div&gt;&amp;nbsp;&amp;amp; akses&lt;/div&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="282.5" y="-80" />
-              <mxPoint x="120" y="-80" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="d2_logs" value="Data Aktivitas&lt;br&gt;&amp; Settings" style="shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="930" y="790" width="175" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="d2_e3" edge="1" parent="1" source="d2_p1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_users" value="data user">
+        <mxCell id="d2_e1" value="kelola akun" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_super" target="d2_p1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_e4" edge="1" parent="1" source="d2_cust" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p1" value="registrasi / login">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="120" y="120" />
-              <mxPoint x="282.5" y="120" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e5" edge="1" parent="1" source="d2_cust" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p3" value="lihat hewan &amp; ajukan adopsi">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="160" y="240" />
-              <mxPoint x="370" y="240" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e6" edge="1" parent="1" source="d2_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_cust" value="status pengajuan">
+        <mxCell id="d2_e2" value="info akun &amp; akses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p1" target="d2_super">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_e7" edge="1" parent="1" source="d2_master" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p3" value="data master">
+        <mxCell id="d2_e3" value="data user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p1" target="d2_users">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_e8" edge="1" parent="1" source="d2_p3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_req" value="data pengajuan">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="550" y="340" />
-              <mxPoint x="550" y="340" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e9" edge="1" parent="1" source="d2_admin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p2" value="kelola hewan/kategori">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1390" y="610.04" />
-              <mxPoint x="1390" y="820.04" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e10" edge="1" parent="1" source="d2_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_master" value="data master">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="960" y="920.04" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e11" edge="1" parent="1" source="d2_req" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p4" value="review data pengajuan">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="720" y="380.07" />
-              <mxPoint x="540.07" y="380.07" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e12" edge="1" parent="1" source="d2_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p4" value="setujui / tolak">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="540" y="820.04" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e13" edge="1" parent="1" source="d2_p4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_req" value="hasil verifikasi">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="720" y="475" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e14" edge="1" parent="1" source="d2_req" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p5" value="data adopsi disetujui">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="990" y="330" />
-              <mxPoint x="990" y="330" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e15" edge="1" parent="1" source="d2_petugas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p5" value="atur jadwal pickup">
+        <mxCell id="d2_e4" value="registrasi / login" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_cust" target="d2_p1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_e16" edge="1" parent="1" source="d2_p5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_req" value="update pickup&amp;nbsp;&lt;div&gt;&amp;amp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;status hewan&lt;/div&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="910" y="370" />
-              <mxPoint x="910" y="370" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e17" edge="1" parent="1" source="d2_cust" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p6" value="pesan customer">
+        <mxCell id="d2_e5" value="lihat hewan &amp; ajukan adopsi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_cust" target="d2_p3">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_e18" edge="1" parent="1" source="d2_petugas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p6" value="balasan admin/petugas">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1390.03" y="240.03" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e19" edge="1" parent="1" source="d2_p6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_chat" value="riwayat chat">
+        <mxCell id="d2_e6" value="status pengajuan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p3" target="d2_cust">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_e20" edge="1" parent="1" source="d2_req" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p7" value="data transaksi adopsi">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="757.56" y="500" />
-              <mxPoint x="940" y="500" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e21" edge="1" parent="1" source="d2_p7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#6c8ebf;fillColor=#dae8fc;" target="d2_super" value="laporan / dashboard">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="-39.92" y="620.08" />
-              <mxPoint x="-39.92" y="-129.92" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="d2_e22" edge="1" parent="1" source="d2_p7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_admin" value="laporan operasional">
+        <mxCell id="d2_e7" value="data master" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_master" target="d2_p3">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_e23" edge="1" parent="1" source="d2_super" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p8" value="backup, restore, settings">
+        <mxCell id="d2_e8" value="data pengajuan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p3" target="d2_req">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_e24" edge="1" parent="1" source="d2_p8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_logs" value="log aktivitas">
+        <mxCell id="d2_e9" value="kelola hewan/kategori" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_admin" target="d2_p2">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="fuq6f8haktTtTCtaVyHv-1" edge="1" parent="1" source="d2_admin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="d2_p2" value="">
+        <mxCell id="d2_e10" value="data master" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p2" target="d2_master">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1275.04" y="720.04" />
-              <mxPoint x="950" y="720.04" />
-            </Array>
-            <mxPoint x="130" y="1010" as="sourcePoint" />
-            <mxPoint x="715" y="445" as="targetPoint" />
+            <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="d2_p2" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" value="2.2&lt;br&gt;Kelola Master&lt;br&gt;Hewan &amp; Kategori" vertex="1">
-          <mxGeometry height="140" width="140" x="880" y="750" as="geometry" />
+        <mxCell id="d2_e11" value="review data pengajuan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_req" target="d2_p4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e12" value="setujui / tolak" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_admin" target="d2_p4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e13" value="hasil verifikasi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p4" target="d2_req">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e14" value="data adopsi disetujui" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_req" target="d2_p5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e15" value="atur jadwal pickup" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_petugas" target="d2_p5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e16" value="update pickup &amp; status hewan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p5" target="d2_req">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e17" value="pesan customer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_cust" target="d2_p6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e18" value="balasan admin/petugas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_petugas" target="d2_p6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e19" value="riwayat chat" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p6" target="d2_chat">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e20" value="data transaksi adopsi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_req" target="d2_p7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e21" value="laporan / dashboard" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p7" target="d2_super">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e22" value="laporan operasional" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p7" target="d2_admin">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e23" value="backup, restore, settings" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_super" target="d2_p8">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e24" value="log aktivitas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="d2_p8" target="d2_logs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram name="ERD" id="2">
-    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3317" dy="2037" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="er_title" value="ERD - Sistem Adopsi Hewan" style="text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="610" y="20" width="360" height="40" as="geometry" />
+        <mxCell id="er_users" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="USERS&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- name&lt;br&gt;- email&lt;br&gt;- password&lt;br&gt;- profile_photo&lt;br&gt;- profile_bg_photo&lt;br&gt;- reset_password_token&lt;br&gt;- reset_password_expires_at&lt;br&gt;- role&lt;br&gt;- status&lt;br&gt;- created_at&lt;br&gt;- updated_at&lt;br&gt;- deleted&lt;br&gt;- deleted_by&lt;br&gt;- deleted_at&lt;br&gt;- deleted_ip" vertex="1">
+          <mxGeometry height="350" width="250" x="20" y="90" as="geometry" />
         </mxCell>
-        <mxCell id="er_users" value="users&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;name&lt;br&gt;email UNIQUE&lt;br&gt;password&lt;br&gt;role&lt;br&gt;status&lt;br&gt;profile_photo&lt;br&gt;deleted" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="80" y="100" width="230" height="230" as="geometry" />
+        <mxCell id="er_animals" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="ANIMALS&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- name&lt;br&gt;- species&lt;br&gt;- gender&lt;br&gt;- age&lt;br&gt;- activity_preference&lt;br&gt;- status&lt;br&gt;- condition&lt;br&gt;- photo&lt;br&gt;- created_at&lt;br&gt;- updated_at&lt;br&gt;- deleted&lt;br&gt;- deleted_by&lt;br&gt;- deleted_at&lt;br&gt;- deleted_ip" vertex="1">
+          <mxGeometry height="330" width="250" x="1320" y="70" as="geometry" />
         </mxCell>
-        <mxCell id="er_animals" value="animals&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;name&lt;br&gt;species&lt;br&gt;gender&lt;br&gt;age&lt;br&gt;activity_preference&lt;br&gt;status&lt;br&gt;condition&lt;br&gt;photo&lt;br&gt;deleted" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="470" y="100" width="250" height="250" as="geometry" />
+        <mxCell id="er_categories" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="CATEGORIES&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- name&lt;br&gt;- created_at&lt;br&gt;- updated_at&lt;br&gt;- deleted&lt;br&gt;- deleted_by&lt;br&gt;- deleted_at&lt;br&gt;- deleted_ip" vertex="1">
+          <mxGeometry height="210" width="230" x="440" y="1090" as="geometry" />
         </mxCell>
-        <mxCell id="er_categories" value="categories&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;name UNIQUE&lt;br&gt;deleted" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="470" y="430" width="230" height="130" as="geometry" />
+        <mxCell id="er_requests" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="ADOPTION_REQUESTS&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- (FK) user_id&lt;br&gt;- (FK) animal_id&lt;br&gt;- full_name&lt;br&gt;- phone&lt;br&gt;- address&lt;br&gt;- job&lt;br&gt;- family_count&lt;br&gt;- housing_type&lt;br&gt;- pet_experience&lt;br&gt;- reason&lt;br&gt;- document_url&lt;br&gt;- rejection_reason&lt;br&gt;- pickup_date&lt;br&gt;- pickup_status&lt;br&gt;- status&lt;br&gt;- created_at&lt;br&gt;- updated_at&lt;br&gt;- deleted" vertex="1">
+          <mxGeometry height="430" width="290" x="880" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="er_requests" value="adoption_requests&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;FK user_id&lt;br&gt;FK animal_id&lt;br&gt;full_name&lt;br&gt;phone&lt;br&gt;address&lt;br&gt;document_url&lt;br&gt;pickup_date&lt;br&gt;pickup_status&lt;br&gt;status&lt;br&gt;rejection_reason" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="850" y="90" width="280" height="285" as="geometry" />
+        <mxCell id="er_adoptions" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="ADOPTIONS&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- (FK) request_id&lt;br&gt;- (FK) user_id&lt;br&gt;- (FK) animal_id&lt;br&gt;- status&lt;br&gt;- approved_at&lt;br&gt;- created_at&lt;br&gt;- updated_at&lt;br&gt;- deleted&lt;br&gt;- deleted_by&lt;br&gt;- deleted_at&lt;br&gt;- deleted_ip" vertex="1">
+          <mxGeometry height="290" width="250" x="460" y="90" as="geometry" />
         </mxCell>
-        <mxCell id="er_adoptions" value="adoptions&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;FK request_id UNIQUE&lt;br&gt;FK user_id&lt;br&gt;FK animal_id&lt;br&gt;status&lt;br&gt;approved_at&lt;br&gt;deleted" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="1240" y="105" width="240" height="210" as="geometry" />
+        <mxCell id="er_chat" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="CHAT_MESSAGES&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- msg_id&lt;br&gt;- (FK) user_id&lt;br&gt;- sender&lt;br&gt;- sender_name&lt;br&gt;- target_role&lt;br&gt;- text&lt;br&gt;- topic&lt;br&gt;- is_read&lt;br&gt;- created_at" vertex="1">
+          <mxGeometry height="250" width="250" x="-430" y="140" as="geometry" />
         </mxCell>
-        <mxCell id="er_chat" value="chat_messages&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;msg_id UNIQUE&lt;br&gt;FK user_id&lt;br&gt;sender&lt;br&gt;sender_name&lt;br&gt;target_role&lt;br&gt;text&lt;br&gt;topic&lt;br&gt;is_read" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="80" y="430" width="250" height="220" as="geometry" />
+        <mxCell id="er_activities" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="ACTIVITIES&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- type&lt;br&gt;- title&lt;br&gt;- description&lt;br&gt;- entity_type&lt;br&gt;- entity_id&lt;br&gt;- user_name&lt;br&gt;- user_email&lt;br&gt;- user_role&lt;br&gt;- ip_address&lt;br&gt;- latitude&lt;br&gt;- longitude&lt;br&gt;- location_name&lt;br&gt;- created_at&lt;br&gt;- updated_at&lt;br&gt;- deleted" vertex="1">
+          <mxGeometry height="350" width="270" x="800" y="1100" as="geometry" />
         </mxCell>
-        <mxCell id="er_activities" value="activities&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;type&lt;br&gt;title&lt;br&gt;description&lt;br&gt;entity_type&lt;br&gt;entity_id&lt;br&gt;user_name&lt;br&gt;user_email&lt;br&gt;user_role&lt;br&gt;ip_address" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="850" y="500" width="270" height="240" as="geometry" />
+        <mxCell id="er_settings" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="SETTINGS&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- setting_key&lt;br&gt;- setting_value&lt;br&gt;- created_at&lt;br&gt;- updated_at" vertex="1">
+          <mxGeometry height="150" width="230" x="1200" y="1100" as="geometry" />
         </mxCell>
-        <mxCell id="er_settings" value="settings&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;setting_key UNIQUE&lt;br&gt;setting_value" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="1240" y="500" width="230" height="130" as="geometry" />
+        <mxCell id="er_questions" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;" value="QUESTIONNAIRE_QUESTIONS&lt;br&gt;&lt;hr&gt;- (PK) id&lt;br&gt;- question&lt;br&gt;- answer_type&lt;br&gt;- status&lt;br&gt;- created_at&lt;br&gt;- updated_at&lt;br&gt;- deleted&lt;br&gt;- deleted_by&lt;br&gt;- deleted_at&lt;br&gt;- deleted_ip" vertex="1">
+          <mxGeometry height="250" width="280" x="40" y="1080" as="geometry" />
         </mxCell>
-        <mxCell id="er_questions" value="questionnaire_questions&lt;br&gt;&lt;br&gt;PK id&lt;br&gt;question&lt;br&gt;answer_type&lt;br&gt;status&lt;br&gt;deleted" style="swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;" vertex="1" parent="1">
-          <mxGeometry x="470" y="690" width="250" height="150" as="geometry" />
+        <mxCell id="er_e1" edge="1" parent="1" source="er_users" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="er_requests" value="user_id">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="145" y="560" />
+              <mxPoint x="1025" y="560" />
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="er_e1" value="1 user mengajukan banyak adopsi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="er_users" target="er_requests">
+        <mxCell id="er_e2" edge="1" parent="1" source="er_animals" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="er_requests" value="animal_id">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="er_e2" value="1 hewan bisa punya riwayat pengajuan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="er_animals" target="er_requests">
+        <mxCell id="er_e3" edge="1" parent="1" source="er_requests" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="er_adoptions" value="request_id">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="er_e3" value="1 pengajuan menjadi 0/1 adopsi berhasil" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="er_requests" target="er_adoptions">
+        <mxCell id="er_e4" edge="1" parent="1" source="er_users" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="er_adoptions" value="user_id">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
+            <Array as="points">
+              <mxPoint x="440" y="320" />
+              <mxPoint x="440" y="320" />
+            </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="er_e4" value="user pemilik adopsi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="er_users" target="er_adoptions">
+        <mxCell id="er_e5" edge="1" parent="1" source="er_animals" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="er_adoptions" value="animal_id">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
+            <Array as="points">
+              <mxPoint x="1445" y="-160" />
+              <mxPoint x="415" y="-160" />
+              <mxPoint x="415" y="235" />
+            </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="er_e5" value="hewan yang diadopsi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="er_animals" target="er_adoptions">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="er_e6" value="user mengirim chat" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" edge="1" parent="1" source="er_users" target="er_chat">
+        <mxCell id="er_e6" edge="1" parent="1" source="er_users" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontSize=11;strokeColor=#111111;" target="er_chat" value="user_id">
           <mxGeometry relative="1" as="geometry">
             <Array as="points" />
           </mxGeometry>

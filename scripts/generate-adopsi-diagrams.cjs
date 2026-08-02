@@ -29,7 +29,7 @@ const entityGreen = "rounded=0;whiteSpace=wrap;html=1;fillColor=#d5ead0;strokeCo
 const entityRed = "rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;"
 const entityGray = "rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#888888;fontSize=13;"
 const dbStyle = "shape=cylinder3d;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffffff;strokeColor=#111111;fontSize=13;"
-const erStyle = "swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=13;"
+const erStyle = "swimlane;whiteSpace=wrap;html=1;startSize=28;fillColor=#ffffff;strokeColor=#666666;fontSize=12;fontStyle=1;"
 const decision = "rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;"
 const terminator = "ellipse;whiteSpace=wrap;html=1;fillColor=#d5ead0;strokeColor=#82b366;fontSize=13;"
 const flowProcess = "rounded=0;whiteSpace=wrap;html=1;fillColor=#d6e8ff;strokeColor=#6b93c8;fontSize=12;"
@@ -124,26 +124,26 @@ const dfd2 = [
 ]
 
 function erEntity(id, name, fields, x, y, w, h) {
-  return cell(id, `${name}<br><br>${fields.join("<br>")}`, erStyle, x, y, w, h)
+  return cell(id, `${name}<br><hr>${fields.join("<br>")}`, erStyle, x, y, w, h)
 }
 
 const erd = [
   cell("er_title", "ERD - Sistem Adopsi Hewan", "text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;", 610, 20, 360, 40),
-  erEntity("er_users", "users", ["PK id", "name", "email UNIQUE", "password", "role", "status", "profile_photo", "deleted"], 80, 100, 230, 230),
-  erEntity("er_animals", "animals", ["PK id", "name", "species", "gender", "age", "activity_preference", "status", "condition", "photo", "deleted"], 470, 100, 250, 250),
-  erEntity("er_categories", "categories", ["PK id", "name UNIQUE", "deleted"], 470, 430, 230, 130),
-  erEntity("er_requests", "adoption_requests", ["PK id", "FK user_id", "FK animal_id", "full_name", "phone", "address", "document_url", "pickup_date", "pickup_status", "status", "rejection_reason"], 850, 90, 280, 285),
-  erEntity("er_adoptions", "adoptions", ["PK id", "FK request_id UNIQUE", "FK user_id", "FK animal_id", "status", "approved_at", "deleted"], 1240, 105, 240, 210),
-  erEntity("er_chat", "chat_messages", ["PK id", "msg_id UNIQUE", "FK user_id", "sender", "sender_name", "target_role", "text", "topic", "is_read"], 80, 430, 250, 220),
-  erEntity("er_activities", "activities", ["PK id", "type", "title", "description", "entity_type", "entity_id", "user_name", "user_email", "user_role", "ip_address"], 850, 500, 270, 240),
-  erEntity("er_settings", "settings", ["PK id", "setting_key UNIQUE", "setting_value"], 1240, 500, 230, 130),
-  erEntity("er_questions", "questionnaire_questions", ["PK id", "question", "answer_type", "status", "deleted"], 470, 690, 250, 150),
-  edge("er_e1", "1 user mengajukan banyak adopsi", "er_users", "er_requests"),
-  edge("er_e2", "1 hewan bisa punya riwayat pengajuan", "er_animals", "er_requests"),
-  edge("er_e3", "1 pengajuan menjadi 0/1 adopsi berhasil", "er_requests", "er_adoptions"),
-  edge("er_e4", "user pemilik adopsi", "er_users", "er_adoptions"),
-  edge("er_e5", "hewan yang diadopsi", "er_animals", "er_adoptions"),
-  edge("er_e6", "user mengirim chat", "er_users", "er_chat"),
+  erEntity("er_users", "USERS", ["- (PK) id", "- name", "- email", "- password", "- profile_photo", "- profile_bg_photo", "- reset_password_token", "- reset_password_expires_at", "- role", "- status", "- created_at", "- updated_at", "- deleted", "- deleted_by", "- deleted_at", "- deleted_ip"], 40, 95, 250, 350),
+  erEntity("er_animals", "ANIMALS", ["- (PK) id", "- name", "- species", "- gender", "- age", "- activity_preference", "- status", "- condition", "- photo", "- created_at", "- updated_at", "- deleted", "- deleted_by", "- deleted_at", "- deleted_ip"], 510, 90, 250, 330),
+  erEntity("er_categories", "CATEGORIES", ["- (PK) id", "- name", "- created_at", "- updated_at", "- deleted", "- deleted_by", "- deleted_at", "- deleted_ip"], 510, 520, 230, 210),
+  erEntity("er_requests", "ADOPTION_REQUESTS", ["- (PK) id", "- (FK) user_id", "- (FK) animal_id", "- full_name", "- phone", "- address", "- job", "- family_count", "- housing_type", "- pet_experience", "- reason", "- document_url", "- rejection_reason", "- pickup_date", "- pickup_status", "- status", "- created_at", "- updated_at", "- deleted"], 880, 70, 290, 430),
+  erEntity("er_adoptions", "ADOPTIONS", ["- (PK) id", "- (FK) request_id", "- (FK) user_id", "- (FK) animal_id", "- status", "- approved_at", "- created_at", "- updated_at", "- deleted", "- deleted_by", "- deleted_at", "- deleted_ip"], 1260, 105, 250, 290),
+  erEntity("er_chat", "CHAT_MESSAGES", ["- (PK) id", "- msg_id", "- (FK) user_id", "- sender", "- sender_name", "- target_role", "- text", "- topic", "- is_read", "- created_at"], 40, 560, 250, 250),
+  erEntity("er_activities", "ACTIVITIES", ["- (PK) id", "- type", "- title", "- description", "- entity_type", "- entity_id", "- user_name", "- user_email", "- user_role", "- ip_address", "- latitude", "- longitude", "- location_name", "- created_at", "- updated_at", "- deleted"], 870, 610, 270, 350),
+  erEntity("er_settings", "SETTINGS", ["- (PK) id", "- setting_key", "- setting_value", "- created_at", "- updated_at"], 1260, 610, 230, 150),
+  erEntity("er_questions", "QUESTIONNAIRE_QUESTIONS", ["- (PK) id", "- question", "- answer_type", "- status", "- created_at", "- updated_at", "- deleted", "- deleted_by", "- deleted_at", "- deleted_ip"], 500, 825, 280, 250),
+  edge("er_e1", "user_id", "er_users", "er_requests", [[350, 170], [350, 170]]),
+  edge("er_e2", "animal_id", "er_animals", "er_requests"),
+  edge("er_e3", "request_id", "er_requests", "er_adoptions"),
+  edge("er_e4", "user_id", "er_users", "er_adoptions", [[350, 330], [350, 330], [1220, 330]]),
+  edge("er_e5", "animal_id", "er_animals", "er_adoptions", [[815, 245], [815, 245]]),
+  edge("er_e6", "user_id", "er_users", "er_chat"),
 ]
 
 const flow = [
