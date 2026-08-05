@@ -949,6 +949,25 @@ async function restoreQuestionnaireQuestion(req, res, next) {
   }
 }
 
+async function getPermissions(req, res, next) {
+  try {
+    const permissions = await superadminModel.getPermissionsConfig()
+    res.json({ success: true, data: permissions })
+  } catch (error) {
+    next(error)
+  }
+}
+
+async function updatePermissions(req, res, next) {
+  try {
+    const { role, permissions } = req.body || {}
+    const result = await superadminModel.upsertPermissionsConfig(role, permissions)
+    res.json({ success: true, message: "Hak akses berhasil diperbarui.", data: result })
+  } catch (error) {
+    next(error)
+  }
+}
+
 async function getSettings(req, res, next) {
   try {
     const settings = await superadminModel.getSettings()
@@ -1169,6 +1188,8 @@ module.exports = {
   deleteQuestionnaireQuestion,
   getDeletedQuestionnaireQuestions,
   restoreQuestionnaireQuestion,
+  getPermissions,
+  updatePermissions,
   getSettings,
   updateSettings,
   getProfile,

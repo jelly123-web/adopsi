@@ -1,5 +1,6 @@
 const crypto = require("crypto")
 const { getPool } = require("../config/database")
+const { getDefaultPermissions, normalizePermissionsForRole, permissionDefinitions } = require("../utils/permissionConfig")
 
 const monthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
 const validRoles = ["costumer", "superadmin", "admin", "petugas"]
@@ -958,6 +959,66 @@ async function restoreQuestionnaireQuestion(id) {
   return result.rowCount
 }
 
+async function getPermissionsConfig() {
+  try {
+    const pool = await getPool()
+    const { rows } = await pool.query(
+      `SELECT role_name, permissions FROM role_permissions ORDER BY role_name ASC`,
+    )
+
+    const defaults = getDefaultPermissions()
+    const result = {}
+
+    for (const role of Object.keys(defaults)) {
+      const row = rows.find((item) => item.role_name === role)
+      const permissions = row?.permissions || {}
+      const permissionKeys = Object.keys(defaults[role])
+      result[role] = normalizePermissionsForRole(
+        permissionKeys.map((key) => ({ key, allowed: Boolean(permissions?.[key]) })),
+        permissionKeys,
+      )
+    }
+
+    return result
+  } catch (error) {
+    console.error("Error loading permissions:", error)
+    return getDefaultPermissions()
+  }
+}
+
+async function upsertPermissionsConfig(roleName, permissionsInput = {}) {
+  try {
+    const pool = await getPool()
+    const role = String(roleName || "").trim().toLowerCase()
+    if (!role) {
+      throw new Error("Nama role wajib diisi.")
+    }
+
+    const defaults = getDefaultPermissions()
+    const permissionKeys = defaults[role] ? Object.keys(defaults[role]) : []
+    const normalized = {}
+
+    for (const key of permissionKeys) {
+      normalized[key] = Boolean(permissionsInput?.[key])
+    }
+
+    await pool.query(
+      `
+        INSERT INTO role_permissions (role_name, permissions, updated_at)
+        VALUES ($1, $2::jsonb, CURRENT_TIMESTAMP)
+        ON CONFLICT (role_name)
+        DO UPDATE SET permissions = EXCLUDED.permissions, updated_at = CURRENT_TIMESTAMP
+      `,
+      [role, JSON.stringify(normalized)],
+    )
+
+    return { role_name: role, permissions: normalized }
+  } catch (error) {
+    console.error("Error upserting permissions:", error)
+    throw error
+  }
+}
+
 async function getSettings() {
   const pool = await getPool()
   const { rows } = await pool.query("SELECT setting_key, setting_value FROM settings")
@@ -1481,6 +1542,8 @@ module.exports = {
   restoreQuestionnaireQuestion,
   getSettings,
   updateSettings,
+  getPermissionsConfig,
+  upsertPermissionsConfig,
   getProfile,
   updateProfile,
   getAccountProfile,

@@ -54,6 +54,8 @@ router.put("/superadmin/questionnaire-questions/:id", superadminController.updat
 router.delete("/superadmin/questionnaire-questions/:id", superadminController.deleteQuestionnaireQuestion)
 router.get("/superadmin/deleted-questionnaire-questions", superadminController.getDeletedQuestionnaireQuestions)
 router.post("/superadmin/questionnaire-questions/:id/restore", superadminController.restoreQuestionnaireQuestion)
+router.get("/superadmin/permissions", superadminController.getPermissions)
+router.put("/superadmin/permissions", superadminController.updatePermissions)
 router.get("/superadmin/settings", superadminController.getSettings)
 router.put("/superadmin/settings", superadminController.updateSettings)
 router.get("/superadmin/profile", superadminController.getProfile)

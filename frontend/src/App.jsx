@@ -15,6 +15,7 @@ import PengaturanSistem from './pages/PengaturanSistem'
 import Profile from './pages/Profile'
 import Restore from './pages/Restore'
 import HistoryLogs from './pages/HistoryLogs'
+import HakAkses from './pages/HakAkses'
 import PetugasChat from './pages/PetugasChat'
 import PetugasVisits from './pages/PetugasVisits'
 import CustomerDashboard from './pages/CustomerDashboard'
@@ -387,6 +388,7 @@ function App() {
           <Route path="/dashboard/reports" element={<RequireRole roles={['superadmin']}><Reports /></RequireRole>} />
           <Route path="/dashboard/logs" element={<RequireRole roles={['superadmin']}><HistoryLogs /></RequireRole>} />
           <Route path="/dashboard/settings" element={<RequireRole roles={['superadmin']}><PengaturanSistem /></RequireRole>} />
+          <Route path="/dashboard/permissions" element={<RequireRole roles={['superadmin']}><HakAkses /></RequireRole>} />
           <Route path="/dashboard/profile" element={<RequireRole roles={['superadmin']}><Profile /></RequireRole>} />
           <Route path="/dashboard/questionnaire-character" element={<RequireRole roles={['superadmin']}><Navigate to="/dashboard" replace /></RequireRole>} />
           <Route path="/dashboard/restore" element={<RequireRole roles={['superadmin']}><Restore /></RequireRole>} />

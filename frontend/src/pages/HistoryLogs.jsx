@@ -8,6 +8,10 @@ function HistoryLogs() {
     typeof window !== 'undefined' ? window.innerWidth > 768 : true
   )
   const [activityLogs, setActivityLogs] = useState([])
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(6)
+  const [totalLogs, setTotalLogs] = useState(0)
+  const [pages, setPages] = useState(1)
   const [userLocation, setUserLocation] = useState(null)
   const [locationError, setLocationError] = useState(null)
   const [loadingLocation, setLoadingLocation] = useState(false)
@@ -52,14 +56,21 @@ function HistoryLogs() {
     )
   }
 
-  const fetchLogs = () => {
+  const fetchLogs = (p = page) => {
     setLoading(true)
     axios
-      .get('http://localhost:3000/api/superadmin/activity-logs')
+      .get('http://localhost:3000/api/superadmin/activity-logs', { params: { page: p, limit } })
       .then((response) => {
         setActivityLogs(response.data?.data || [])
+        setTotalLogs(response.data?.total || 0)
+        setPages(response.data?.pages || 1)
+        setPage(response.data?.page || p)
       })
-      .catch(() => setActivityLogs([]))
+      .catch(() => {
+        setActivityLogs([])
+        setTotalLogs(0)
+        setPages(1)
+      })
       .finally(() => setLoading(false))
   }
 
@@ -84,18 +95,20 @@ function HistoryLogs() {
   }
 
   const handleDeleteAllLogs = async () => {
-    if (activityLogs.length === 0) {
+    if (totalLogs === 0) {
       window.alert('Tidak ada history log untuk dihapus.')
       return
     }
 
-    if (!window.confirm(`Hapus semua history logs? Aksi ini akan menghapus ${activityLogs.length} entri dari database.`)) {
+    if (!window.confirm(`Hapus semua history logs? Aksi ini akan menghapus ${totalLogs} entri dari database.`)) {
       return
     }
 
     try {
       await axios.delete('http://localhost:3000/api/superadmin/activity-logs')
       setActivityLogs([])
+      setTotalLogs(0)
+      setPages(1)
       window.alert('Semua history logs berhasil dihapus.')
     } catch (error) {
       window.alert(error.response?.data?.message || 'Gagal menghapus history logs.')
@@ -107,7 +120,7 @@ function HistoryLogs() {
     ;(async () => {
       await recordPageVisit()
       if (active) {
-        fetchLogs()
+        fetchLogs(1)
         requestLocation()
       }
     })()
@@ -271,7 +284,7 @@ function HistoryLogs() {
                 </p>
               </div>
               <div className="history-panel-actions">
-                <span style={{ color: 'var(--muted)', fontSize: '13px' }}>{activityLogs.length} entri</span>
+                <span style={{ color: 'var(--muted)', fontSize: '13px' }}>{totalLogs} entri</span>
                 <button
                   type="button"
                   className="history-delete-all"
@@ -315,6 +328,7 @@ function HistoryLogs() {
                             <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
                               {log.user_email || '-'} • {log.user_role || 'user'}
                             </div>
+                            
                           </div>
                         </div>
                       </td>
@@ -361,6 +375,16 @@ function HistoryLogs() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            {/* Pagination Controls */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px' }}>
+              <div style={{ color: 'var(--muted)' }}>
+                Menampilkan halaman {page} dari {pages} — total {totalLogs} entri
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="btn" onClick={() => fetchLogs(Math.max(1, page - 1))} disabled={page <= 1}>Prev</button>
+                <button className="btn" onClick={() => fetchLogs(Math.min(pages, page + 1))} disabled={page >= pages}>Next</button>
+              </div>
             </div>
           </div>
         </div>

@@ -12,6 +12,7 @@ const superadminMenu = [
   { to: '/dashboard/customers', label: 'Data Customer', icon: 'fa-address-book' },
   { to: '/dashboard/reports', label: 'Laporan', icon: 'fa-chart-line' },
   { to: '/dashboard/logs', label: 'History Logs', icon: 'fa-history' },
+  { to: '/dashboard/permissions', label: 'Hak Akses', icon: 'fa-shield-alt' },
   { to: '/dashboard/restore', label: 'Pulihkan Data', icon: 'fa-undo' },
 ]
 

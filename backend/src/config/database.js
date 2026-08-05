@@ -343,6 +343,63 @@ async function initializeDatabase() {
   await pool.query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS target_role VARCHAR(60) NULL`)
   await pool.query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS is_read BOOLEAN NOT NULL DEFAULT FALSE`)
   await pool.query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS topic VARCHAR(255) NULL`)
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS role_permissions (
+      id SERIAL PRIMARY KEY,
+      role_name VARCHAR(60) NOT NULL UNIQUE,
+      permissions JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+  await pool.query(`ALTER TABLE role_permissions ADD COLUMN IF NOT EXISTS permissions JSONB NOT NULL DEFAULT '{}'::jsonb`)
+  await pool.query(`ALTER TABLE role_permissions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
+
+  const defaultRolePermissions = {
+    admin: {
+      dashboard_view: true,
+      manage_animals: true,
+      manage_categories: true,
+      manage_adoptions: true,
+      verify_adoptions: true,
+      view_customers: true,
+      manage_chat: true,
+      manage_visits: true,
+      view_reports: true,
+      view_logs: false,
+      restore_data: false,
+    },
+    costumer: {
+      view_dashboard: true,
+      view_animals: true,
+      submit_adoption: true,
+      view_status: true,
+      chat_with_staff: true,
+    },
+    petugas: {
+      dashboard_view: true,
+      manage_animals: true,
+      manage_adoptions: true,
+      manage_chat: true,
+      manage_visits: true,
+    },
+    superadmin: {
+      full_access: true,
+    },
+  }
+
+  for (const [role, perms] of Object.entries(defaultRolePermissions)) {
+    await pool.query(
+      `
+        INSERT INTO role_permissions (role_name, permissions, updated_at)
+        VALUES ($1, $2::jsonb, CURRENT_TIMESTAMP)
+        ON CONFLICT (role_name)
+        DO UPDATE SET permissions = EXCLUDED.permissions, updated_at = CURRENT_TIMESTAMP
+      `,
+      [role, JSON.stringify(perms)],
+    )
+  }
 }
 
 

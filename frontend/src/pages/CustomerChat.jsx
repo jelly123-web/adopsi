@@ -227,7 +227,7 @@ export default function CustomerChat() {
   return (
     <CustomerLayout>
       <main className="customer-page">
-        <div className="customer-chat-page" style={{ padding: '20px 28px 40px', maxWidth: 1100, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+        <div className="customer-chat-page" style={{ padding: '20px 28px 40px', maxWidth: 1100, margin: '0 auto', width: '100%', boxSizing: 'border-box', minHeight: 'calc(100vh - 180px)' }}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#EFF6FF', color: '#2563EB', fontSize: 10, fontWeight: 800, padding: '4px 12px', borderRadius: 999, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               <span className="iconify text-sm" data-icon="mdi:chat-outline"></span> Pusat Chat Online
@@ -260,7 +260,7 @@ export default function CustomerChat() {
             </div>
           </div>
 
-          <div className="customer-chat-panel" style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 0, height: 520, background: '#fff', borderRadius: 24, border: '1px solid #E8ECF1', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,.04)' }}>
+          <div className="customer-chat-panel" style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 0, minHeight: 'calc(100vh - 240px)', background: '#fff', borderRadius: 24, border: '1px solid #E8ECF1', overflow: 'hidden', boxShadow: '0 10px 40px rgba(0,0,0,.04)' }}>
             <div style={{ borderRight: '1px solid #F1F5F9', display: 'flex', flexDirection: 'column', background: '#FAFBFF' }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
