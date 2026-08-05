@@ -1304,15 +1304,33 @@ async function updateAccountProfile(userId, input = {}) {
   }
 }
 
-async function listActivityLogs() {
+async function listActivityLogs(page = 1, limit = 6) {
   const pool = await getPool()
+  const offset = (page - 1) * limit
+
+  const { rows: countRows } = await pool.query(`
+    SELECT COUNT(*) AS count
+    FROM activities
+    WHERE deleted = FALSE
+  `)
+
   const { rows } = await pool.query(`
     SELECT id, type, title, description, user_name, user_email, user_role, ip_address, latitude, longitude, location_name, created_at
     FROM activities
     WHERE deleted = FALSE
     ORDER BY created_at DESC, id DESC
-  `)
-  return rows
+    LIMIT $1 OFFSET $2
+  `, [limit, offset])
+
+  const total = Number(countRows[0]?.count || 0)
+
+  return {
+    rows,
+    total,
+    page,
+    limit,
+    pages: Math.max(1, Math.ceil(total / limit)),
+  }
 }
 
 async function createActivityLog(input) {
@@ -1363,8 +1381,7 @@ async function getReportsData() {
   const { rows: monthlyRows } = await pool.query(`
     SELECT EXTRACT(MONTH FROM created_at) AS month_number, COUNT(*) AS total
     FROM adoption_requests
-    WHERE status = 'disetujui'
-      AND deleted = FALSE
+    WHERE deleted = FALSE
       AND EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
     GROUP BY EXTRACT(MONTH FROM created_at)
     ORDER BY EXTRACT(MONTH FROM created_at)
@@ -1373,8 +1390,7 @@ async function getReportsData() {
   const { rows: yearlyRows } = await pool.query(`
     SELECT EXTRACT(YEAR FROM created_at) AS year_number, COUNT(*) AS total
     FROM adoption_requests
-    WHERE status = 'disetujui'
-      AND deleted = FALSE
+    WHERE deleted = FALSE
       AND EXTRACT(YEAR FROM created_at) >= EXTRACT(YEAR FROM CURRENT_DATE) - 4
     GROUP BY EXTRACT(YEAR FROM created_at)
     ORDER BY EXTRACT(YEAR FROM created_at)

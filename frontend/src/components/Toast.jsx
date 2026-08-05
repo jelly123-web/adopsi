@@ -39,7 +39,7 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
         aria-label="Tutup notifikasi"
         onClick={() => setIsVisible(false)}
       >
-        ×
+        &times;
       </button>
     </div>
   )

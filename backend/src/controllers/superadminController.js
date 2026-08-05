@@ -1061,8 +1061,10 @@ async function getReports(req, res, next) {
 
 async function getActivityLogs(req, res, next) {
   try {
-    const logs = await superadminModel.listActivityLogs()
-    res.json({ success: true, data: logs })
+    const page = Math.max(1, parseInt(req.query.page) || 1)
+    const limit = Math.max(1, parseInt(req.query.limit) || 6)
+    const result = await superadminModel.listActivityLogs(page, limit)
+    res.json({ success: true, data: result.rows, total: result.total, page: result.page, pages: result.pages, limit: result.limit })
   } catch (error) {
     next(error)
   }

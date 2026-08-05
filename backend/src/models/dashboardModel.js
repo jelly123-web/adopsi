@@ -15,7 +15,7 @@ async function getDashboardData() {
   const { rows: monthlyRows } = await pool.query(`
     SELECT EXTRACT(MONTH FROM created_at) AS month_number, COUNT(*) AS total
     FROM adoption_requests
-    WHERE status = 'disetujui' AND deleted = FALSE
+    WHERE deleted = FALSE
     GROUP BY EXTRACT(MONTH FROM created_at)
     ORDER BY EXTRACT(MONTH FROM created_at)
   `)

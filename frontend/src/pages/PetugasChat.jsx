@@ -7,9 +7,9 @@ import { subscribeLiveData } from '../utils/liveDataEvents'
 
 const storageKey = 'petugasChatReplies'
 
-/* ---- reusable chat message list ---- */
 function ChatMessages({ conversation, selectedCustomer, onDelete }) {
   const bottomRef = useRef(null)
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [conversation])
@@ -50,7 +50,7 @@ function ChatMessages({ conversation, selectedCustomer, onDelete }) {
             </button>
             <span className="ig-name">{label}</span>
             {item.topic && (
-              <div style={{ fontSize: '11px', fontWeight: 600, opacity: 0.85, marginBottom: '4px' }}>
+              <div className="staff-chat-topic">
                 {item.topic}
               </div>
             )}
@@ -64,7 +64,6 @@ function ChatMessages({ conversation, selectedCustomer, onDelete }) {
   )
 }
 
-/* ---- reusable input bar ---- */
 function ChatInput({ message, setMessage, onSend, disabled }) {
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -72,6 +71,7 @@ function ChatInput({ message, setMessage, onSend, disabled }) {
       onSend()
     }
   }
+
   return (
     <div className="ig-input-bar">
       <input
@@ -94,7 +94,6 @@ function ChatInput({ message, setMessage, onSend, disabled }) {
   )
 }
 
-/* ---- main page ---- */
 function PetugasChat() {
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth > 768 : true,
@@ -111,9 +110,7 @@ function PetugasChat() {
   })
 
   const authRole = localStorage.getItem('authRole') || 'petugas'
-  const authName =
-    localStorage.getItem('authName') ||
-    (authRole === 'admin' ? 'Admin' : 'Petugas')
+  const authName = localStorage.getItem('authName') || (authRole === 'admin' ? 'Admin' : 'Petugas')
 
   const getCustomerPhoto = (customer) =>
     pickMedia(
@@ -124,7 +121,6 @@ function PetugasChat() {
       customer?.avatar,
     )
 
-  /* load customers & set initial selectedId */
   useEffect(() => {
     let active = true
     const loadCustomers = () => {
@@ -142,6 +138,7 @@ function PetugasChat() {
           if (active) setCustomers([])
         })
     }
+
     loadCustomers()
     const unsub = subscribeLiveData(['users', 'customers'], loadCustomers)
     return () => {
@@ -157,7 +154,6 @@ function PetugasChat() {
 
   const activeId = selectedCustomer ? String(selectedCustomer.id) : ''
 
-  // Sync DB Chat Messages
   const syncChatData = async () => {
     try {
       const res = await axios.get('http://localhost:3000/api/chat-messages')
@@ -168,27 +164,30 @@ function PetugasChat() {
 
         dbMessages.forEach((dbMsg) => {
           const cId = String(dbMsg.user_id)
-          if (cId) {
-            if (!updatedReplies[cId]) updatedReplies[cId] = []
-            const exists = updatedReplies[cId].some((m) => m.id === dbMsg.msg_id)
-            if (!exists) {
-              updatedReplies[cId].push({
-                id: dbMsg.msg_id,
-                sender: dbMsg.sender,
-                senderName: dbMsg.sender_name,
-                targetRole: dbMsg.target_role,
-                text: dbMsg.text,
-                topic: dbMsg.topic,
-                time: new Date(dbMsg.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
-              })
-            }
+          if (!cId) return
+
+          if (!updatedReplies[cId]) updatedReplies[cId] = []
+          const exists = updatedReplies[cId].some((m) => m.id === dbMsg.msg_id)
+          if (!exists) {
+            updatedReplies[cId].push({
+              id: dbMsg.msg_id,
+              sender: dbMsg.sender,
+              senderName: dbMsg.sender_name,
+              targetRole: dbMsg.target_role,
+              text: dbMsg.text,
+              topic: dbMsg.topic,
+              time: new Date(dbMsg.created_at).toLocaleString('id-ID', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              }),
+            })
           }
         })
 
         setReplies(updatedReplies)
         localStorage.setItem(storageKey, JSON.stringify(updatedReplies))
       }
-    } catch (e) {
+    } catch {
       try {
         setReplies(JSON.parse(localStorage.getItem(storageKey) || '{}'))
       } catch {
@@ -199,13 +198,13 @@ function PetugasChat() {
 
   useEffect(() => {
     syncChatData()
-    const h = () => syncChatData()
-    window.addEventListener('chat-updated', h)
-    window.addEventListener('storage', h)
+    const handleUpdate = () => syncChatData()
+    window.addEventListener('chat-updated', handleUpdate)
+    window.addEventListener('storage', handleUpdate)
     const interval = setInterval(syncChatData, 3000)
     return () => {
-      window.removeEventListener('chat-updated', h)
-      window.removeEventListener('storage', h)
+      window.removeEventListener('chat-updated', handleUpdate)
+      window.removeEventListener('storage', handleUpdate)
       clearInterval(interval)
     }
   }, [])
@@ -220,7 +219,6 @@ function PetugasChat() {
       (!m.targetRole && m.sender === 'customer'),
   )
 
-  /* mark as read when selected customer changes */
   useEffect(() => {
     if (!activeId || !Array.isArray(replies[activeId])) return
     const hasUnread = replies[activeId].some(
@@ -229,22 +227,21 @@ function PetugasChat() {
         !m.isRead &&
         (authRole === 'superadmin' || m.targetRole === authRole || !m.targetRole),
     )
-    if (hasUnread) {
-      const updated = replies[activeId].map((m) =>
-        m.sender === 'customer' &&
-        !m.isRead &&
-        (authRole === 'superadmin' || m.targetRole === authRole || !m.targetRole)
-          ? { ...m, isRead: true }
-          : m,
-      )
-      const next = { ...replies, [activeId]: updated }
-      setReplies(next)
-      localStorage.setItem(storageKey, JSON.stringify(next))
-      window.dispatchEvent(new Event('chat-updated'))
-    }
+    if (!hasUnread) return
+
+    const updated = replies[activeId].map((m) =>
+      m.sender === 'customer' &&
+      !m.isRead &&
+      (authRole === 'superadmin' || m.targetRole === authRole || !m.targetRole)
+        ? { ...m, isRead: true }
+        : m,
+    )
+    const next = { ...replies, [activeId]: updated }
+    setReplies(next)
+    localStorage.setItem(storageKey, JSON.stringify(next))
+    window.dispatchEvent(new Event('chat-updated'))
   }, [activeId])
 
-  /* send message */
   const saveReply = async () => {
     if (!activeId || !message.trim()) return
 
@@ -260,6 +257,7 @@ function PetugasChat() {
         timeStyle: 'short',
       }),
     }
+
     const next = {
       ...replies,
       [activeId]: [...(replies[activeId] || []), newMsg],
@@ -272,14 +270,14 @@ function PetugasChat() {
     try {
       await axios.post('http://localhost:3000/api/chat-messages', {
         msgId,
-        userId: isNaN(Number(activeId)) ? null : Number(activeId),
+        userId: Number(activeId),
         sender: authRole,
         senderName: authName,
         targetRole: 'customer',
         text,
       })
-    } catch (err) {
-      console.error('Failed saving staff message to DB', err)
+    } catch (error) {
+      console.error('Failed saving staff message to DB', error)
     }
   }
 
@@ -296,8 +294,8 @@ function PetugasChat() {
 
     try {
       await axios.delete(`http://localhost:3000/api/chat-messages/${encodeURIComponent(msgId)}`)
-    } catch (err) {
-      console.error('Failed deleting chat message', err)
+    } catch (error) {
+      console.error('Failed deleting chat message', error)
     }
   }
 
@@ -312,62 +310,27 @@ function PetugasChat() {
           onToggleSidebar={() => setSidebarOpen((open) => !open)}
         />
 
-        <div className="page-body" style={{ padding: '20px' }}>
-          <div className="page-header" style={{ marginBottom: '16px' }}>
+        <div className="page-body staff-chat-page">
+          <div className="page-header staff-chat-hero">
             <h1 className="page-header-title">
               <i className="fas fa-comments" /> Chat Customer
             </h1>
             <p className="page-header-desc">
-              Pilih akun customer untuk melihat profil dan bertukar pesan langsung (Instagram Style).
+              Pilih akun customer untuk melihat profil dan bertukar pesan langsung.
             </p>
           </div>
 
-          {/* Grid Layout Instagram Chat (Daftar Customer di Kiri & Ruang Chat + Profil di Kanan) */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '320px 1fr',
-              gap: '20px',
-              height: 'calc(100vh - 200px)',
-              minHeight: '520px',
-              maxHeight: '720px',
-              background: '#fff',
-              borderRadius: '16px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-              overflow: 'hidden',
-              border: '1px solid var(--border)',
-            }}
-          >
-            {/* KOLOM KIRI: Daftar Customer */}
-            <div
-              style={{
-                borderRight: '1px solid var(--border)',
-                display: 'flex',
-                flexDirection: 'column',
-                background: '#fafafa',
-              }}
-            >
-              <div
-                style={{
-                  padding: '16px 20px',
-                  borderBottom: '1px solid var(--border)',
-                  fontWeight: 700,
-                  fontSize: '15px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  background: '#fff',
-                }}
-              >
+          <div className="staff-chat-shell">
+            <aside className="staff-chat-list">
+              <div className="staff-chat-list-head">
                 <span>
-                  <i className="fas fa-address-book" style={{ marginRight: 8, color: 'var(--accent)' }} /> Daftar Customer
+                  <i className="fas fa-address-book" style={{ marginRight: 8, color: 'var(--accent)' }} />
+                  Daftar Customer
                 </span>
-                <span style={{ fontSize: '12px', background: '#e2e8f0', padding: '2px 8px', borderRadius: '12px', color: '#475569' }}>
-                  {customers.length}
-                </span>
+                <span className="staff-chat-count">{customers.length}</span>
               </div>
 
-              <div style={{ flex: 1, overflowY: 'auto' }}>
+              <div className="staff-chat-list-scroll">
                 {customers.map((customer) => {
                   const isSelected = String(customer.id) === activeId
                   const chats = replies[customer.id] || []
@@ -383,44 +346,20 @@ function PetugasChat() {
                     <div
                       key={customer.id}
                       onClick={() => setSelectedId(String(customer.id))}
-                      style={{
-                        padding: '14px 18px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        cursor: 'pointer',
-                        background: isSelected ? '#eff6ff' : 'transparent',
-                        borderLeft: isSelected ? '4px solid #0ea5e9' : '4px solid transparent',
-                        transition: 'all 0.2s',
-                        borderBottom: '1px solid #f1f5f9',
-                      }}
+                      className={`staff-chat-list-item ${isSelected ? 'active' : ''}`}
                     >
                       <MediaAvatar
                         src={getCustomerPhoto(customer)}
                         fallbackSrc={DEFAULT_USER_PHOTO}
                         alt={customer.name}
-                        className="staff-chat-customer-avatar"
+                        className="customer-contact-avatar"
                       />
-
-                      {/* Info & Last message */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                          <strong style={{ fontSize: '14px', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {customer.name}
-                          </strong>
-                          {hasUnread && (
-                            <span
-                              style={{
-                                width: '8px',
-                                height: '8px',
-                                background: '#ef4444',
-                                borderRadius: '50%',
-                                display: 'inline-block',
-                              }}
-                            />
-                          )}
+                      <div className="staff-chat-list-copy">
+                        <div className="staff-chat-list-row">
+                          <strong className="staff-chat-name">{customer.name}</strong>
+                          {hasUnread && <span className="staff-chat-unread" />}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div className="staff-chat-preview">
                           {lastMsg ? lastMsg.text : customer.email}
                         </div>
                       </div>
@@ -429,28 +368,17 @@ function PetugasChat() {
                 })}
 
                 {customers.length === 0 && (
-                  <div style={{ padding: '30px', textAlign: 'center', color: 'var(--muted)', fontSize: '13px' }}>
+                  <div className="staff-chat-list-empty">
                     Belum ada data customer.
                   </div>
                 )}
               </div>
-            </div>
+            </aside>
 
-            {/* KOLOM KANAN: Ruang Chat (Instagram Style) + Profile Customer */}
             {selectedCustomer ? (
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff' }}>
-                {/* Header Chat: Info & Profile Customer */}
-                <div
-                  style={{
-                    padding: '14px 20px',
-                    borderBottom: '1px solid var(--border)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    background: '#fff',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <section className="staff-chat-conversation">
+                <div className="staff-chat-conv-head">
+                  <div className="staff-chat-conv-person">
                     <MediaAvatar
                       src={getCustomerPhoto(selectedCustomer)}
                       fallbackSrc={DEFAULT_USER_PHOTO}
@@ -458,40 +386,41 @@ function PetugasChat() {
                       className="staff-chat-header-avatar"
                     />
                     <div>
-                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
-                        {selectedCustomer.name}
-                      </h3>
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                      <h3 className="staff-chat-title">{selectedCustomer.name}</h3>
+                      <span className="staff-chat-email">
                         <i className="fas fa-envelope" style={{ marginRight: 4 }} />
                         {selectedCustomer.email}
-                        {selectedCustomer.phone && ` • 📞 ${selectedCustomer.phone}`}
+                        {selectedCustomer.phone ? ` - ${selectedCustomer.phone}` : ''}
                       </span>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <span style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '20px', background: '#f1f5f9', color: '#475569', fontWeight: 600 }}>
-                      <i className="fas fa-user-check" style={{ marginRight: 4, color: '#10b981' }} /> Customer
-                    </span>
-                  </div>
+                  <span className="staff-chat-role-pill">
+                    <i className="fas fa-user-check" style={{ marginRight: 4, color: '#10b981' }} />
+                    Customer
+                  </span>
                 </div>
 
-                {/* Body Chat (Messages) */}
-                <div className="ig-chat-area" style={{ flex: 1, padding: '20px', background: '#f8fafc' }}>
-                  <ChatMessages conversation={conversation} selectedCustomer={selectedCustomer} onDelete={deleteMessage} />
+                <div className="staff-chat-messages ig-chat-area">
+                  <ChatMessages
+                    conversation={conversation}
+                    selectedCustomer={selectedCustomer}
+                    onDelete={deleteMessage}
+                  />
                 </div>
 
-                {/* Input Bar */}
-                <ChatInput
-                  message={message}
-                  setMessage={setMessage}
-                  onSend={saveReply}
-                  disabled={false}
-                />
-              </div>
+                <div className="staff-chat-input">
+                  <ChatInput
+                    message={message}
+                    setMessage={setMessage}
+                    onSend={saveReply}
+                    disabled={false}
+                  />
+                </div>
+              </section>
             ) : (
-              <div className="ig-empty" style={{ flex: 1 }}>
-                <i className="fas fa-comments" style={{ fontSize: '36px', color: '#94a3b8' }} />
+              <div className="ig-empty staff-chat-empty">
+                <i className="fas fa-comments" />
                 <span>Pilih customer di sebelah kiri untuk mulai mengobrol.</span>
               </div>
             )}

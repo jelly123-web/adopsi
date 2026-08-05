@@ -212,13 +212,32 @@ function Dashboard() {
                 </div>
               </div>
               <div className="section-card-body">
-                <div style={{ padding: '22px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'stretch', height: '190px', gap: '12px' }}>
+                <div style={{ padding: '22px', overflowX: 'auto' }}>
+                  <div
+                    style={{
+                      minWidth: `${Math.max(chartMonthlyAdoptions.length * 88, 100)}px`,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'stretch',
+                      height: '190px',
+                      gap: '12px',
+                      paddingBottom: '6px',
+                    }}
+                  >
                     {chartMonthlyAdoptions.map((item, index) => {
                       const total = Number(item.total) || 0
                       const barHeight = total > 0 ? Math.max((total / highestMonthly) * 100, 15) : 12
                       return (
-                        <div key={`${item.month}-${index}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%' }}>
+                        <div
+                          key={`${item.month}-${index}`}
+                          style={{
+                            flex: '0 0 76px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            height: '100%',
+                          }}
+                        >
                           <div style={{ fontWeight: 700, fontSize: '13px', color: '#334155', marginBottom: '6px' }}>{total}</div>
                           <div style={{ flex: 1, width: '100%', maxWidth: '38px', background: '#f1f5f9', borderRadius: '8px 8px 0 0', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', border: '1px solid #e2e8f0' }}>
                             <div style={{

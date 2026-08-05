@@ -77,6 +77,113 @@ const emptyForm = {
   document_url: '',
 }
 
+function normalizeAnimalActivity(value = '') {
+  const text = String(value).toLowerCase()
+  if (text.includes('rumah') || text.includes('tenang') || text.includes('diam')) return 'home'
+  if (text.includes('main') || text.includes('aktif') || text.includes('keluar') || text.includes('jalan')) return 'active'
+  return 'neutral'
+}
+
+function isSpeciesMatch(animal, expected) {
+  const species = String(animal?.species || animal?.category_name || '').toLowerCase()
+  if (expected === 'cat') return species.includes('kucing')
+  if (expected === 'dog') return species.includes('anjing')
+  if (expected === 'small') return !species.includes('anjing')
+  return true
+}
+
+function isCompatibleWithAnswers(animal, answers) {
+  const activity = normalizeAnimalActivity(animal?.activity_preference || animal?.habits || '')
+  const species = String(animal?.species || animal?.category_name || '').toLowerCase()
+  const isCat = species.includes('kucing')
+  const isDog = species.includes('anjing')
+  const isSmall = !isDog
+
+  if (answers[0] === 'home' && activity === 'active') return false
+  if (answers[0] === 'active' && activity === 'home') return false
+
+  if (answers[2] === 'apartment' || answers[2] === 'kost') {
+    if (isDog && activity === 'active') return false
+  }
+
+  if (answers[3] === 'calm' && activity === 'active') return false
+  if (answers[3] === 'playful' && activity === 'home') return false
+
+  if (answers[4] === 'cat' && !isCat) return false
+  if (answers[4] === 'dog' && !isDog) return false
+  if (answers[4] === 'small' && !isSmall) return false
+
+  return true
+}
+
+function scoreAnimalCompatibility(animal, answers, index = 0) {
+  const species = String(animal?.species || animal?.category_name || '').toLowerCase()
+  const activity = normalizeAnimalActivity(animal?.activity_preference || animal?.habits || '')
+  const condition = String(animal?.condition || animal?.health_condition || '').toLowerCase()
+  let score = 50
+
+  if (answers[0] === 'active') {
+    score += activity === 'active' ? 22 : activity === 'neutral' ? 8 : -20
+    score += species.includes('anjing') ? 10 : 0
+  }
+
+  if (answers[0] === 'home') {
+    score += activity === 'home' ? 22 : activity === 'neutral' ? 8 : -24
+    score += species.includes('kucing') ? 10 : 0
+  }
+
+  if (answers[0] === 'social') {
+    score += activity === 'neutral' ? 12 : 6
+  }
+
+  if (answers[1] === 'free') {
+    score += activity === 'active' ? 10 : 4
+  }
+
+  if (answers[1] === 'moderate') {
+    score += activity === 'neutral' ? 10 : 6
+  }
+
+  if (answers[1] === 'busy') {
+    score += activity === 'home' || activity === 'neutral' ? 14 : -12
+  }
+
+  if (answers[2] === 'house') {
+    score += isSpeciesMatch(animal, 'dog') ? 10 : 4
+  }
+
+  if (answers[2] === 'apartment' || answers[2] === 'kost') {
+    score += isSpeciesMatch(animal, 'cat') ? 14 : isSpeciesMatch(animal, 'small') ? 10 : 0
+    score += activity === 'active' ? -14 : 4
+  }
+
+  if (answers[3] === 'playful') {
+    score += activity === 'active' ? 22 : activity === 'neutral' ? 8 : -18
+  }
+
+  if (answers[3] === 'calm') {
+    score += activity === 'home' ? 22 : activity === 'neutral' ? 10 : -20
+  }
+
+  if (answers[3] === 'caring') {
+    score += condition.includes('sehat') || condition.includes('baik') ? 8 : 0
+  }
+
+  if (answers[4] === 'cat') {
+    score += species.includes('kucing') ? 26 : -18
+  }
+
+  if (answers[4] === 'dog') {
+    score += species.includes('anjing') ? 26 : -18
+  }
+
+  if (answers[4] === 'small') {
+    score += isSpeciesMatch(animal, 'small') ? 18 : -10
+  }
+
+  return Math.min(99, Math.max(1, score - index))
+}
+
 function PetMedia({ animal, className = '' }) {
   const fallback = fallbackPhotos[Math.abs(Number(animal?.id || 0)) % fallbackPhotos.length]
   const src = animal?.photo || fallback
@@ -105,28 +212,14 @@ export default function CustomerAdoption() {
   )
 
   const recommendations = useMemo(() => {
-    const scored = animals.map((animal, index) => {
-      const species = String(animal.species || animal.category_name || '').toLowerCase()
-      const habit = String(animal.activity_preference || animal.habits || '').toLowerCase()
-      let score = 76
+    const compatible = animals.filter((animal) => isCompatibleWithAnswers(animal, answers))
+    const source = compatible.length > 0 ? compatible : animals
 
-      if (answers[0] === 'active' && (species.includes('anjing') || habit.includes('aktif'))) score += 14
-      if (answers[0] === 'home' && (species.includes('kucing') || habit.includes('rumah'))) score += 14
-      if (answers[1] === 'busy' && !species.includes('anjing')) score += 10
-      if (answers[2] === 'house' && species.includes('anjing')) score += 10
-      if ((answers[2] === 'apartment' || answers[2] === 'kost') && !species.includes('anjing')) score += 12
-      if (answers[3] === 'calm' && species.includes('kucing')) score += 8
-      if (answers[3] === 'playful' && species.includes('anjing')) score += 8
-      if (answers[4] === 'cat' && species.includes('kucing')) score += 12
-      if (answers[4] === 'dog' && species.includes('anjing')) score += 12
-      if (answers[4] === 'small' && !species.includes('anjing')) score += 8
-
-      return {
-        ...animal,
-        match: Math.min(98, score - index),
-        reason: buildReason(animal, answers),
-      }
-    })
+    const scored = source.map((animal, index) => ({
+      ...animal,
+      match: scoreAnimalCompatibility(animal, answers, index),
+      reason: buildReason(animal, answers),
+    }))
 
     return scored.sort((a, b) => b.match - a.match).slice(0, 3)
   }, [animals, answers])
@@ -457,11 +550,23 @@ export default function CustomerAdoption() {
 }
 
 function buildReason(animal, answers) {
-  if (answers[0] === 'home' || answers[2] === 'apartment' || answers[2] === 'kost') {
-    return `${animal.name} cocok untuk ruang kecil dan rutinitas santai.`
+  const species = String(animal?.species || animal?.category_name || '').toLowerCase()
+  const activity = normalizeAnimalActivity(animal?.activity_preference || animal?.habits || '')
+
+  if (answers[0] === 'home' || answers[3] === 'calm') {
+    return `${animal.name} cenderung tenang dan cocok untuk suasana rumah yang santai.`
   }
-  if (answers[0] === 'active' || answers[4] === 'dog') {
-    return `${animal.name} cocok untuk adopter yang aktif dan punya waktu bermain.`
+  if (answers[0] === 'active' || answers[3] === 'playful') {
+    return `${animal.name} lebih cocok untuk adopter yang aktif dan suka interaksi.`
+  }
+  if (answers[4] === 'cat' || species.includes('kucing')) {
+    return `${animal.name} sesuai untuk kamu yang mencari hewan mandiri dan tenang.`
+  }
+  if (answers[4] === 'dog' || species.includes('anjing')) {
+    return `${animal.name} cocok untuk kamu yang siap dengan hewan yang lebih ekspresif dan interaktif.`
+  }
+  if (activity === 'home') {
+    return `${animal.name} punya kebiasaan yang lebih santai dan tidak terlalu ramai.`
   }
   if (answers[3] === 'caring') {
     return `${animal.name} cocok untuk kamu yang telaten dan penuh perhatian.`

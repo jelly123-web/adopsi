@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 import SuperadminNavbar from '../components/SuperadminNavbar'
+import SuperadminSidebar from '../components/SuperadminSidebar'
 
 function HistoryLogs() {
   const [sidebarOpen, setSidebarOpen] = useState(() =>
@@ -145,87 +146,7 @@ function HistoryLogs() {
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-brand">
-          <div className="sidebar-logo">A</div>
-          <div className="sidebar-brand-text">
-            <div className="sidebar-brand-name">Adopsi Hewan</div>
-            <div className="sidebar-brand-role">Superadmin</div>
-          </div>
-        </div>
-
-        <nav className="sidebar-nav">
-          <div className="nav-section-title">MENU</div>
-          <a href="/dashboard" className="nav-item">
-            <i className="fas fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-          </a>
-          <a href="/dashboard/chat" className="nav-item">
-            <i className="fas fa-comments"></i>
-            <span>Chat Customer</span>
-          </a>
-          <a href="/dashboard/users" className="nav-item">
-            <i className="fas fa-users"></i>
-            <span>Kelola User</span>
-          </a>
-          <a href="/dashboard/categories" className="nav-item">
-            <i className="fas fa-tags"></i>
-            <span>Kelola Kategori</span>
-          </a>
-          <a href="/dashboard/animals" className="nav-item">
-            <i className="fas fa-paw"></i>
-            <span>Kelola Hewan</span>
-          </a>
-          <a href="/dashboard/adoptions" className="nav-item">
-            <i className="fas fa-file-alt"></i>
-            <span>Kelola Pengajuan Adopsi</span>
-          </a>
-          <a href="/dashboard/adoptions/verify" className="nav-item">
-            <i className="fas fa-check-circle"></i>
-            <span>Verifikasi Adopsi</span>
-          </a>
-          <a href="/dashboard/customers" className="nav-item">
-            <i className="fas fa-address-book"></i>
-            <span>Data Customer</span>
-          </a>
-          <a href="/dashboard/reports" className="nav-item">
-            <i className="fas fa-chart-line"></i>
-            <span>Laporan</span>
-          </a>
-          <a href="/dashboard/logs" className="nav-item active">
-            <i className="fas fa-history"></i>
-            <span>History Logs</span>
-          </a>
-          <a href="/dashboard/restore" className="nav-item">
-            <i className="fas fa-undo"></i>
-            <span>Pulihkan Data</span>
-          </a>
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/dashboard/profile" className="sidebar-user">
-            <div className="sidebar-avatar">SA</div>
-            <div className="sidebar-user-info">
-              <div className="sidebar-user-name">Super Admin</div>
-              <div className="sidebar-user-email">admin@adopsi.test</div>
-            </div>
-          </Link>
-          <button 
-            className="sidebar-logout-btn"
-            onClick={() => {
-              localStorage.removeItem('authUserId')
-              localStorage.removeItem('authName')
-              localStorage.removeItem('authRole')
-              localStorage.removeItem('authEmail')
-              localStorage.removeItem('authRemember')
-              window.location.href = '/login'
-            }}
-          >
-            <i className="fas fa-sign-out-alt"></i> Keluar
-          </button>
-        </div>
-      </aside>
+      <SuperadminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
       <main className={`main-content ${!sidebarOpen ? 'sidebar-closed' : ''}`}>

@@ -139,12 +139,17 @@ function SuperadminSidebar({ open = true, onClose }) {
           <div className="nav-section-title">MENU</div>
           {menuItems.map((item) => {
             const showChatUnread = item.to.includes('/chat') && !isCustomer && hasUnreadChat
+            const isLongLabel = item.to === '/dashboard/adoptions'
             return (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
-              className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+              className={({ isActive }) => [
+                'nav-item',
+                isActive ? 'active' : '',
+                isLongLabel ? 'nav-item-long' : '',
+              ].filter(Boolean).join(' ')}
             >
               <MenuIcon icon={item.icon} />
               <span>{item.label}</span>

@@ -34,6 +34,18 @@ const getReadNotificationIds = (role) => {
   }
 }
 
+const formatNotifTime = (value) => {
+  if (!value) return 'Baru saja'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Baru saja'
+  return date.toLocaleString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 function SuperadminNavbar({
   pageTitle = '',
   statusLabel = 'LIVE',
@@ -198,7 +210,20 @@ function SuperadminNavbar({
     localStorage.setItem(getNotifReadKey(authInfo.role), JSON.stringify(next))
   }
 
+  const markAllNotificationsRead = () => {
+    markNotificationsRead(notifications)
+    setNotifOpen(false)
+  }
+
   const unreadNotifications = notifications.filter((item) => !readNotificationIds.includes(item.id))
+  const displayedNotifications = [...notifications].sort((a, b) => {
+    const aUnread = readNotificationIds.includes(a.id) ? 0 : 1
+    const bUnread = readNotificationIds.includes(b.id) ? 0 : 1
+    if (aUnread !== bUnread) return bUnread - aUnread
+    const aTime = new Date(a.time || 0).getTime()
+    const bTime = new Date(b.time || 0).getTime()
+    return bTime - aTime
+  })
 
   return (
     <header className={`topbar superadmin-navbar ${offsetForSidebar && sidebarOpen ? 'shifted' : ''}`}>
@@ -236,17 +261,27 @@ function SuperadminNavbar({
           {notifOpen && (
             <div className="notif-menu">
               <div className="notif-menu-head">
-                <strong>Notifikasi</strong>
-                <span>{unreadNotifications.length} baru</span>
+                <div className="notif-menu-head-copy">
+                  <strong>Notifikasi</strong>
+                  <span>{unreadNotifications.length} baru</span>
+                </div>
+                <button
+                  type="button"
+                  className="notif-mark-read"
+                  onClick={markAllNotificationsRead}
+                  disabled={notifications.length === 0 || unreadNotifications.length === 0}
+                >
+                  Tandai dibaca
+                </button>
               </div>
               {notifications.length === 0 ? (
                 <div className="notif-empty">Belum ada notifikasi baru.</div>
               ) : (
-                notifications.map((item) => (
+                displayedNotifications.map((item) => (
                   <Link
                     key={item.id}
                     to={item.to}
-                    className={`notif-item ${item.type}`}
+                    className={`notif-item ${item.type} ${readNotificationIds.includes(item.id) ? '' : 'unread'}`}
                     onClick={() => {
                       markNotificationsRead([item])
                       setNotifOpen(false)
@@ -256,6 +291,7 @@ function SuperadminNavbar({
                     <span className="notif-item-body">
                       <strong>{item.title}</strong>
                       <small>{item.text}</small>
+                      <span className="notif-item-time">{formatNotifTime(item.time)}</span>
                     </span>
                   </Link>
                 ))

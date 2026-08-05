@@ -295,6 +295,7 @@ function Reports() {
                       borderRadius: '20px',
                       padding: '18px',
                       minHeight: '240px',
+                      overflowX: 'auto',
                     }}>
                       {hasChartData ? (
                         <div style={{
@@ -302,11 +303,13 @@ function Reports() {
                           justifyContent: 'space-between',
                           alignItems: 'flex-end',
                           height: '200px',
-                          gap: '16px'
+                          gap: '16px',
+                          minWidth: `${Math.max(activeChartData.length * 88, 100)}px`,
+                          paddingBottom: '4px',
                         }}>
                           {activeChartData.map((item) => (
                             <div key={item.label} style={{
-                              flex: 1,
+                              flex: '0 0 76px',
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
