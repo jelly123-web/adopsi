@@ -877,7 +877,7 @@ function Login() {
             </div>
           </div>
           <div className="footer-bottom">
-            <span>© 2025 {appSettings.nama_apk}. Setiap hewan berhak atas rumah yang penuh kasih.</span>
+            <span>© 2026 {appSettings.nama_apk}. Setiap hewan berhak atas rumah yang penuh kasih.</span>
             <span className="footer-safe"><Icon name="shield" size={13} /> Data terenkripsi &amp; aman</span>
           </div>
         </div>
