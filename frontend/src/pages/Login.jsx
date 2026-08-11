@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
@@ -141,14 +141,6 @@ function GoogleIcon() {
   )
 }
 
-function AppleIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M16.7 12.4c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.8-3.5.8-.8 0-1.9-.8-3.1-.8-1.6 0-3.1.9-3.9 2.4-1.7 2.9-.4 7.2 1.2 9.5.8 1.2 1.8 2.5 3.1 2.4 1.2-.1 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.3 1.3-2.6 1.3-2.7-.1-.1-2.6-1-2.6-3.9zM14.4 5.6c.7-.8 1.1-1.9 1-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2-.5 2.7-1.3z" />
-    </svg>
-  )
-}
-
 function Login() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -168,6 +160,7 @@ function Login() {
   const [animals, setAnimals] = useState([])
   const [animalTotal, setAnimalTotal] = useState(0)
   const [animalsLoading, setAnimalsLoading] = useState(true)
+  const [googlePopup, setGooglePopup] = useState(null)
   const [appSettings, setAppSettings] = useState(() => {
     const cachedSettings = localStorage.getItem('appSettings')
     if (!cachedSettings) return defaultAppSettings
@@ -297,10 +290,12 @@ function Login() {
       const user = response.data?.data
       localStorage.setItem('authUserId', String(user.id))
         localStorage.setItem('authName', user.name)
-        localStorage.setItem('authRole', user.role)
-        localStorage.setItem('authEmail', user.email)
-        localStorage.setItem('authAvatar', user.profile_photo || '')
-        localStorage.setItem('authRemember', remember ? '1' : '0')
+      localStorage.setItem('authRole', user.role)
+      localStorage.setItem('authEmail', user.email)
+      localStorage.setItem('authAvatar', user.profile_photo || '')
+      localStorage.setItem('authPhone', user.phone || '')
+      localStorage.setItem('authAddress', user.address || '')
+      localStorage.setItem('authRemember', remember ? '1' : '0')
       showToast('Berhasil!', 'Selamat datang kembali di Sahabat Kecil.')
       navigate(
         user.role === 'superadmin' ? '/dashboard' : user.role === 'admin' ? '/admin' : user.role === 'petugas' ? '/petugas' : '/customer',
@@ -313,44 +308,139 @@ function Login() {
     }
   }
 
-  const completeLogin = (user) => {
+  const completeLogin = useCallback((user) => {
     localStorage.setItem('authUserId', String(user.id))
     localStorage.setItem('authName', user.name)
     localStorage.setItem('authRole', user.role)
     localStorage.setItem('authEmail', user.email)
     localStorage.setItem('authAvatar', user.profile_photo || '')
+    localStorage.setItem('authPhone', user.phone || '')
+    localStorage.setItem('authAddress', user.address || '')
     localStorage.setItem('authRemember', remember ? '1' : '0')
     navigate(
       user.role === 'superadmin' ? '/dashboard' : user.role === 'admin' ? '/admin' : user.role === 'petugas' ? '/petugas' : '/customer',
       { replace: true },
     )
-  }
+  }, [navigate, remember])
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const googleTicket = params.get('google_ticket')
+    const googleError = params.get('google_error')
+
+    if (googleError) {
+      const frame = window.requestAnimationFrame(() => {
+        setError(googleError)
+        openPanel()
+      })
+      navigate('/login#panel', { replace: true })
+      return () => window.cancelAnimationFrame(frame)
+    }
+
+    if (!googleTicket) return
+
+    let active = true
+    const frame = window.requestAnimationFrame(() => {
+      setLoading(true)
+      axios.get(`${API_BASE_URL}/auth/google/session`, {
+        params: { ticket: googleTicket },
+      })
+        .then((response) => {
+          if (!active) return
+          showToast('Berhasil!', 'Login Google berhasil.')
+          completeLogin(response.data?.data)
+        })
+        .catch((err) => {
+          if (!active) return
+          setError(err.response?.data?.message || 'Login Google gagal.')
+          openPanel()
+          navigate('/login#panel', { replace: true })
+        })
+        .finally(() => {
+          if (active) setLoading(false)
+        })
+    })
+
+    return () => {
+      active = false
+      window.cancelAnimationFrame(frame)
+    }
+  }, [completeLogin, location.search, navigate])
+
+  useEffect(() => {
+    const expectedOrigin = new URL(API_BASE_URL).origin
+
+    const handleGoogleMessage = (event) => {
+      if (event.origin !== expectedOrigin) return
+      const payload = event.data || {}
+      if (payload.source !== 'google-oauth') return
+
+      if (payload.error) {
+        setError(payload.error)
+        openPanel()
+        setGooglePopup(null)
+        return
+      }
+
+      if (!payload.ticket) {
+        setGooglePopup(null)
+        return
+      }
+
+      setLoading(true)
+      axios.get(`${API_BASE_URL}/auth/google/session`, {
+        params: { ticket: payload.ticket },
+      })
+        .then((response) => {
+          showToast('Berhasil!', 'Login Google berhasil.')
+          completeLogin(response.data?.data)
+        })
+        .catch((err) => {
+          setError(err.response?.data?.message || 'Login Google gagal.')
+          openPanel()
+        })
+        .finally(() => {
+          setLoading(false)
+          setGooglePopup(null)
+        })
+    }
+
+    window.addEventListener('message', handleGoogleMessage)
+    return () => window.removeEventListener('message', handleGoogleMessage)
+  }, [completeLogin])
+
+  useEffect(() => {
+    if (!googlePopup || googlePopup.closed) return
+    const timer = window.setInterval(() => {
+      if (googlePopup.closed) {
+        setGooglePopup(null)
+        window.clearInterval(timer)
+      }
+    }, 500)
+
+    return () => window.clearInterval(timer)
+  }, [googlePopup])
 
   const handleGoogleLogin = () => {
     setError('')
-    setAuthModalEmail(form.email || '')
-    setAuthModal('google')
-  }
+    const width = 560
+    const height = 720
+    const left = window.screenX + Math.max(0, (window.outerWidth - width) / 2)
+    const top = window.screenY + Math.max(0, (window.outerHeight - height) / 2)
+    const popup = window.open(
+      `${API_BASE_URL}/auth/google?popup=1`,
+      'google-login',
+      `width=${width},height=${height},left=${Math.round(left)},top=${Math.round(top)},resizable=yes,scrollbars=yes`,
+    )
 
-  const submitGoogleLogin = async (event) => {
-    event.preventDefault()
-    const email = authModalEmail.trim()
-    if (!email) return
-    setError('')
-    setLoading(true)
-    try {
-      const response = await axios.post(`${API_BASE_URL}/auth/google`, {
-        email,
-        name: email.split('@')[0],
-      })
-      setAuthModal(null)
-      showToast('Berhasil!', 'Login Google berhasil.')
-      completeLogin(response.data?.data)
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login Google gagal.')
-    } finally {
-      setLoading(false)
+    if (!popup) {
+      setError('Popup Google diblokir browser. Izinkan popup lalu coba lagi.')
+      openPanel()
+      return
     }
+
+    popup.focus()
+    setGooglePopup(popup)
   }
 
   const handleForgotPassword = () => {
@@ -591,6 +681,7 @@ function Login() {
         .dog-emoji { display: inline-block; margin-left: 12px; font-size: 27px; line-height: 1; transform-origin: bottom center; animation: tailWag .35s ease-in-out infinite; vertical-align: -4px; }
         .panel-body > p { color: #94a3b8; font-size: 14px; line-height: 1.6; margin: 12px 0 0; }
         .social-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 30px 0 24px; }
+        .social-row.single { grid-template-columns: 1fr; }
         .social-btn { height: 54px; border: 1.5px solid #e2e8f0; background: #f8fafc; color: #475569; border-radius: 14px; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all .25s cubic-bezier(.22,1,.36,1); }
         .social-btn:hover { border-color: #cbd5e1; background: #fff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.05); }
         .panel-divider { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
@@ -903,9 +994,8 @@ function Login() {
             <h2>Selamat Datang<br />Kembali <span className="dog-emoji">🐕</span></h2>
             <p>Masuk untuk mulai perjalanan adopsimu.</p>
 
-            {!resetToken && <div className="social-row">
+            {!resetToken && <div className="social-row single">
               <button type="button" className="social-btn" onClick={handleGoogleLogin}><GoogleIcon /> Google</button>
-              <button type="button" className="social-btn" onClick={() => showToast('Info', 'Login Apple segera tersedia!', 'info')}><AppleIcon /> Apple</button>
             </div>}
 
             {!resetToken && <div className="panel-divider"><span>atau email</span></div>}
@@ -1004,15 +1094,15 @@ function Login() {
               </button>
             </div>
 
-            <form className="auth-modal-form" onSubmit={authModal === 'google' ? submitGoogleLogin : submitForgotPassword}>
+            <form className="auth-modal-form" onSubmit={submitForgotPassword}>
               <div className="field">
-                <label htmlFor="auth-modal-email">{authModal === 'google' ? 'Email Google' : 'Email Akun'}</label>
+                <label htmlFor="auth-modal-email">Email Akun</label>
                 <div className="input-wrap">
                   <span className="iw-icon"><Icon name="mail" size={16} /></span>
                   <input
                     id="auth-modal-email"
                     type="email"
-                    placeholder={authModal === 'google' ? 'emailgoogle@gmail.com' : 'emailakun@gmail.com'}
+                    placeholder="emailakun@gmail.com"
                     value={authModalEmail}
                     onChange={(event) => setAuthModalEmail(event.target.value)}
                     required
@@ -1028,7 +1118,7 @@ function Login() {
                   Batal
                 </button>
                 <button type="submit" className="btn-main auth-modal-submit" disabled={loading}>
-                  <span>{loading ? 'Memproses...' : authModal === 'google' ? 'Masuk Google' : 'Kirim Reset'}</span>
+                  <span>{loading ? 'Memproses...' : 'Kirim Reset'}</span>
                   <Icon name="arrow" size={14} />
                 </button>
               </div>

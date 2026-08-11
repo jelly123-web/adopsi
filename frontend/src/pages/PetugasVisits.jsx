@@ -95,20 +95,28 @@ function PetugasVisits() {
     let active = true
     const loadRequests = () => {
       axios
-      .get(`${API_BASE_URL}/superadmin/adoption-requests`)
-      .then((response) => {
-        if (active) setRequests(response.data.data || [])
-      })
-      .catch(() => {
-        if (active) setRequests([])
-      })
+        .get(`${API_BASE_URL}/superadmin/adoption-requests`)
+        .then((response) => {
+          if (active) setRequests(response.data.data || [])
+        })
+        .catch(() => {
+          if (active) setRequests([])
+        })
     }
+
+    const refreshOnFocus = () => loadRequests()
 
     loadRequests()
     const unsubscribe = subscribeLiveData('adoptions', loadRequests)
+    const timer = window.setInterval(loadRequests, 3000)
+    window.addEventListener('focus', refreshOnFocus)
+    window.addEventListener('visibilitychange', refreshOnFocus)
     return () => {
       active = false
       unsubscribe()
+      window.clearInterval(timer)
+      window.removeEventListener('focus', refreshOnFocus)
+      window.removeEventListener('visibilitychange', refreshOnFocus)
     }
   }, [])
 
@@ -144,15 +152,18 @@ function PetugasVisits() {
               <h2><i className="fas fa-calendar-day"></i> Jadwal Calon Adopter</h2>
               <span>{visitRequests.length} siap dijadwalkan</span>
             </div>
-            <div className="table-wrap">
-              <table>
+            <div className="table-wrap visits-table-wrap">
+              <table className="visits-table">
                 <thead>
                   <tr>
                     <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Alamat</th>
                     <th>Hewan</th>
                     <th>Status Pengajuan</th>
                     <th>Tanggal Ambil Hewan</th>
                     <th>Status Jadwal</th>
+                    <th>Metode Pengambilan</th>
                     <th>Aksi</th>
                   </tr>
                 </thead>
@@ -161,53 +172,58 @@ function PetugasVisits() {
                     const schedule = getSchedule(request)
                     return (
                       <tr key={request.id}>
-                        <td>
-                          <strong>{request.user_name || '-'}</strong>
-                          <div style={{ color: 'var(--muted)', fontSize: 13 }}>{formatDate(request.created_at)}</div>
-                        </td>
-                        <td>{request.animal_name || '-'}</td>
-                        <td>
-                          <span className="tag tag-success">
-                            <span className="status-dot"></span>
-                            Disetujui
-                          </span>
-                        </td>
-                        <td>
-                          <input
-                            type="datetime-local"
-                            value={schedule.date || ''}
-                            onChange={(event) => updateSchedule(request, 'date', event.target.value)}
-                            className="schedule-input"
-                          />
-                        </td>
-                        <td>
-                          <select
-                            value={schedule.status || defaultScheduleStatus}
-                            onChange={(event) => updateSchedule(request, 'status', event.target.value)}
-                            className="status-select"
-                          >
-                            <option>Belum Dikonfirmasi Customer</option>
-                            <option>Dikonfirmasi</option>
-                            <option>Dijadwalkan Ulang</option>
-                            <option>Selesai</option>
-                          </select>
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            className="schedule-send-btn"
-                            onClick={() => sendSchedule(request)}
-                          >
-                            <i className="fas fa-paper-plane"></i>
-                            Kirim Jadwal
-                          </button>
-                        </td>
-                      </tr>
+                      <td>
+                        <strong>{request.user_name || '-'}</strong>
+                        <div style={{ color: 'var(--muted)', fontSize: 13 }}>{formatDate(request.created_at)}</div>
+                      </td>
+                      <td>{request.phone || '-'}</td>
+                      <td>{request.address || '-'}</td>
+                      <td>{request.animal_name || '-'}</td>
+                      <td>
+                        <span className="tag tag-success">
+                          <span className="status-dot"></span>
+                          Disetujui
+                        </span>
+                      </td>
+                      <td>
+                        <input
+                          type="datetime-local"
+                          value={schedule.date || ''}
+                          onChange={(event) => updateSchedule(request, 'date', event.target.value)}
+                          className="schedule-input"
+                        />
+                      </td>
+                      <td>
+                        <select
+                          value={schedule.status || defaultScheduleStatus}
+                          onChange={(event) => updateSchedule(request, 'status', event.target.value)}
+                          className="status-select"
+                        >
+                          <option>Belum Dikonfirmasi Customer</option>
+                          <option>Dikonfirmasi</option>
+                          <option>Dijadwalkan Ulang</option>
+                          <option>Selesai</option>
+                        </select>
+                      </td>
+                      <td>
+                        {request.pickup_method === 'langsung' ? 'Ambil langsung di tempat' : request.pickup_method === 'antar' ? 'Diantar oleh petugas' : '-'}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="schedule-send-btn"
+                          onClick={() => sendSchedule(request)}
+                        >
+                          <i className="fas fa-paper-plane"></i>
+                          Kirim Jadwal
+                        </button>
+                      </td>
+                    </tr>
                     )
                   })}
                   {visitRequests.length === 0 ? (
                     <tr>
-                      <td colSpan="6" style={{ textAlign: 'center', color: 'var(--muted)', padding: 28 }}>
+                      <td colSpan="9" style={{ textAlign: 'center', color: 'var(--muted)', padding: 28 }}>
                         Belum ada pengajuan disetujui yang perlu dijadwalkan.
                       </td>
                     </tr>

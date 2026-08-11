@@ -21,7 +21,8 @@ const defaultSettings = {
   login_hero_secondary_button: 'Jelajahi',
   dashboard_bg_apk: '',
   admin_name: 'Super Admin',
-  admin_email: 'admin@adopsi.test'
+  admin_email: 'admin@adopsi.test',
+  adoption_location: 'Shelter Sahabat Kecil'
 }
 
 const MEDIA_ACCEPT = 'image/*,video/mp4,video/webm,video/*'
@@ -417,6 +418,17 @@ function PengaturanSistem() {
                       value={formData.login_hero_description}
                       onChange={handleChange}
                       placeholder="Tulis deskripsi hero halaman login"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="adoption_location">Lokasi Tempat Adopsi</label>
+                    <textarea
+                      id="adoption_location"
+                      name="adoption_location"
+                      value={formData.adoption_location}
+                      onChange={handleChange}
+                      placeholder="Contoh: Jl. Melati No. 10, Bandung"
                       rows={3}
                     />
                   </div>

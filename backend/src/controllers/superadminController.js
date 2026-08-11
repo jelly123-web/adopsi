@@ -1,6 +1,84 @@
 const superadminModel = require("../models/superadminModel")
+const crypto = require("crypto")
 
 const authRoles = ["costumer", "superadmin", "admin", "petugas"]
+const googleLoginTickets = new Map()
+
+function getFrontendUrl() {
+  return process.env.FRONTEND_URL || "http://localhost:5173"
+}
+
+function buildFrontendLoginUrl(params = {}) {
+  const base = new URL("/login", getFrontendUrl())
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      base.searchParams.set(key, String(value))
+    }
+  })
+  return base.toString()
+}
+
+function cleanupGoogleTickets() {
+  const now = Date.now()
+  for (const [ticket, payload] of googleLoginTickets.entries()) {
+    if (!payload?.expiresAt || payload.expiresAt <= now) {
+      googleLoginTickets.delete(ticket)
+    }
+  }
+}
+
+function createGoogleLoginTicket(user) {
+  cleanupGoogleTickets()
+  const ticket = crypto.randomBytes(24).toString("hex")
+  googleLoginTickets.set(ticket, {
+    user,
+    expiresAt: Date.now() + (5 * 60 * 1000),
+  })
+  return ticket
+}
+
+function encodeGoogleState(payload = {}) {
+  return Buffer.from(JSON.stringify(payload)).toString("base64url")
+}
+
+function decodeGoogleState(value = "") {
+  try {
+    return JSON.parse(Buffer.from(String(value || ""), "base64url").toString("utf8"))
+  } catch {
+    return {}
+  }
+}
+
+function renderGooglePopupResult({ ticket = "", error = "" } = {}) {
+  const frontendOrigin = new URL(getFrontendUrl()).origin
+  const payload = JSON.stringify({
+    source: "google-oauth",
+    ticket: ticket || "",
+    error: error || "",
+  })
+
+  return `<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <title>Google Login</title>
+  </head>
+  <body>
+    <script>
+      (function () {
+        var payload = ${payload};
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(payload, ${JSON.stringify(frontendOrigin)});
+          }
+        } catch (e) {}
+        window.close();
+      })();
+    </script>
+    <p>Menutup jendela login Google...</p>
+  </body>
+</html>`
+}
 
 function normalizeRole(role = "costumer") {
   if (role === "customer" || role === "user") return "costumer"
@@ -9,12 +87,12 @@ function normalizeRole(role = "costumer") {
 
 async function register(req, res, next) {
   try {
-    const { name, email, password, role = "costumer" } = req.body || {}
+    const { name, email, password, address, phone, role = "costumer" } = req.body || {}
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !address || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Nama, email, dan password wajib diisi.",
+        message: "Nama, email, password, alamat, dan nomor HP wajib diisi.",
       })
     }
 
@@ -22,6 +100,8 @@ async function register(req, res, next) {
       name,
       email,
       password,
+      address,
+      phone,
       role: normalizeRole(role),
     })
 
@@ -82,9 +162,9 @@ async function googleLogin(req, res, next) {
 
     const user = await superadminModel.loginOrRegisterGoogleUser({ email, name })
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        message: "Akun Google tidak aktif.",
+        message: "Akun belum terdaftar. Daftar dulu memakai email itu, baru bisa login dengan Google.",
       })
     }
 
@@ -96,6 +176,163 @@ async function googleLogin(req, res, next) {
   } catch (error) {
     next(error)
   }
+}
+
+async function startGoogleAuth(req, res) {
+  const clientId = process.env.GOOGLE_CLIENT_ID || ""
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || ""
+  const popupMode = String(req.query.popup || "") === "1"
+
+  if (!clientId || !redirectUri) {
+    if (popupMode) {
+      return res.status(200).send(renderGooglePopupResult({
+        error: "Konfigurasi Google login belum lengkap.",
+      }))
+    }
+    return res.redirect(buildFrontendLoginUrl({
+      google_error: "Konfigurasi Google login belum lengkap.",
+    }))
+  }
+
+  const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth")
+  authUrl.searchParams.set("client_id", clientId)
+  authUrl.searchParams.set("redirect_uri", redirectUri)
+  authUrl.searchParams.set("response_type", "code")
+  authUrl.searchParams.set("scope", "openid email profile")
+  authUrl.searchParams.set("access_type", "online")
+  authUrl.searchParams.set("prompt", "select_account")
+  authUrl.searchParams.set("state", encodeGoogleState({ popup: popupMode }))
+
+  return res.redirect(authUrl.toString())
+}
+
+async function handleGoogleCallback(req, res, next) {
+  const code = String(req.query.code || "").trim()
+  const state = decodeGoogleState(req.query.state || "")
+  const popupMode = Boolean(state?.popup)
+  const clientId = process.env.GOOGLE_CLIENT_ID || ""
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || ""
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || ""
+
+  if (!code) {
+    if (popupMode) {
+      return res.status(200).send(renderGooglePopupResult({
+        error: "Kode autentikasi Google tidak ditemukan.",
+      }))
+    }
+    return res.redirect(buildFrontendLoginUrl({
+      google_error: "Kode autentikasi Google tidak ditemukan.",
+    }))
+  }
+
+  if (!clientId || !clientSecret || !redirectUri) {
+    if (popupMode) {
+      return res.status(200).send(renderGooglePopupResult({
+        error: "Konfigurasi Google login belum lengkap.",
+      }))
+    }
+    return res.redirect(buildFrontendLoginUrl({
+      google_error: "Konfigurasi Google login belum lengkap.",
+    }))
+  }
+
+  try {
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }),
+    })
+
+    const tokenData = await tokenResponse.json()
+    if (!tokenResponse.ok || !tokenData?.access_token) {
+      if (popupMode) {
+        return res.status(200).send(renderGooglePopupResult({
+          error: tokenData?.error_description || "Gagal mengambil akses token Google.",
+        }))
+      }
+      return res.redirect(buildFrontendLoginUrl({
+        google_error: tokenData?.error_description || "Gagal mengambil akses token Google.",
+      }))
+    }
+
+    const profileResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+      },
+    })
+
+    const profileData = await profileResponse.json()
+    if (!profileResponse.ok || !profileData?.email) {
+      if (popupMode) {
+        return res.status(200).send(renderGooglePopupResult({
+          error: "Data akun Google tidak bisa dibaca.",
+        }))
+      }
+      return res.redirect(buildFrontendLoginUrl({
+        google_error: "Data akun Google tidak bisa dibaca.",
+      }))
+    }
+
+    const user = await superadminModel.loginOrRegisterGoogleUser({
+      email: profileData.email,
+      name: profileData.name || profileData.given_name || profileData.email.split("@")[0],
+    })
+
+    if (!user) {
+      if (popupMode) {
+        return res.status(200).send(renderGooglePopupResult({
+          error: "Akun belum terdaftar. Daftar dulu memakai email Google itu, baru bisa login.",
+        }))
+      }
+      return res.redirect(buildFrontendLoginUrl({
+        google_error: "Akun belum terdaftar. Daftar dulu memakai email Google itu, baru bisa login.",
+      }))
+    }
+
+    const ticket = createGoogleLoginTicket(user)
+    if (popupMode) {
+      return res.status(200).send(renderGooglePopupResult({ ticket }))
+    }
+    return res.redirect(buildFrontendLoginUrl({ google_ticket: ticket }))
+  } catch (error) {
+    return next(error)
+  }
+}
+
+async function getGoogleLoginSession(req, res) {
+  cleanupGoogleTickets()
+  const ticket = String(req.query.ticket || "").trim()
+
+  if (!ticket) {
+    return res.status(400).json({
+      success: false,
+      message: "Ticket Google login wajib diisi.",
+    })
+  }
+
+  const payload = googleLoginTickets.get(ticket)
+  if (!payload || !payload.user || payload.expiresAt <= Date.now()) {
+    googleLoginTickets.delete(ticket)
+    return res.status(404).json({
+      success: false,
+      message: "Sesi Google login tidak ditemukan atau sudah kedaluwarsa.",
+    })
+  }
+
+  googleLoginTickets.delete(ticket)
+  return res.json({
+    success: true,
+    message: "Login Google berhasil.",
+    data: payload.user,
+  })
 }
 
 async function forgotPassword(req, res, next) {
@@ -354,7 +591,7 @@ async function getAnimals(req, res, next) {
 
 async function createAnimal(req, res, next) {
   try {
-    const { name, species, gender, age, activity_preference = "Suka di rumah", status = "tersedia", condition = "Sehat", photo = null } = req.body || {}
+    const { name, species, gender, age, activity_preference = "Suka di rumah", status = "tersedia", condition = "Sehat", photo = null, weight = null, color = null, photo_top = null, photo_bottom = null, photo_left = null, photo_right = null, photo_back = null, video = null } = req.body || {}
     const parsedAge = Number(age)
 
     if (!name || !species || !gender || Number.isNaN(parsedAge)) {
@@ -373,6 +610,14 @@ async function createAnimal(req, res, next) {
       status,
       condition,
       photo,
+      weight,
+      color,
+      photo_top,
+      photo_bottom,
+      photo_left,
+      photo_right,
+      photo_back,
+      video,
     })
 
     res.status(201).json({ success: true, message: "Hewan berhasil dibuat.", data: { id } })
@@ -405,7 +650,7 @@ async function uploadPhoto(req, res, next) {
 async function updateAnimal(req, res, next) {
   try {
     const id = Number(req.params.id)
-    const { name, species, gender, age, activity_preference = "Suka di rumah", status = "tersedia", condition = "Sehat", photo = null } = req.body || {}
+    const { name, species, gender, age, activity_preference = "Suka di rumah", status = "tersedia", condition = "Sehat", photo = null, weight = null, color = null, photo_top = null, photo_bottom = null, photo_left = null, photo_right = null, photo_back = null, video = null } = req.body || {}
     const parsedAge = Number(age)
 
     if (!Number.isInteger(id)) {
@@ -428,6 +673,14 @@ async function updateAnimal(req, res, next) {
       status,
       condition,
       photo,
+      weight,
+      color,
+      photo_top,
+      photo_bottom,
+      photo_left,
+      photo_right,
+      photo_back,
+      video,
     })
     if (!affectedRows) {
       return res.status(404).json({ success: false, message: "Hewan tidak ditemukan." })
@@ -675,12 +928,13 @@ async function createAdoptionRequest(req, res, next) {
       pet_experience = "",
       reason = "",
       document_url = "",
+      pickup_method = "",
     } = req.body || {}
 
-    if (!user_id || !animal_id || !full_name || !phone || !address || !reason) {
+    if (!user_id || !animal_id || !full_name || !phone || !address) {
       return res.status(400).json({
         success: false,
-        message: "Nama lengkap, telepon, alamat, alasan, dan hewan wajib diisi.",
+        message: "Nama lengkap, telepon, alamat, dan hewan wajib diisi.",
       })
     }
 
@@ -696,6 +950,7 @@ async function createAdoptionRequest(req, res, next) {
       pet_experience,
       reason,
       document_url,
+      pickup_method,
     })
 
     res.status(201).json({
@@ -1145,6 +1400,9 @@ module.exports = {
   register,
   login,
   googleLogin,
+  startGoogleAuth,
+  handleGoogleCallback,
+  getGoogleLoginSession,
   forgotPassword,
   resetPassword,
   getDashboard,

@@ -142,6 +142,8 @@ function DataCustomers() {
                     <th>No.</th>
                     <th>Customer</th>
                     <th>Email</th>
+                    <th>Phone</th>
+                    <th>Alamat</th>
                     <th>Status</th>
                     <th>Terdaftar</th>
                   </tr>
@@ -161,6 +163,8 @@ function DataCustomers() {
                         </div>
                       </td>
                       <td>{customer.email}</td>
+                      <td>{customer.phone || '-'}</td>
+                      <td>{customer.address || '-'}</td>
                       <td>
                         <span className={`tag ${customer.status === 'aktif' ? 'tag-success' : 'tag-muted'}`}>
                           <span className="status-dot"></span>
@@ -172,7 +176,8 @@ function DataCustomers() {
                   ))}
                   {customers.length === 0 ? (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', color: 'var(--muted)', padding: '28px' }}>
+                      <td colSpan="7" style={{ textAlign: 'center', color: 'var(--muted)', padding: '28px' }}
+                        >
                         Belum ada data customer.
                       </td>
                     </tr>

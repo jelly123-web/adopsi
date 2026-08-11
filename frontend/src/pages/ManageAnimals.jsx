@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import axios from 'axios'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import CropModal from '../components/CropModal'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
@@ -9,12 +9,20 @@ import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
 const emptyForm = {
   name: '',
   species: 'Kucing',
-  gender: 'Perempuan',
+  gender: 'Betina',
   age: '',
   activity_preference: 'Suka di rumah',
   status: 'tersedia',
   condition: 'Sehat',
   photo: '',
+  weight: '',
+  color: '',
+  photo_top: '',
+  photo_bottom: '',
+  photo_left: '',
+  photo_right: '',
+  photo_back: '',
+  video: '',
 }
 
 const ACTIVITY_PREFERENCES = [
@@ -44,6 +52,7 @@ function ManageAnimals() {
   const [animals, setAnimals] = useState([])
   const [categories, setCategories] = useState(['Semua'])
   const [form, setForm] = useState(emptyForm)
+  const [selectedMediaField, setSelectedMediaField] = useState('photo_top')
   const [editingId, setEditingId] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -57,8 +66,12 @@ function ManageAnimals() {
   // Crop modal state
   const [cropModalOpen, setCropModalOpen] = useState(false)
   const [cropSource, setCropSource] = useState('')
+  const [cropTargetField, setCropTargetField] = useState('photo')
+  const [previewMediaOpen, setPreviewMediaOpen] = useState(false)
+  const [previewMediaUrl, setPreviewMediaUrl] = useState('')
   const cropImgRef = useRef(null)
   const cropWrapRef = useRef(null)
+  const cropBoxRef = useRef(null)
   const [zoom, setZoom] = useState(1)
   const [imgOffset, setImgOffset] = useState({ x: 0, y: 0 })
   const [cropImageSize, setCropImageSize] = useState({ width: 0, height: 0 })
@@ -146,6 +159,26 @@ function ManageAnimals() {
     setForm((current) => ({ ...current, [name]: value }))
   }
 
+  const handleGenericMediaUpload = (event, fieldName) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = typeof reader.result === 'string' ? reader.result : ''
+      if (isVideoMedia(dataUrl)) {
+        setForm((current) => ({ ...current, [fieldName]: dataUrl }))
+      } else {
+        setCropTargetField(fieldName)
+        setCropSource(dataUrl)
+        setCropImageSize({ width: 0, height: 0 })
+        setImgOffset({ x: 0, y: 0 })
+        setCropModalOpen(true)
+      }
+    }
+    reader.readAsDataURL(file)
+    event.target.value = ''
+  }
+
   const handlePhotoUpload = (event) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -167,8 +200,9 @@ function ManageAnimals() {
     event.target.value = ''
   }
 
-  const openCropFromPreview = (dataUrl) => {
+  const openCropFromPreview = (dataUrl, fieldName = 'photo') => {
     if (isVideoMedia(dataUrl)) return
+    setCropTargetField(fieldName)
     setCropSource(dataUrl)
     setCropImageSize({ width: 0, height: 0 })
     setImgOffset({ x: 0, y: 0 })
@@ -213,7 +247,7 @@ function ManageAnimals() {
     if (!cropImgRef.current || !cropWrapRef.current) return
     const img = cropImgRef.current
     const wrap = cropWrapRef.current.getBoundingClientRect()
-    const boxSize = Math.floor(Math.min(wrap.width, wrap.height) * 0.8)
+    const boxSize = Math.floor(cropBoxRef.current?.getBoundingClientRect().width || Math.min(wrap.width, wrap.height) * 0.8)
     const scale = Math.max(boxSize / img.naturalWidth, boxSize / img.naturalHeight)
     const width = Math.round(img.naturalWidth * scale)
     const height = Math.round(img.naturalHeight * scale)
@@ -232,10 +266,11 @@ function ManageAnimals() {
     const img = cropImgRef.current
     const wrapRect = cropWrapRef.current.getBoundingClientRect()
     const imgRect = img.getBoundingClientRect()
-    // crop box is centered square inside wrapper
-    const boxSize = Math.floor(Math.min(wrapRect.width, wrapRect.height) * 0.8)
-    const boxLeft = Math.floor((wrapRect.width - boxSize) / 2)
-    const boxTop = Math.floor((wrapRect.height - boxSize) / 2)
+    const boxRect = cropBoxRef.current?.getBoundingClientRect()
+    const fallbackBoxSize = Math.floor(Math.min(wrapRect.width, wrapRect.height) * 0.8)
+    const boxSize = Math.floor(boxRect?.width || fallbackBoxSize)
+    const boxLeft = Math.floor(boxRect ? boxRect.left - wrapRect.left : (wrapRect.width - boxSize) / 2)
+    const boxTop = Math.floor(boxRect ? boxRect.top - wrapRect.top : (wrapRect.height - boxSize) / 2)
 
     // image position relative to wrapper
     const imgLeft = imgRect.left - wrapRect.left
@@ -270,13 +305,13 @@ function ManageAnimals() {
         const res = await axios.post('http://localhost:3000/api/superadmin/upload-photo', { image: dataUrl })
         const url = res?.data?.url
         if (url) {
-          setForm((current) => ({ ...current, photo: url }))
+          setForm((current) => ({ ...current, [cropTargetField]: url }))
         } else {
-          setForm((current) => ({ ...current, photo: dataUrl }))
+          setForm((current) => ({ ...current, [cropTargetField]: dataUrl }))
         }
       } catch {
         // fallback to data URL if upload not available
-        setForm((current) => ({ ...current, photo: dataUrl }))
+        setForm((current) => ({ ...current, [cropTargetField]: dataUrl }))
       } finally {
         setIsUploading(false)
         setCropModalOpen(false)
@@ -289,7 +324,7 @@ function ManageAnimals() {
     if (!cropImgRef.current || !cropWrapRef.current) return
     const img = cropImgRef.current
     const wrap = cropWrapRef.current.getBoundingClientRect()
-    const boxSize = Math.floor(Math.min(wrap.width, wrap.height) * 0.8)
+    const boxSize = Math.floor(cropBoxRef.current?.getBoundingClientRect().width || Math.min(wrap.width, wrap.height) * 0.8)
     const scale = Math.max(boxSize / img.naturalWidth, boxSize / img.naturalHeight)
     const width = Math.round(img.naturalWidth * scale)
     const height = Math.round(img.naturalHeight * scale)
@@ -352,12 +387,20 @@ function ManageAnimals() {
     setForm({
       name: animal.name || '',
       species: animal.species || 'Kucing',
-      gender: animal.gender || 'Perempuan',
+      gender: animal.gender || 'Betina',
       age: animal.age?.toString() || '',
       activity_preference: animal.activity_preference || 'Suka di rumah',
       status: animal.status || 'tersedia',
       condition: animal.condition || 'Sehat',
       photo: animal.photo || '',
+      weight: animal.weight || '',
+      color: animal.color || '',
+      photo_top: animal.photo_top || '',
+      photo_bottom: animal.photo_bottom || '',
+      photo_left: animal.photo_left || '',
+      photo_right: animal.photo_right || '',
+      photo_back: animal.photo_back || '',
+      video: animal.video || '',
     })
     setDrawerOpen(true)
   }
@@ -714,14 +757,14 @@ function ManageAnimals() {
                   value={form.gender}
                   onChange={handleChange}
                 >
-                  <option value="Perempuan">Perempuan</option>
-                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Betina">Betina</option>
+                  <option value="Jantan">Jantan</option>
                 </select>
               </div>
             </div>
 
             <div className="drawer-field">
-              <label htmlFor="photo">Foto Hewan</label>
+              <label htmlFor="photo">Foto Utama Hewan</label>
               <label className="animal-photo-upload">
                 <i className="fas fa-image" aria-hidden="true"></i>
                 <span>Pilih Foto Hewan</span>
@@ -750,6 +793,94 @@ function ManageAnimals() {
               )}
             </div>
 
+            <div className="additional-media-section" style={{ 
+              marginBottom: 24, 
+              padding: 20, 
+              background: '#f8fafc', 
+              border: '1px solid #e2e8f0', 
+              borderRadius: '12px' 
+            }}>
+              <h4 style={{ 
+                margin: '0 0 16px 0', 
+                fontSize: 14, 
+                color: '#334155', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 8 
+              }}>
+                <i className="fas fa-camera-retro" style={{ color: 'var(--accent)' }}></i>
+                Galeri Tambahan & Video (Opsional)
+              </h4>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 12, marginBottom: 4, display: 'block', color: '#64748b', fontWeight: 600 }}>Pilih Sisi / Tipe</label>
+                    <select
+                      value={selectedMediaField}
+                      onChange={(e) => setSelectedMediaField(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: 13,
+                        background: '#fff'
+                      }}
+                    >
+                      <option value="photo_top">Sisi Depan</option>
+                      <option value="photo_back">Sisi Belakang</option>
+                      <option value="video">Video</option>
+                    </select>
+                  </div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 12, marginBottom: 4, display: 'block', color: '#64748b', fontWeight: 600 }}>Upload File</label>
+                    <label className="animal-photo-upload" style={{ minHeight: 42, padding: '0 16px', margin: 0 }}>
+                      <i className="fas fa-upload"></i>
+                      <span>{form[selectedMediaField] ? 'Ganti File' : 'Pilih File'}</span>
+                      <input
+                        type="file"
+                        accept={MEDIA_ACCEPT}
+                        onChange={(e) => handleGenericMediaUpload(e, selectedMediaField)}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                  {/* Media preview for the selected field */}
+                  <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center' }}>
+                    {(() => {
+                      const field = selectedMediaField;
+                      const labels = { photo_top: 'Depan', photo_back: 'Belakang', video: 'Video' };
+                      const value = form[field];
+                      return (
+                        <div className="selected-photo">
+                          {value && (
+                            <button className="photo-clear" type="button" title="Hapus" onClick={() => setForm(c => ({ ...c, [field]: '' }))} style={{ position: 'absolute', top: 2, right: 2, width: 20, height: 20, fontSize: 12, zIndex: 2 }}>
+                              ×
+                            </button>
+                          )}
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 10, textAlign: 'center', padding: '2px 0', zIndex: 1 }}>{labels[field]}</div>
+                          {value ? (
+                            isVideoMedia(value) ? (
+                              <div title="Klik untuk memutar/melihat video full" onClick={() => { setPreviewMediaUrl(value); setPreviewMediaOpen(true); }} style={{ cursor: 'pointer', width: '100%', height: '100%' }}>
+                                <video src={value} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+                              </div>
+                            ) : (
+                              <img src={value} alt={labels[field]} title="Klik foto untuk crop" onClick={() => openCropFromPreview(value, field)} style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }} />
+                            )
+                          ) : (
+                            <span style={{ color: '#64748b', fontSize: 12 }}>{labels[field]} kosong</span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+              </div>
+            </div>
+
             <div className="form-grid">
               <div className="drawer-field">
                 <label htmlFor="age">Umur (tahun)</label>
@@ -762,6 +893,32 @@ function ManageAnimals() {
                   onChange={handleChange}
                   required
                   placeholder="0"
+                />
+              </div>
+
+              <div className="drawer-field">
+                <label htmlFor="weight">Berat (kg/g dsb)</label>
+                <input
+                  type="text"
+                  id="weight"
+                  name="weight"
+                  value={form.weight}
+                  onChange={handleChange}
+                  placeholder="Contoh: 5 kg"
+                />
+              </div>
+            </div>
+
+            <div className="form-grid">
+              <div className="drawer-field">
+                <label htmlFor="color">Warna</label>
+                <input
+                  type="text"
+                  id="color"
+                  name="color"
+                  value={form.color}
+                  onChange={handleChange}
+                  placeholder="Contoh: Putih, Hitam"
                 />
               </div>
 
@@ -829,58 +986,87 @@ function ManageAnimals() {
 
       {/* Crop Modal rendered via portal to avoid transform issues */}
       <CropModal open={cropModalOpen} onClose={() => setCropModalOpen(false)}>
-        <div className="crop-modal-body" role="dialog" aria-modal="true">
-          <div className="crop-modal-head">
-            <div>
-              <h3>Crop Foto Hewan</h3>
-              <p>Geser foto dan atur zoom sampai bagian yang diinginkan masuk kotak.</p>
-            </div>
-            <button type="button" className="crop-close" onClick={() => setCropModalOpen(false)} aria-label="Tutup crop">
-              <i className="fas fa-times" aria-hidden="true"></i>
-            </button>
+      <div className="crop-modal-body animal-crop-modal" role="dialog" aria-modal="true">
+        <div className="crop-modal-head">
+          <div>
+            <h3>Crop Foto Hewan</h3>
+            <p>Geser foto dan atur zoom sampai bagian yang diinginkan masuk kotak.</p>
           </div>
-            <div className="crop-area">
-              <div
-                className="crop-image-wrap"
-                ref={cropWrapRef}
-                onMouseDown={onCropMouseDown}
-                onMouseMove={onCropMouseMove}
-                onMouseUp={onCropMouseUp}
-                onMouseLeave={onCropMouseUp}
-              >
-                <img
-                  ref={cropImgRef}
-                  src={cropSource}
-                  alt="Crop preview"
-                  onLoad={onCropImageLoad}
-                  style={{
-                    width: cropImageSize.width ? `${cropImageSize.width}px` : 'auto',
-                    height: cropImageSize.height ? `${cropImageSize.height}px` : 'auto',
-                    transform: `translate(${imgOffset.x}px, ${imgOffset.y}px) scale(${zoom})`,
-                    cursor: isDraggingCrop ? 'grabbing' : 'grab',
-                  }}
-                />
-
-                {/* fixed centered crop box */}
-                <div className="crop-box" />
-              </div>
-            </div>
-
-            <div className="crop-actions">
-              <div className="crop-zoom-control">
-                <label htmlFor="cropZoom">Zoom</label>
-                <input id="cropZoom" type="range" min="0.5" max="3" step="0.05" value={zoom} onChange={(e) => setZoom(Number(e.target.value))} />
-              </div>
-                <div className="crop-action-buttons">
-                  <button type="button" className="primary-link" onClick={applyCrop} disabled={isUploading}>
-                    {isUploading ? 'Menyimpan...' : 'Simpan Crop'}
-                  </button>
-                  <button className="crop-reset-btn" onClick={resetCrop} type="button">Reset</button>
-                  <button type="button" className="danger-link" onClick={() => setCropModalOpen(false)}>Batal</button>
-                </div>
-            </div>
+          <button type="button" className="crop-close" onClick={() => setCropModalOpen(false)} aria-label="Tutup crop">
+            <i className="fas fa-times" aria-hidden="true"></i>
+          </button>
         </div>
-      </CropModal>
+
+        <div className="crop-stage-shell animal-crop-stage">
+          <div
+            className="crop-image-wrap animal-crop-wrap"
+            ref={cropWrapRef}
+            onMouseDown={onCropMouseDown}
+            onMouseMove={onCropMouseMove}
+            onMouseUp={onCropMouseUp}
+            onMouseLeave={onCropMouseUp}
+            style={{ cursor: isDraggingCrop ? 'grabbing' : 'grab' }}
+          >
+            <img
+              ref={cropImgRef}
+              src={cropSource}
+              alt="Crop preview"
+              onLoad={onCropImageLoad}
+              style={{
+                width: `${cropImageSize.width}px`,
+                height: `${cropImageSize.height}px`,
+                transform: `translate(${imgOffset.x}px, ${imgOffset.y}px) scale(${zoom})`
+              }}
+            />
+            <div className="crop-box animal-crop-box" ref={cropBoxRef} />
+          </div>
+
+          <div className="crop-controls animal-crop-controls">
+            <label><i className="fas fa-search-minus"></i></label>
+            <input
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.05"
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+            />
+            <label><i className="fas fa-search-plus"></i></label>
+          </div>
+        </div>
+
+        <div className="crop-action-buttons">
+          <button type="button" className="primary-link" onClick={applyCrop} disabled={isUploading}>
+            {isUploading ? 'Menyimpan...' : 'Simpan Crop'}
+          </button>
+          <button className="crop-reset-btn" onClick={resetCrop} type="button">Reset</button>
+          <button type="button" className="danger-link" onClick={() => setCropModalOpen(false)}>Batal</button>
+        </div>
+      </div>
+    </CropModal>
+
+      {/* Media Preview Modal */}
+      {previewMediaOpen && (
+        <div 
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={() => setPreviewMediaOpen(false)}
+        >
+          <div style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%', background: '#000', borderRadius: 8, overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+            <button 
+              type="button" 
+              onClick={() => setPreviewMediaOpen(false)}
+              style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', zIndex: 10 }}
+            >
+              <i className="fas fa-times"></i>
+            </button>
+            {isVideoMedia(previewMediaUrl) ? (
+              <video src={previewMediaUrl} controls autoPlay style={{ maxWidth: '100%', maxHeight: '85vh', display: 'block' }} />
+            ) : (
+              <img src={previewMediaUrl} alt="Preview" style={{ maxWidth: '100%', maxHeight: '85vh', display: 'block' }} />
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   )

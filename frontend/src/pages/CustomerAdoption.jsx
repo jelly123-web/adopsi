@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import CustomerLayout from '../components/CustomerLayout'
-import { publishLiveData } from '../utils/liveDataEvents'
+import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
 
 const API_BASE_URL = 'http://localhost:3000/api'
+const defaultAppSettings = {
+  adoption_location: 'Shelter Sahabat Kecil',
+}
 
 const isVideoMedia = (value = '') =>
   value.startsWith('data:video') || /\.(mp4|webm|ogg)(\?|#|$)/i.test(value)
@@ -64,18 +67,19 @@ const quizQuestions = [
   },
 ]
 
-const emptyForm = {
+const getEmptyForm = () => ({
   full_name: localStorage.getItem('authName') || '',
-  phone: '',
+  phone: localStorage.getItem('authPhone') || '',
   email: localStorage.getItem('authEmail') || '',
-  address: '',
-  job: '',
-  family_count: '',
-  housing_type: '',
-  pet_experience: '',
-  reason: '',
+  address: localStorage.getItem('authAddress') || '',
+  job: '-',
+  family_count: '-',
+  housing_type: '-',
+  pet_experience: '-',
+  reason: 'Pesan adopsi melalui aplikasi.',
   document_url: '',
-}
+  pickup_method: '',
+})
 
 function normalizeAnimalActivity(value = '') {
   const text = String(value).toLowerCase()
@@ -192,6 +196,34 @@ function PetMedia({ animal, className = '' }) {
   return <img className={className} src={src} alt={animal?.name || 'Hewan'} />
 }
 
+function CustomerCardIcon({ kind }) {
+  if (kind === 'location') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 3L10 14" />
+        <path d="M21 3L14 21l-4-7-7-4z" />
+      </svg>
+    )
+  }
+
+  if (kind === 'house') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 11.5L12 5l8 6.5" />
+        <path d="M6.5 10.5V19h11v-8.5" />
+        <path d="M10 19v-4.5h4V19" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.2" />
+      <path d="M6.5 18.5c1.3-3 3.3-4.5 5.5-4.5s4.2 1.5 5.5 4.5" />
+    </svg>
+  )
+}
+
 export default function CustomerAdoption() {
   const [searchParams] = useSearchParams()
   const [animals, setAnimals] = useState([])
@@ -199,12 +231,18 @@ export default function CustomerAdoption() {
   const [quizIndex, setQuizIndex] = useState(0)
   const [answers, setAnswers] = useState({})
   const [selectedAnimalId, setSelectedAnimalId] = useState(searchParams.get('animal_id') || '')
-  const [formStep, setFormStep] = useState(1)
-  const [form, setForm] = useState(emptyForm)
-  const [fileName, setFileName] = useState('')
+  const [form, setForm] = useState(getEmptyForm)
   const [message, setMessage] = useState(null)
   const [loading, setLoading] = useState(false)
   const [sentAnimal, setSentAnimal] = useState(null)
+  const [activeMedia, setActiveMedia] = useState(null)
+  const [appSettings, setAppSettings] = useState(() => {
+    try {
+      return { ...defaultAppSettings, ...JSON.parse(localStorage.getItem('appSettings') || '{}') }
+    } catch {
+      return defaultAppSettings
+    }
+  })
 
   const selectedAnimal = useMemo(
     () => animals.find((animal) => String(animal.id) === String(selectedAnimalId)),
@@ -218,7 +256,6 @@ export default function CustomerAdoption() {
     const scored = source.map((animal, index) => ({
       ...animal,
       match: scoreAnimalCompatibility(animal, answers, index),
-      reason: buildReason(animal, answers),
     }))
 
     return scored.sort((a, b) => b.match - a.match).slice(0, 3)
@@ -232,10 +269,35 @@ export default function CustomerAdoption() {
   }, [])
 
   useEffect(() => {
+    axios
+      .get(`${API_BASE_URL}/superadmin/settings`)
+      .then((res) => {
+        const settings = { ...defaultAppSettings, ...(res.data?.data || {}) }
+        setAppSettings(settings)
+        localStorage.setItem('appSettings', JSON.stringify(settings))
+      })
+      .catch(() => {})
+  }, [])
+
+  // Refresh animal list when admin updates animals
+  useEffect(() => {
+    const unsubscribe = subscribeLiveData('animals', () => {
+      axios
+        .get(`${API_BASE_URL}/superadmin/animals?limit=200`)
+        .then((res) => setAnimals(res.data?.data || []))
+        .catch(() => setAnimals([]))
+    })
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
     const animalId = searchParams.get('animal_id')
     if (animalId) {
-      setSelectedAnimalId(animalId)
-      setView('detail')
+      queueMicrotask(() => {
+        setSelectedAnimalId(animalId)
+        setActiveMedia(null)
+        setView('detail')
+      })
     }
   }, [searchParams])
 
@@ -262,28 +324,35 @@ export default function CustomerAdoption() {
   }
 
   const openDetail = (animalId) => {
-    setSelectedAnimalId(String(animalId))
+    setSelectedAnimalId(animalId)
+    setActiveMedia(null)
     showView('detail')
   }
 
   const startForm = () => {
-    setFormStep(1)
+    setForm(getEmptyForm())
     showView('form')
   }
 
-  const handleFile = (event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.onload = () => {
-      setField('document_url', reader.result)
-      setFileName(file.name)
-    }
-    reader.readAsDataURL(file)
-  }
-
   const submitAdoption = async () => {
+    const accountForm = {
+      ...form,
+      full_name: localStorage.getItem('authName') || form.full_name,
+      phone: localStorage.getItem('authPhone') || form.phone,
+      email: localStorage.getItem('authEmail') || form.email,
+      address: localStorage.getItem('authAddress') || form.address,
+      job: form.job || '-',
+      family_count: form.family_count || '-',
+      housing_type: form.housing_type || '-',
+      pet_experience: form.pet_experience || '-',
+      reason: form.reason || 'Pesan adopsi melalui aplikasi.',
+    }
+
+    if (!accountForm.pickup_method) {
+      setMessage({ type: 'error', text: 'Pilih metode pengambilan dulu.' })
+      return
+    }
+
     setLoading(true)
     setMessage(null)
 
@@ -291,13 +360,12 @@ export default function CustomerAdoption() {
       await axios.post(`${API_BASE_URL}/customer/adoption-requests`, {
         user_id: localStorage.getItem('authUserId'),
         animal_id: selectedAnimalId,
-        ...form,
+        ...accountForm,
       })
       publishLiveData('adoptions')
       setSentAnimal(selectedAnimal)
       showView('success')
-      setForm(emptyForm)
-      setFileName('')
+      setForm(getEmptyForm())
     } catch (error) {
       setMessage({ type: 'error', text: error.response?.data?.message || 'Gagal mengirim pengajuan adopsi.' })
     } finally {
@@ -383,7 +451,7 @@ export default function CustomerAdoption() {
                 <b>{animal.match}%</b>
                 <div><i style={{ width: `${animal.match}%` }} /></div>
               </div>
-              <p>{animal.reason}</p>
+              <p>{animal.reason || buildReason(animal, answers)}</p>
               <button type="button" className="customer-main-btn small" onClick={() => openDetail(animal.id)}>
                 <i className="fas fa-heart" /> Ajukan Adopsi
               </button>
@@ -401,10 +469,45 @@ export default function CustomerAdoption() {
     if (!selectedAnimal) return null
     const tags = [selectedAnimal.activity_preference, selectedAnimal.health_condition, selectedAnimal.gender].filter(Boolean)
 
+    const mediaList = [
+      { type: 'photo', url: selectedAnimal.photo },
+      { type: 'photo_top', url: selectedAnimal.photo_top },
+      { type: 'photo_back', url: selectedAnimal.photo_back },
+      { type: 'video', url: selectedAnimal.video },
+    ].filter(m => m.url)
+
+    const mainMediaUrl = activeMedia || selectedAnimal.photo
+
     return (
       <section className="customer-detail-page">
         <div className="customer-detail-gallery">
-          <div className="customer-detail-main-media"><PetMedia animal={selectedAnimal} /></div>
+          <div className="customer-detail-main-media">
+            {isVideoMedia(mainMediaUrl) ? (
+              <video src={mainMediaUrl} controls autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <img src={mainMediaUrl} alt={selectedAnimal.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            )}
+          </div>
+          {mediaList.length > 1 && (
+            <div className="customer-detail-thumbnails" style={{ display: 'flex', gap: 10, marginTop: 10, overflowX: 'auto', paddingBottom: 10 }}>
+              {mediaList.map((media, i) => (
+                <div
+                  key={i}
+                  onClick={() => setActiveMedia(media.url)}
+                  style={{
+                    width: 70, height: 70, flexShrink: 0, borderRadius: 8, overflow: 'hidden',
+                    cursor: 'pointer', border: mainMediaUrl === media.url ? '2px solid var(--accent)' : '2px solid transparent'
+                  }}
+                >
+                  {isVideoMedia(media.url) ? (
+                    <video src={media.url} autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+                  ) : (
+                    <img src={media.url} alt="thumbnail" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="customer-detail-info">
           <div className="customer-detail-badges">
@@ -412,12 +515,12 @@ export default function CustomerAdoption() {
             <span>{selectedAnimal.category_name || selectedAnimal.species || 'Adopsi'}</span>
           </div>
           <h1>{selectedAnimal.name}</h1>
-          <p><i className="fas fa-map-marker-alt" /> Shelter Sahabat Kecil</p>
+          <p><i className="fas fa-map-marker-alt" /> {appSettings.adoption_location || defaultAppSettings.adoption_location}</p>
           <div className="customer-detail-stats">
             <div><strong>{selectedAnimal.age || 0} tahun</strong><span>Umur</span></div>
             <div><strong>{selectedAnimal.weight || '-'}</strong><span>Berat</span></div>
+            <div><strong>{selectedAnimal.color || '-'}</strong><span>Warna</span></div>
             <div><strong>{selectedAnimal.gender || '-'}</strong><span>Gender</span></div>
-            <div><strong>{selectedAnimal.size || 'Kecil'}</strong><span>Ukuran</span></div>
           </div>
           <h3>Tentang {selectedAnimal.name}</h3>
           <p>{selectedAnimal.description || `${selectedAnimal.name} siap menjadi bagian dari keluargamu. Hewan ini sedang menunggu adopter yang tepat.`}</p>
@@ -432,7 +535,9 @@ export default function CustomerAdoption() {
             ))}
           </div>
           <div className="customer-detail-actions">
-            <button type="button" className="customer-main-btn" onClick={startForm}><i className="fas fa-heart" /> Ajukan Adopsi</button>
+            <button type="button" className="customer-main-btn" onClick={startForm} disabled={loading}>
+              {loading ? <><i className="fas fa-spinner fa-spin" /> Memproses...</> : <><i className="fas fa-heart" /> Ajukan Adopsi</>}
+            </button>
             <button type="button" className="customer-outline-btn"><i className="fas fa-share-alt" /></button>
           </div>
         </div>
@@ -453,76 +558,54 @@ export default function CustomerAdoption() {
 
       {message ? <div className={`customer-message ${message.type}`}><i className="fas fa-exclamation-circle" />{message.text}</div> : null}
 
-      {formStep === 1 ? (
-        <div className="customer-adopt-step">
-          <div className="customer-adopt-step-title">
-            <h2>Data Diri</h2>
-            <p>Pastikan data yang kamu isi sudah benar.</p>
-          </div>
-          <div className="customer-form-grid customer-adopt-grid">
-            <label>Nama Lengkap<input value={form.full_name} onChange={(event) => setField('full_name', event.target.value)} required /></label>
-            <label>No. Telepon<input value={form.phone} onChange={(event) => setField('phone', event.target.value)} placeholder="08xxxxxxxxxx" required /></label>
-            <label className="customer-form-wide">Email<input value={form.email} onChange={(event) => setField('email', event.target.value)} /></label>
-            <label className="customer-form-wide">Alamat Lengkap<textarea value={form.address} onChange={(event) => setField('address', event.target.value)} rows={3} required /></label>
-            <label>Pekerjaan<input value={form.job} onChange={(event) => setField('job', event.target.value)} placeholder="Contoh: Karyawan Swasta" /></label>
-            <label>Jumlah Anggota Keluarga<select value={form.family_count} onChange={(event) => setField('family_count', event.target.value)}><option value="">Pilih</option><option>1 orang</option><option>2-3 orang</option><option>4-5 orang</option><option>6+ orang</option></select></label>
-          </div>
-          <div className="customer-adopt-actions end">
-            <button type="button" className="customer-main-btn" onClick={() => setFormStep(2)} disabled={!form.full_name || !form.phone || !form.address}>Selanjutnya <i className="fas fa-arrow-right" /></button>
-          </div>
+      <div className="customer-adopt-step customer-quick-order">
+        <div className="customer-adopt-step-title centered">
+          <h2>Metode Pengambilan</h2>
+          <p>Pilih cara pengambilan hewan. Data akunmu akan dipakai otomatis.</p>
         </div>
-      ) : null}
 
-      {formStep === 2 ? (
-        <div className="customer-adopt-step">
-          <div className="customer-adopt-step-title">
-            <h2>Pengalaman & Kondisi Rumah</h2>
-            <p>Bantu kami memastikan hewan akan nyaman bersamamu.</p>
-          </div>
-          <div className="customer-form-grid customer-adopt-grid">
-            <label className="customer-form-wide">Jenis Tempat Tinggal<select value={form.housing_type} onChange={(event) => setField('housing_type', event.target.value)}><option value="">Pilih</option><option>Rumah dengan halaman luas</option><option>Rumah dengan halaman kecil</option><option>Apartemen</option><option>Kos / kontrakan</option></select></label>
-            <label className="customer-form-wide">Pernah Memelihara Hewan?<select value={form.pet_experience} onChange={(event) => setField('pet_experience', event.target.value)}><option value="">Pilih</option><option>Ya, pernah hewan sejenis</option><option>Ya, pernah hewan lain</option><option>Belum pernah</option></select></label>
-            <label className="customer-form-wide">Alasan Mengadopsi<textarea value={form.reason} onChange={(event) => setField('reason', event.target.value)} rows={3} placeholder="Ceritakan kenapa kamu ingin mengadopsi hewan ini..." required /></label>
-          </div>
-          <label className="customer-upload-box customer-adopt-upload">
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.mp4,.webm,.ogg,image/*,video/*" onChange={handleFile} />
-            <i className="fas fa-cloud-upload-alt" />
-            <strong>{fileName || 'Dokumen pendukung opsional'}</strong>
-            <span>Untuk KTP, foto rumah, atau bukti pendukung jika diminta petugas. Bisa dilewati.</span>
-          </label>
-          <div className="customer-adopt-actions">
-            <button type="button" className="customer-outline-btn" onClick={() => setFormStep(1)}><i className="fas fa-arrow-left" /> Kembali</button>
-            <button type="button" className="customer-main-btn" onClick={() => setFormStep(3)} disabled={!form.reason}>Selanjutnya <i className="fas fa-arrow-right" /></button>
+        <div className="customer-location-card">
+          <span className="customer-card-icon customer-card-icon-location">
+            <CustomerCardIcon kind="location" />
+          </span>
+          <div>
+            <span>Lokasi Tempat Adopsi</span>
+            <strong>{appSettings.adoption_location || defaultAppSettings.adoption_location}</strong>
           </div>
         </div>
-      ) : null}
 
-      {formStep === 3 ? (
-        <div className="customer-adopt-step">
-          <div className="customer-confirm-icon"><i className="fas fa-clipboard-check" /></div>
-          <div className="customer-adopt-step-title centered">
-            <h2>Konfirmasi Pengajuan</h2>
-            <p>Periksa sekali lagi sebelum mengirim.</p>
-          </div>
-          <div className="customer-confirm-card">
-            <div className="customer-confirm-pet">
-              <div><PetMedia animal={selectedAnimal} /></div>
-              <section><strong>{selectedAnimal?.name || '-'}</strong><span>{selectedAnimal?.species || selectedAnimal?.category_name || 'Hewan'}</span></section>
-            </div>
-            <div className="customer-confirm-grid">
-              <div><span>Nama</span><strong>{form.full_name || '-'}</strong></div>
-              <div><span>Telepon</span><strong>{form.phone || '-'}</strong></div>
-              <div><span>Email</span><strong>{form.email || '-'}</strong></div>
-              <div><span>Status</span><strong className="amber">Menunggu Verifikasi</strong></div>
-            </div>
-          </div>
-          <div className="customer-adopt-note"><i className="fas fa-info-circle" /><p>Tim akan memverifikasi pengajuan dalam 1-3 hari kerja. Jika disetujui, kamu akan dihubungi untuk jadwal visitasi dan pengambilan hewan.</p></div>
-          <div className="customer-adopt-actions">
-            <button type="button" className="customer-outline-btn" onClick={() => setFormStep(2)}><i className="fas fa-arrow-left" /> Kembali</button>
-            <button type="button" className="customer-main-btn" onClick={submitAdoption} disabled={loading}><i className="fas fa-paper-plane" /> {loading ? 'Mengirim...' : 'Kirim Pengajuan'}</button>
-          </div>
+        <div className="customer-pickup-options">
+          <button
+            type="button"
+            className={`customer-pickup-option ${form.pickup_method === 'langsung' ? 'selected' : ''}`}
+            onClick={() => setField('pickup_method', 'langsung')}
+          >
+            <span className="customer-pickup-check"><i className="fas fa-check" /></span>
+            <span className="customer-card-icon customer-pickup-icon customer-card-icon-pickup">
+              <CustomerCardIcon kind="house" />
+            </span>
+            <strong>Ambil langsung di tempat</strong>
+          </button>
+          <button
+            type="button"
+            className={`customer-pickup-option ${form.pickup_method === 'antar' ? 'selected' : ''}`}
+            onClick={() => setField('pickup_method', 'antar')}
+          >
+            <span className="customer-pickup-check"><i className="fas fa-check" /></span>
+            <span className="customer-card-icon customer-pickup-icon customer-card-icon-pickup">
+              <CustomerCardIcon kind="person" />
+            </span>
+            <strong>Diantar oleh petugas</strong>
+          </button>
         </div>
-      ) : null}
+
+        <div className="customer-adopt-actions end">
+          <button type="button" className="customer-main-btn" onClick={submitAdoption} disabled={loading || !form.pickup_method}>
+            <i className={loading ? 'fas fa-spinner fa-spin' : 'fas fa-shopping-bag'} />
+            {loading ? 'Memesan...' : 'Pesan Adopsi'}
+          </button>
+        </div>
+      </div>
     </section>
   )
 

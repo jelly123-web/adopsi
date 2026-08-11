@@ -89,7 +89,10 @@ export default function CustomerLayout({ children }) {
   }, [])
 
   useEffect(() => {
-    setReadNotificationIds(getReadNotificationIds(userId))
+    const frame = window.requestAnimationFrame(() => {
+      setReadNotificationIds(getReadNotificationIds(userId))
+    })
+    return () => window.cancelAnimationFrame(frame)
   }, [userId])
 
   const markNotificationsRead = (items = notifications) => {
@@ -193,14 +196,19 @@ export default function CustomerLayout({ children }) {
     const refresh = () => loadNotifications(() => active)
     refresh()
     const unsubscribeAdoptions = subscribeLiveData('adoptions', refresh)
+    const refreshOnFocus = () => refresh()
     window.addEventListener('chat-updated', refresh)
     window.addEventListener('storage', refresh)
-    const timer = window.setInterval(refresh, 3500)
+    window.addEventListener('focus', refreshOnFocus)
+    window.addEventListener('visibilitychange', refreshOnFocus)
+    const timer = window.setInterval(refresh, 3000)
     return () => {
       active = false
       unsubscribeAdoptions()
       window.removeEventListener('chat-updated', refresh)
       window.removeEventListener('storage', refresh)
+      window.removeEventListener('focus', refreshOnFocus)
+      window.removeEventListener('visibilitychange', refreshOnFocus)
       window.clearInterval(timer)
     }
   }, [])

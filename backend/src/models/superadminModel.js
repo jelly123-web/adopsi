@@ -99,7 +99,7 @@ async function listUsers(page = 1, limit = 6, role = "") {
   const countParams = normalizedRole ? [normalizedRole] : []
   
   const { rows: data } = await pool.query(`
-    SELECT id, name, email, role, status, profile_photo, created_at
+    SELECT id, name, email, role, status, profile_photo, created_at, phone, address
     FROM users
     WHERE deleted = FALSE ${roleClause}
     ORDER BY id ASC
@@ -164,16 +164,16 @@ async function updateUser(id, input) {
 
 async function registerUser(input) {
   const pool = await getPool()
-  const { name, email, password } = input
+  const { name, email, password, address, phone } = input
   const role = normalizeRole(input.role)
 
   const result = await pool.query(
     `
-      INSERT INTO users (name, email, password, role, status)
-      VALUES ($1, $2, $3, $4, 'aktif')
-      RETURNING id, name, email, role, status, profile_photo, created_at
+      INSERT INTO users (name, email, password, role, status, address, phone)
+      VALUES ($1, $2, $3, $4, 'aktif', $5, $6)
+      RETURNING id, name, email, role, status, profile_photo, created_at, address, phone
     `,
-    [name, email, hashPassword(password), role],
+    [name, email, hashPassword(password), role, address || null, phone || null],
   )
 
   return result.rows[0]
@@ -183,7 +183,7 @@ async function loginUser({ email, password, role }) {
   const pool = await getPool()
   const { rows: [user] } = await pool.query(
     `
-      SELECT id, name, email, password, role, status, profile_photo, profile_bg_photo
+      SELECT id, name, email, password, role, status, profile_photo, profile_bg_photo, address, phone
       FROM users
       WHERE email = $1 AND deleted = FALSE
       LIMIT 1
@@ -206,13 +206,14 @@ async function loginUser({ email, password, role }) {
     role: normalizeRole(user.role),
     status: user.status,
     profile_photo: user.profile_photo || "",
+    address: user.address || "",
+    phone: user.phone || "",
   }
 }
 
 async function loginOrRegisterGoogleUser({ email, name = "" }) {
   const pool = await getPool()
   const normalizedEmail = String(email || "").trim().toLowerCase()
-  const displayName = String(name || "").trim() || normalizedEmail.split("@")[0] || "Customer"
 
   if (!normalizedEmail) {
     throw new Error("Email Google wajib diisi.")
@@ -220,7 +221,7 @@ async function loginOrRegisterGoogleUser({ email, name = "" }) {
 
   const { rows: [existingUser] } = await pool.query(
     `
-      SELECT id, name, email, role, status, profile_photo
+      SELECT id, name, email, role, status, profile_photo, address, phone
       FROM users
       WHERE LOWER(email) = $1 AND deleted = FALSE
       LIMIT 1
@@ -237,26 +238,12 @@ async function loginOrRegisterGoogleUser({ email, name = "" }) {
       role: normalizeRole(existingUser.role),
       status: existingUser.status,
       profile_photo: existingUser.profile_photo || "",
+      address: existingUser.address || "",
+      phone: existingUser.phone || "",
     }
   }
 
-  const { rows: [createdUser] } = await pool.query(
-    `
-      INSERT INTO users (name, email, password, role, status)
-      VALUES ($1, $2, NULL, 'costumer', 'aktif')
-      RETURNING id, name, email, role, status, profile_photo
-    `,
-    [displayName, normalizedEmail],
-  )
-
-  return {
-    id: createdUser.id,
-    name: createdUser.name,
-    email: createdUser.email,
-    role: normalizeRole(createdUser.role),
-    status: createdUser.status,
-    profile_photo: createdUser.profile_photo || "",
-  }
+  return null
 }
 
 async function requestPasswordReset(email) {
@@ -421,7 +408,34 @@ async function listAnimals(page = 1, limit = 10, search = '', species = '') {
 
   const { rows: data } = await pool.query(
     `
-      SELECT id, name, species, gender, age, activity_preference, status, condition, photo, created_at
+      SELECT
+        id,
+        name,
+        species,
+        gender,
+        age,
+        activity_preference,
+        CASE
+          WHEN status = 'diadopsi' AND NOT EXISTS (
+            SELECT 1
+            FROM adoption_requests ar
+            WHERE ar.animal_id = animals.id
+              AND ar.deleted = FALSE
+              AND ar.status = 'disetujui'
+          ) THEN 'tersedia'
+          ELSE status
+        END AS status,
+        condition,
+        photo,
+        weight,
+        color,
+        photo_top,
+        photo_bottom,
+        photo_left,
+        photo_right,
+        photo_back,
+        video,
+        created_at
       FROM animals
       WHERE deleted = FALSE AND (name ILIKE $3 OR species ILIKE $3 OR activity_preference ILIKE $3 OR condition ILIKE $3)
       ${speciesClause}
@@ -462,14 +476,14 @@ async function softDeleteAllAnimals({ deletedBy, deletedIp }) {
 
 async function createAnimal(input) {
   const pool = await getPool()
-  const { name, species, gender, age, activity_preference, status, condition, photo } = input
+  const { name, species, gender, age, activity_preference, status, condition, photo, weight, color, photo_top, photo_bottom, photo_left, photo_right, photo_back, video } = input
   const result = await pool.query(
     `
-      INSERT INTO animals (name, species, gender, age, activity_preference, status, condition, photo)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO animals (name, species, gender, age, activity_preference, status, condition, photo, weight, color, photo_top, photo_bottom, photo_left, photo_right, photo_back, video)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING id
     `,
-    [name, species, gender, age, activity_preference, status, condition, photo],
+    [name, species, gender, age, activity_preference, status, condition, photo, weight, color, photo_top, photo_bottom, photo_left, photo_right, photo_back, video],
   )
 
   return result.rows[0].id
@@ -477,14 +491,14 @@ async function createAnimal(input) {
 
 async function updateAnimal(id, input) {
   const pool = await getPool()
-  const { name, species, gender, age, activity_preference, status, condition, photo } = input
+  const { name, species, gender, age, activity_preference, status, condition, photo, weight, color, photo_top, photo_bottom, photo_left, photo_right, photo_back, video } = input
   const result = await pool.query(
     `
       UPDATE animals
-      SET name = $1, species = $2, gender = $3, age = $4, activity_preference = $5, status = $6, condition = $7, photo = $8
-      WHERE id = $9 AND deleted = FALSE
+      SET name = $1, species = $2, gender = $3, age = $4, activity_preference = $5, status = $6, condition = $7, photo = $8, weight = $9, color = $10, photo_top = $11, photo_bottom = $12, photo_left = $13, photo_right = $14, photo_back = $15, video = $16
+      WHERE id = $17 AND deleted = FALSE
     `,
-    [name, species, gender, age, activity_preference, status, condition, photo, id],
+    [name, species, gender, age, activity_preference, status, condition, photo, weight, color, photo_top, photo_bottom, photo_left, photo_right, photo_back, video, id],
   )
 
   return result.rowCount
@@ -534,7 +548,7 @@ async function deleteAllDeletedAnimals() {
 async function listDeletedAnimals() {
   const pool = await getPool()
   const { rows } = await pool.query(`
-    SELECT id, name, species, gender, age, activity_preference, status, photo, deleted, deleted_by, deleted_at, deleted_ip
+    SELECT id, name, species, gender, age, activity_preference, status, photo, weight, color, photo_top, photo_bottom, photo_left, photo_right, photo_back, video, deleted, deleted_by, deleted_at, deleted_ip
     FROM animals
     WHERE deleted = TRUE
     ORDER BY deleted_at DESC
@@ -665,6 +679,7 @@ async function listAdoptionRequests() {
       ar.reason,
       ar.document_url,
       ar.rejection_reason,
+      ar.pickup_method,
       ar.pickup_date,
       ar.pickup_status,
       ar.pickup_notified_at,
@@ -695,6 +710,7 @@ async function createAdoptionRequest(input) {
     pet_experience = "",
     reason = "",
     document_url = "",
+    pickup_method = "",
   } = input
 
   const { rows: [existing] } = await pool.query(
@@ -730,12 +746,13 @@ async function createAdoptionRequest(input) {
         pet_experience,
         reason,
         document_url,
-        status
+        status,
+        pickup_method
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending')
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', $12)
       RETURNING id
     `,
-    [user_id, animal_id, full_name, phone, address, job, family_count, housing_type, pet_experience, reason, document_url],
+    [user_id, animal_id, full_name, phone, address, job, family_count, housing_type, pet_experience, reason, document_url, pickup_method],
   )
 
   return result.rows[0].id
@@ -743,9 +760,13 @@ async function createAdoptionRequest(input) {
 
 async function updateAdoptionRequest(id, input = {}) {
   const pool = await getPool()
+  const normalizedStatus = Object.prototype.hasOwnProperty.call(input, "status")
+    ? String(input.status || "").trim().toLowerCase()
+    : ""
   const allowedFields = {
     status: "status",
     pickup_date: "pickup_date",
+    pickup_method: "pickup_method",
     pickup_status: "pickup_status",
     pickup_notified_at: "pickup_notified_at",
     pickup_updated_at: "pickup_updated_at",
@@ -777,9 +798,50 @@ async function updateAdoptionRequest(id, input = {}) {
   if (
     result.rowCount &&
     Object.prototype.hasOwnProperty.call(input, "status") &&
-    input.status === "disetujui"
+    normalizedStatus === "disetujui"
   ) {
     await pool.query("UPDATE animals SET status = 'diadopsi' WHERE id = (SELECT animal_id FROM adoption_requests WHERE id = $1 AND deleted = FALSE)", [id])
+  }
+
+  if (
+    result.rowCount &&
+    Object.prototype.hasOwnProperty.call(input, "status") &&
+    normalizedStatus === "ditolak"
+  ) {
+    const { rows: [requestRow] } = await pool.query(
+      `
+        SELECT animal_id
+        FROM adoption_requests
+        WHERE id = $1 AND deleted = FALSE
+        LIMIT 1
+      `,
+      [id],
+    )
+
+    if (requestRow?.animal_id) {
+      const { rows: [activeRequest] } = await pool.query(
+        `
+          SELECT id
+          FROM adoption_requests
+          WHERE animal_id = $1
+            AND deleted = FALSE
+            AND status = 'disetujui'
+          LIMIT 1
+        `,
+        [requestRow.animal_id],
+      )
+
+      if (!activeRequest) {
+        await pool.query(
+          `
+            UPDATE animals
+            SET status = 'tersedia'
+            WHERE id = $1
+          `,
+          [requestRow.animal_id],
+        )
+      }
+    }
   }
 
   return result.rowCount
@@ -1173,7 +1235,7 @@ async function getAccountProfile(userId) {
   const pool = await getPool()
   const { rows: [user] } = await pool.query(
     `
-      SELECT id, name, email, password, role, status, profile_photo
+      SELECT id, name, email, password, role, status, profile_photo, address, phone
       FROM users
       WHERE id = $1 AND deleted = FALSE
       LIMIT 1
@@ -1193,6 +1255,8 @@ async function getAccountProfile(userId) {
     status: user.status,
     profile_photo: user.profile_photo || "",
     profile_bg_photo: user.profile_bg_photo || "",
+    address: user.address || "",
+    phone: user.phone || "",
     admin_name: user.name,
     admin_email: user.email,
     admin_avatar: user.profile_photo || "",
@@ -1206,6 +1270,8 @@ async function updateAccountProfile(userId, input = {}) {
   const pool = await getPool()
   const name = String(input.admin_name || input.name || "").trim()
   const email = String(input.admin_email || input.email || "").trim()
+  const phone = String(input.admin_phone || input.phone || "").trim()
+  const address = String(input.admin_address || input.address || "").trim()
   const photo = input.admin_avatar ?? input.profile_photo ?? ""
   const background = input.admin_background ?? input.profile_bg_photo ?? input.profile_background ?? ""
   const currentPassword = input.current_password || ""
@@ -1254,11 +1320,13 @@ async function updateAccountProfile(userId, input = {}) {
             profile_photo = $3,
             profile_bg_photo = $4,
             password = $5,
+            phone = $6,
+            address = $7,
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $6 AND deleted = FALSE
-        RETURNING id, name, email, role, status, profile_photo, profile_bg_photo, password
+        WHERE id = $8 AND deleted = FALSE
+        RETURNING id, name, email, role, status, profile_photo, profile_bg_photo, address, phone, password
       `,
-      [name, email, photo || null, background || null, nextPassword, id],
+      [name, email, photo || null, background || null, nextPassword, phone, address, id],
     )
 
     if (normalizeRole(updated.role) === "superadmin") {

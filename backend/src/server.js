@@ -1,8 +1,10 @@
 const express = require("express")
 const cors = require("cors")
-require("dotenv").config()
+const path = require("path")
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") })
 
 const dashboardRoutes = require("./routes/dashboardRoutes")
+const superadminController = require("./controllers/superadminController")
 const { initializeDatabase } = require("./config/database")
 
 const app = express()
@@ -18,6 +20,8 @@ app.use((req, res, next) => {
 })
 
 app.use("/api", dashboardRoutes)
+app.get("/auth/google", superadminController.startGoogleAuth)
+app.get("/auth/google/callback", superadminController.handleGoogleCallback)
 
 app.get("/", (req, res) => {
   res.json({

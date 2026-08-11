@@ -154,6 +154,7 @@ async function initializeDatabase() {
       deleted_by VARCHAR(255) NULL,
       deleted_at TIMESTAMP NULL,
       deleted_ip VARCHAR(45) NULL,
+      pickup_method VARCHAR(80) NULL,
       CONSTRAINT adoption_requests_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       CONSTRAINT adoption_requests_animal_fk FOREIGN KEY (animal_id) REFERENCES animals(id) ON DELETE CASCADE
     )
@@ -172,6 +173,7 @@ async function initializeDatabase() {
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS reason TEXT NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS document_url TEXT NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS rejection_reason TEXT NULL`)
+  await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pickup_method VARCHAR(80) NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pickup_date TIMESTAMP NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pickup_status VARCHAR(80) NULL`)
   await pool.query(`ALTER TABLE adoption_requests ADD COLUMN IF NOT EXISTS pickup_notified_at TIMESTAMP NULL`)
@@ -279,6 +281,7 @@ async function initializeDatabase() {
     ["dashboard_bg_apk", ""],
     ["admin_name", "Super Admin"],
     ["admin_email", "admin@adopsi.test"],
+    ["adoption_location", "Shelter Sahabat Kecil"],
   ]
   const { rows: [settingsCountRow] } = await pool.query("SELECT COUNT(*) AS count FROM settings")
   if (Number(settingsCountRow.count) === 0) {

@@ -61,6 +61,7 @@ const defaultAppSettings = {
   warna_apk: '#0EA5E9',
   logo_apk: 'A',
   dashboard_bg_apk: '',
+  adoption_location: 'Shelter Sahabat Kecil',
 }
 
 const isVideoMedia = (value = '') => value.startsWith('data:video') || /\.(mp4|webm|ogg)(\?|#|$)/i.test(value)

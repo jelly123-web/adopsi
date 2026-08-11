@@ -49,9 +49,22 @@ export default function CustomerStatus() {
         .then((res) => { if (active) setRequests(res.data?.data || []) })
         .catch(() => { if (active) setRequests([]) })
     }
+
+    const refreshOnFocus = () => load()
+
     load()
     const unsub = subscribeLiveData('adoptions', load)
-    return () => { active = false; unsub() }
+    const timer = window.setInterval(load, 3000)
+    window.addEventListener('focus', refreshOnFocus)
+    window.addEventListener('visibilitychange', refreshOnFocus)
+
+    return () => {
+      active = false
+      unsub()
+      window.clearInterval(timer)
+      window.removeEventListener('focus', refreshOnFocus)
+      window.removeEventListener('visibilitychange', refreshOnFocus)
+    }
   }, [])
 
   const confirmSchedule = async (requestId) => {
@@ -127,6 +140,7 @@ export default function CustomerStatus() {
                         <div>
                           <strong>Jadwal Pengambilan Hewan</strong>
                           <p>{formatDateTime(schedule.date)}</p>
+                          <p style={{ fontSize: '0.85em', color: '#64748b' }}>Metode: {r.pickup_method || 'Pengambilan Mandiri'}</p>
                           <span>{schedule.status || 'Belum Dikonfirmasi Customer'}</span>
                           {needsConfirm && (
                             <button type="button" onClick={() => confirmSchedule(r.id)}>
