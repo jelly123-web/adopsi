@@ -1,29 +1,75 @@
+name: adopsi
+
 services:
   postgres:
-    image: postgres:17
-    container_name: postgres_adopsi
-    restart: always
+    image: postgres:17-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: adopsi
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB:-adopsi}
+      POSTGRES_USER: ${POSTGRES_USER:-adopsi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.production}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    shm_size: 128mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - internal
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin_adopsi
-    restart: always
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: jelly@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: jelly1245
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-adopsi}
+      DB_USERNAME: ${POSTGRES_USER:-adopsi}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.production}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "3000"
+    mem_limit: 256m
+    cpus: 0.50
+    pids_limit: 100
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - internal
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
     ports:
-      - "8081:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - "${HTTP_PORT:-80}:80"
+    mem_limit: 96m
+    cpus: 0.25
+    pids_limit: 50
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - internal
 
 volumes:
   postgres_data:
-  pgadmin_data:
+
+networks:
+  internal:
+    driver: bridge
