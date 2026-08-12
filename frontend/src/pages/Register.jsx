@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../utils/api'
 import { publishLiveData } from '../utils/liveDataEvents'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 const defaultAppSettings = {
   nama_apk: 'Sahabat Kecil',
   warna_apk: '#60A5FA',
@@ -115,7 +114,7 @@ function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/superadmin/settings`)
+    axios.get(`/superadmin/settings`)
       .then((response) => {
         const settings = response.data?.data || {}
         localStorage.setItem('appSettings', JSON.stringify(settings))
@@ -178,7 +177,7 @@ function Register() {
 
     try {
       setLoading(true)
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+      const response = await axios.post(`/auth/register`, {
         name: form.name,
         email: form.email,
         phone: form.phone,
@@ -374,7 +373,7 @@ function Register() {
         </div>
 
         <div className="panel-body">
-          <h2>Daftar Akun <span className="dog-emoji">🐕</span></h2>
+          <h2>Daftar Akun <span className="dog-emoji">Ã°Å¸Ââ€¢</span></h2>
           <p>Silahkan daftar.</p>
 
           <form className="panel-form" onSubmit={handleSubmit}>

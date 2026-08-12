@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../utils/api'
 import CustomerLayout from '../components/CustomerLayout'
 import { subscribeLiveData } from '../utils/liveDataEvents'
 
@@ -19,8 +19,8 @@ const uniqueLabels = (items = []) => {
 }
 
 const CATEGORY_ICONS = {
-  anjing: '🐕', kucing: '🐱', kelinci: '🐰', burung: '🐦',
-  hamster: '🐹', ikan: '🐠', reptil: '🦎', default: '🐾',
+  anjing: 'ðŸ•', kucing: 'ðŸ±', kelinci: 'ðŸ°', burung: 'ðŸ¦',
+  hamster: 'ðŸ¹', ikan: 'ðŸ ', reptil: 'ðŸ¦Ž', default: 'ðŸ¾',
 }
 const getCategoryIcon = (cat = '') => CATEGORY_ICONS[normalizeValue(cat)] || CATEGORY_ICONS.default
 
@@ -34,7 +34,7 @@ const statusColor = (status = '') => {
 
 function AnimalMedia({ src, alt = '', className = '' }) {
   if (!src) return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', fontSize: 48 }}>🐾</div>
+    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', fontSize: 48 }}>ðŸ¾</div>
   )
   if (isVideoMedia(src)) return <video className={className} src={src} autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
   return <img className={className} src={src} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s cubic-bezier(.22,1,.36,1)' }} />
@@ -67,8 +67,8 @@ export default function CustomerAnimals() {
     let active = true
     const load = () => {
       Promise.allSettled([
-        axios.get('http://localhost:3000/api/superadmin/animals'),
-        axios.get('http://localhost:3000/api/superadmin/categories'),
+        axios.get('/superadmin/animals'),
+        axios.get('/superadmin/categories'),
       ]).then(([animalsRes, catsRes]) => {
         if (!active) return
         const animalsData = animalsRes.status === 'fulfilled' ? animalsRes.value.data?.data || [] : []
@@ -101,7 +101,7 @@ export default function CustomerAnimals() {
           <div className="customer-animals-hero" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <div style={{ width: 28, height: 28, background: '#FEF3C7', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🐾</div>
+                <div style={{ width: 28, height: 28, background: '#FEF3C7', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>ðŸ¾</div>
                 <span style={{ fontSize: 10, fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Temukan Sahabatmu</span>
               </div>
               <h1 style={{ fontSize: 32, fontWeight: 900, color: '#0F172A', margin: 0, letterSpacing: '-0.5px' }}>Daftar Hewan</h1>
@@ -189,7 +189,7 @@ export default function CustomerAnimals() {
                       <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: '#0F172A' }}>{animal.name}</h3>
                       <span style={{ fontSize: 10, color: '#94A3B8' }}>{animal.gender || ''}</span>
                     </div>
-                    <p style={{ margin: '3px 0 0', fontSize: 11, color: '#94A3B8' }}>{getAnimalCategory(animal) || 'Hewan'} · {animal.age || 0} tahun</p>
+                    <p style={{ margin: '3px 0 0', fontSize: 11, color: '#94A3B8' }}>{getAnimalCategory(animal) || 'Hewan'} Â· {animal.age || 0} tahun</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, color: '#94A3B8' }}>
                       <i className="fas fa-map-marker-alt" style={{ fontSize: 10 }}></i>
                       <span style={{ fontSize: 10 }}>Shelter Adopsi</span>
@@ -202,7 +202,7 @@ export default function CustomerAnimals() {
 
           {filteredAnimals.length === 0 && (
             <div style={{ textAlign: 'center', padding: '64px 24px', color: '#94A3B8' }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>ðŸ”</div>
               <strong style={{ display: 'block', fontSize: 16, color: '#475569', marginBottom: 8 }}>Tidak ada hewan yang cocok</strong>
               <p style={{ fontSize: 13 }}>Coba ubah pencarian atau filter kategori.</p>
             </div>

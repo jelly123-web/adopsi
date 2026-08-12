@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../utils/api'
 import CustomerLayout from '../components/CustomerLayout'
 import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 
 function getStatusCls(status) {
   if (status === 'disetujui') return 'approved'
@@ -45,7 +44,7 @@ export default function CustomerStatus() {
     let active = true
     const load = () => {
       axios
-        .get(`${API_BASE_URL}/superadmin/adoption-requests`)
+        .get(`/superadmin/adoption-requests`)
         .then((res) => { if (active) setRequests(res.data?.data || []) })
         .catch(() => { if (active) setRequests([]) })
     }
@@ -70,7 +69,7 @@ export default function CustomerStatus() {
   const confirmSchedule = async (requestId) => {
     const now = new Date().toISOString()
     try {
-      await axios.put(`${API_BASE_URL}/superadmin/adoption-requests/${requestId}`, {
+      await axios.put(`/superadmin/adoption-requests/${requestId}`, {
         pickup_status: 'Dikonfirmasi',
         pickup_updated_at: now,
       })
@@ -105,7 +104,7 @@ export default function CustomerStatus() {
                 <strong>Belum ada pengajuan adopsi</strong>
                 <p>Yuk mulai adopsi hewan pertamamu!</p>
                 <Link to="/customer/animals" className="customer-main-btn small" style={{ marginTop: 10 }}>
-                  🐾 Jelajahi Hewan
+                  Ã°Å¸ÂÂ¾ Jelajahi Hewan
                 </Link>
               </div>
             ) : (
@@ -127,7 +126,7 @@ export default function CustomerStatus() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <strong>{r.animal_name || 'Hewan Adopsi'}</strong>
-                    <p>{r.animal_species || 'Hewan'} · Diajukan {formatDate(r.created_at)}</p>
+                    <p>{r.animal_species || 'Hewan'} Ã‚Â· Diajukan {formatDate(r.created_at)}</p>
                     {r.status === 'ditolak' && r.rejection_reason && (
                       <div className="customer-reject-note" style={{ marginTop: 8 }}>
                         <i className="fas fa-info-circle" />

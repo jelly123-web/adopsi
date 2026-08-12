@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import CustomerLayout from '../components/CustomerLayout'
 import MediaAvatar, { DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 const storageKey = 'petugasChatReplies'
 
 const QUICK_TOPICS = [
@@ -30,7 +29,7 @@ export default function CustomerChat() {
   const syncChatData = async (resolvedId = userIdRef.current) => {
     if (!resolvedId) return
     try {
-      const res = await axios.get(`${API_BASE_URL}/chat-messages`)
+      const res = await axios.get(`/chat-messages`)
       if (res.data?.success && Array.isArray(res.data.data)) {
         const dbMessages = res.data.data
         const localData = JSON.parse(localStorage.getItem(storageKey) || '{}')
@@ -71,7 +70,7 @@ export default function CustomerChat() {
       }
 
       try {
-        const res = await axios.get(`${API_BASE_URL}/superadmin/users?role=costumer&limit=100`)
+        const res = await axios.get(`/superadmin/users?role=costumer&limit=100`)
         const payload = res.data?.data
         const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : []
         const found = rows.find((u) =>
@@ -115,9 +114,9 @@ export default function CustomerChat() {
     const loadContactProfiles = async () => {
       try {
         const [petugasRes, adminRes, superadminRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/superadmin/users?role=petugas&limit=50`),
-          axios.get(`${API_BASE_URL}/superadmin/users?role=admin&limit=50`),
-          axios.get(`${API_BASE_URL}/superadmin/users?role=superadmin&limit=50`),
+          axios.get(`/superadmin/users?role=petugas&limit=50`),
+          axios.get(`/superadmin/users?role=admin&limit=50`),
+          axios.get(`/superadmin/users?role=superadmin&limit=50`),
         ])
         if (!active) return
         setContactProfiles({
@@ -169,7 +168,7 @@ export default function CustomerChat() {
     window.dispatchEvent(new Event('chat-updated'))
     setInputMessage('')
     try {
-      await axios.post(`${API_BASE_URL}/chat-messages`, {
+      await axios.post(`/chat-messages`, {
         msgId,
         userId: Number(activeUserId),
         sender: 'customer',
@@ -196,7 +195,7 @@ export default function CustomerChat() {
     window.dispatchEvent(new Event('chat-updated'))
 
     try {
-      await axios.delete(`${API_BASE_URL}/chat-messages/${encodeURIComponent(msgId)}`)
+      await axios.delete(`/chat-messages/${encodeURIComponent(msgId)}`)
     } catch (error) {
       console.error('Delete chat failed', error)
     }

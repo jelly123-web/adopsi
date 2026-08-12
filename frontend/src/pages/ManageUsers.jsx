@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import { Link } from 'react-router-dom'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
@@ -28,7 +28,7 @@ function ManageUsers() {
 
   const loadUsers = async (page = 1) => {
     try {
-      const response = await axios.get('/api/superadmin/users', {
+      const response = await axios.get('/superadmin/users', {
         params: { page, limit: 6 },
       })
       setUsers(response.data.data || [])
@@ -45,7 +45,7 @@ function ManageUsers() {
     let active = true
     ;(async () => {
       try {
-        const response = await axios.get('/api/superadmin/users', {
+        const response = await axios.get('/superadmin/users', {
           params: { page: 1, limit: 6 },
         })
         if (active) {
@@ -78,9 +78,9 @@ function ManageUsers() {
     event.preventDefault()
     try {
       if (editingId) {
-        await axios.put(`/api/superadmin/users/${editingId}`, form)
+        await axios.put(`/superadmin/users/${editingId}`, form)
       } else {
-        await axios.post('/api/superadmin/users', form)
+        await axios.post('/superadmin/users', form)
       }
       await loadUsers(1)
       publishLiveData('users')
@@ -118,7 +118,7 @@ function ManageUsers() {
   const handleDelete = async (id) => {
     if (!window.confirm('Hapus user ini?')) return
     try {
-      await axios.delete(`/api/superadmin/users/${id}`)
+      await axios.delete(`/superadmin/users/${id}`)
       await loadUsers(currentPage)
       publishLiveData('users')
       publishLiveData('customers')
@@ -140,7 +140,7 @@ function ManageUsers() {
       }
       
       for (const user of usersToDelete) {
-        await axios.delete(`/api/superadmin/users/${user.id}`)
+        await axios.delete(`/superadmin/users/${user.id}`)
       }
       
       await loadUsers(1)
@@ -376,7 +376,7 @@ function ManageUsers() {
                     }
                   }}
                 >
-                  ◀
+                  Ã¢â€”â‚¬
                 </button>
 
                 <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
@@ -461,7 +461,7 @@ function ManageUsers() {
                     }
                   }}
                 >
-                  ▶
+                  Ã¢â€“Â¶
                 </button>
               </div>
             </div>

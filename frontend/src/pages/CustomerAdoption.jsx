@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../utils/api'
 import CustomerLayout from '../components/CustomerLayout'
 import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 const defaultAppSettings = {
   adoption_location: 'Shelter Sahabat Kecil',
 }
@@ -263,14 +262,14 @@ export default function CustomerAdoption() {
 
   useEffect(() => {
     axios
-      .get(`${API_BASE_URL}/superadmin/animals?limit=200`)
+      .get(`/superadmin/animals?limit=200`)
       .then((res) => setAnimals(res.data?.data || []))
       .catch(() => setAnimals([]))
   }, [])
 
   useEffect(() => {
     axios
-      .get(`${API_BASE_URL}/superadmin/settings`)
+      .get(`/superadmin/settings`)
       .then((res) => {
         const settings = { ...defaultAppSettings, ...(res.data?.data || {}) }
         setAppSettings(settings)
@@ -283,7 +282,7 @@ export default function CustomerAdoption() {
   useEffect(() => {
     const unsubscribe = subscribeLiveData('animals', () => {
       axios
-        .get(`${API_BASE_URL}/superadmin/animals?limit=200`)
+        .get(`/superadmin/animals?limit=200`)
         .then((res) => setAnimals(res.data?.data || []))
         .catch(() => setAnimals([]))
     })
@@ -357,7 +356,7 @@ export default function CustomerAdoption() {
     setMessage(null)
 
     try {
-      await axios.post(`${API_BASE_URL}/customer/adoption-requests`, {
+      await axios.post(`/customer/adoption-requests`, {
         user_id: localStorage.getItem('authUserId'),
         animal_id: selectedAnimalId,
         ...accountForm,

@@ -1,4 +1,4 @@
-const API_ORIGIN = 'http://localhost:3000'
+const API_ORIGIN = ''
 
 export const DEFAULT_USER_PHOTO =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%2360A5FA'/%3E%3Cstop offset='1' stop-color='%232563EB'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='96' height='96' rx='48' fill='%23EFF6FF'/%3E%3Ccircle cx='48' cy='36' r='17' fill='url(%23g)'/%3E%3Cpath d='M22 78c4-17 16-27 26-27s22 10 26 27' fill='url(%23g)'/%3E%3C/svg%3E"

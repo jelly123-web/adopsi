@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 
 const getAuthSnapshot = () => {
   const role = localStorage.getItem('authRole') || 'superadmin'
@@ -123,7 +122,7 @@ function SuperadminNavbar({
     const checkNotifications = async () => {
       const items = []
       try {
-        const response = await axios.get(`${API_BASE_URL}/superadmin/adoption-requests`)
+        const response = await axios.get(`/superadmin/adoption-requests`)
         ;(response.data?.data || [])
           .filter((item) => item.status === 'pending' || item.status === 'menunggu' || item.status === 'Menunggu')
           .slice(0, 6)
@@ -143,7 +142,7 @@ function SuperadminNavbar({
       }
 
       try {
-        const response = await axios.get(`${API_BASE_URL}/chat-messages`)
+        const response = await axios.get(`/chat-messages`)
         ;(response.data?.data || [])
           .filter((message) => {
             if (message.sender !== 'customer') return false

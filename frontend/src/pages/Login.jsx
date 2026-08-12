@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../utils/api'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 const defaultAppSettings = {
   nama_apk: 'Sahabat Kecil',
   warna_apk: '#60a5fa',
@@ -194,8 +193,8 @@ function Login() {
   useEffect(() => {
     let alive = true
     Promise.allSettled([
-      axios.get(`${API_BASE_URL}/superadmin/animals?page=1&limit=12`),
-      axios.get(`${API_BASE_URL}/superadmin/settings`),
+      axios.get(`/superadmin/animals?page=1&limit=12`),
+      axios.get(`/superadmin/settings`),
     ])
       .then(([animalsResult, settingsResult]) => {
         if (!alive) return
@@ -286,7 +285,7 @@ function Login() {
     setLoading(true)
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, form)
+      const response = await axios.post(`/auth/login`, form)
       const user = response.data?.data
       localStorage.setItem('authUserId', String(user.id))
         localStorage.setItem('authName', user.name)
@@ -342,7 +341,7 @@ function Login() {
     let active = true
     const frame = window.requestAnimationFrame(() => {
       setLoading(true)
-      axios.get(`${API_BASE_URL}/auth/google/session`, {
+      axios.get(`/auth/google/session`, {
         params: { ticket: googleTicket },
       })
         .then((response) => {
@@ -368,7 +367,7 @@ function Login() {
   }, [completeLogin, location.search, navigate])
 
   useEffect(() => {
-    const expectedOrigin = new URL(API_BASE_URL).origin
+    const expectedOrigin = window.location.origin
 
     const handleGoogleMessage = (event) => {
       if (event.origin !== expectedOrigin) return
@@ -388,7 +387,7 @@ function Login() {
       }
 
       setLoading(true)
-      axios.get(`${API_BASE_URL}/auth/google/session`, {
+      axios.get(`/auth/google/session`, {
         params: { ticket: payload.ticket },
       })
         .then((response) => {
@@ -428,7 +427,7 @@ function Login() {
     const left = window.screenX + Math.max(0, (window.outerWidth - width) / 2)
     const top = window.screenY + Math.max(0, (window.outerHeight - height) / 2)
     const popup = window.open(
-      `${API_BASE_URL}/auth/google?popup=1`,
+      `/auth/google?popup=1`,
       'google-login',
       `width=${width},height=${height},left=${Math.round(left)},top=${Math.round(top)},resizable=yes,scrollbars=yes`,
     )
@@ -456,7 +455,7 @@ function Login() {
     setError('')
     setLoading(true)
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email })
+      const response = await axios.post(`/auth/forgot-password`, { email })
       const resetUrl = response.data?.data?.reset_url || ''
       if (resetUrl) {
         try {
@@ -480,7 +479,7 @@ function Login() {
     setError('')
     setLoading(true)
     try {
-      await axios.post(`${API_BASE_URL}/auth/reset-password`, {
+      await axios.post(`/auth/reset-password`, {
         token: resetToken,
         password: resetPassword,
       })
@@ -968,7 +967,7 @@ function Login() {
             </div>
           </div>
           <div className="footer-bottom">
-            <span>© 2026 {appSettings.nama_apk}. Setiap hewan berhak atas rumah yang penuh kasih.</span>
+            <span>Ã‚Â© 2026 {appSettings.nama_apk}. Setiap hewan berhak atas rumah yang penuh kasih.</span>
             <span className="footer-safe"><Icon name="shield" size={13} /> Data terenkripsi &amp; aman</span>
           </div>
         </div>
@@ -991,7 +990,7 @@ function Login() {
                 <p className="reset-copy">Masukkan password baru untuk akun kamu.</p>
               </>
             )}
-            <h2>Selamat Datang<br />Kembali <span className="dog-emoji">🐕</span></h2>
+            <h2>Selamat Datang<br />Kembali <span className="dog-emoji">Ã°Å¸Ââ€¢</span></h2>
             <p>Masuk untuk mulai perjalanan adopsimu.</p>
 
             {!resetToken && <div className="social-row single">

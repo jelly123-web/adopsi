@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import CustomerLayout from '../components/CustomerLayout'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 
 const roleLabels = {
   superadmin: 'Super Admin',
@@ -33,7 +32,7 @@ function Profile() {
   const authUserId = localStorage.getItem('authUserId')
   const authRole = localStorage.getItem('authRole') || 'costumer'
   const roleLabel = roleLabels[authRole] || 'Akun'
-  const profileEndpoint = authUserId ? `${API_BASE_URL}/profile/${authUserId}` : ''
+  const profileEndpoint = authUserId ? `/profile/${authUserId}` : ''
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth > 768 : true,
   )

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import MediaAvatar, { DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
@@ -125,7 +125,7 @@ function PetugasChat() {
     let active = true
     const loadCustomers = () => {
       axios
-        .get('http://localhost:3000/api/superadmin/users?page=1&limit=50&role=costumer')
+        .get('/superadmin/users?page=1&limit=50&role=costumer')
         .then((res) => {
           if (!active) return
           const data = res.data.data || []
@@ -156,7 +156,7 @@ function PetugasChat() {
 
   const syncChatData = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/chat-messages')
+      const res = await axios.get('/chat-messages')
       if (res.data?.success && Array.isArray(res.data.data)) {
         const dbMessages = res.data.data
         const localData = JSON.parse(localStorage.getItem(storageKey) || '{}')
@@ -268,7 +268,7 @@ function PetugasChat() {
     setMessage('')
 
     try {
-      await axios.post('http://localhost:3000/api/chat-messages', {
+      await axios.post('/chat-messages', {
         msgId,
         userId: Number(activeId),
         sender: authRole,
@@ -293,7 +293,7 @@ function PetugasChat() {
     window.dispatchEvent(new Event('chat-updated'))
 
     try {
-      await axios.delete(`http://localhost:3000/api/chat-messages/${encodeURIComponent(msgId)}`)
+      await axios.delete(`/chat-messages/${encodeURIComponent(msgId)}`)
     } catch (error) {
       console.error('Failed deleting chat message', error)
     }

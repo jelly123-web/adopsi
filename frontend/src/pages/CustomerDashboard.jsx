@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import { Link } from 'react-router-dom'
 import CustomerLayout from '../components/CustomerLayout'
 import { subscribeLiveData } from '../utils/liveDataEvents'
@@ -9,7 +9,7 @@ const isVideoMedia = (v = '') => v.startsWith('data:video') || /\.(mp4|webm|ogg)
 function PetMedia({ src, name }) {
   if (!src) return (
     <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg,#eff6ff,#dbeafe)', color: '#60a5fa', fontSize: 40 }}>
-      🐾
+      ðŸ¾
     </div>
   )
   if (isVideoMedia(src)) return <video src={src} autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -64,10 +64,10 @@ export default function CustomerDashboard() {
   useEffect(() => {
     let active = true
     const loadData = () => {
-      axios.get('http://localhost:3000/api/superadmin/adoption-requests')
+      axios.get('/superadmin/adoption-requests')
         .then((res) => { if (active) setRequests(res.data?.data || []) })
         .catch(() => { if (active) setRequests([]) })
-      axios.get('http://localhost:3000/api/superadmin/animals')
+      axios.get('/superadmin/animals')
         .then((res) => {
           if (!active) return
           const data = res.data?.data || []
@@ -92,8 +92,8 @@ export default function CustomerDashboard() {
               <i />
               Selamat Datang Kembali
             </div>
-            <h1>Hai, {userName}! 👋</h1>
-            <p>{totalAnimals || '—'} hewan menunggu untuk kamu bawa pulang hari ini.</p>
+            <h1>Hai, {userName}! ðŸ‘‹</h1>
+            <p>{totalAnimals || 'â€”'} hewan menunggu untuk kamu bawa pulang hari ini.</p>
           </div>
           <Link to="/customer/adoptions" className="customer-main-btn small">
             <i className="fas fa-star" style={{ fontSize: 11 }} />
@@ -140,7 +140,7 @@ export default function CustomerDashboard() {
               <div className="customer-pet-info">
                 <div>
                   <h2>{a.name}</h2>
-                  <p>{a.category_name || a.species || 'Hewan'} · {a.age || 0} thn</p>
+                  <p>{a.category_name || a.species || 'Hewan'} Â· {a.age || 0} thn</p>
                 </div>
               </div>
               <div className="customer-location">
@@ -176,7 +176,7 @@ export default function CustomerDashboard() {
                 <strong>Belum ada pengajuan adopsi</strong>
                 <p>Mulai adopsi hewan impianmu sekarang.</p>
                 <Link to="/customer/animals" className="customer-main-btn small" style={{ marginTop: 8 }}>
-                  🐾 Jelajahi Hewan
+                  ðŸ¾ Jelajahi Hewan
                 </Link>
               </div>
             ) : myRequests.slice(0, 4).map((r) => (
@@ -200,7 +200,7 @@ export default function CustomerDashboard() {
                       </div>
                     </div>
                   ) : null}
-                  <p>{r.animal_species || '-'} · Diajukan {formatDate(r.created_at)}</p>
+                  <p>{r.animal_species || '-'} Â· Diajukan {formatDate(r.created_at)}</p>
                 </div>
                 <span className={`customer-status ${getStatusStyle(r.status)}`}>
                   {getStatusLabel(r.status)}

@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import { Link } from 'react-router-dom'
 import CropModal from '../components/CropModal'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import { publishLiveData } from '../utils/liveDataEvents'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 const defaultSettings = {
   nama_apk: 'Adopsi Hewan',
   warna_apk: '#0EA5E9',
@@ -199,7 +198,7 @@ function PengaturanSistem() {
     e.preventDefault()
     setLoading(true)
     try {
-      await axios.put(`${API_BASE_URL}/superadmin/settings`, formData)
+      await axios.put(`/superadmin/settings`, formData)
       document.documentElement.style.setProperty('--app-accent', formData.warna_apk || '#0EA5E9')
       if (formData.dashboard_bg_apk) {
         document.documentElement.style.setProperty('--dashboard-bg-image', `url("${formData.dashboard_bg_apk}")`)
@@ -220,7 +219,7 @@ function PengaturanSistem() {
   useEffect(() => {
     let alive = true
 
-    axios.get(`${API_BASE_URL}/superadmin/settings`)
+    axios.get(`/superadmin/settings`)
       .then((response) => {
         if (!alive || !response.data.data) return
         const settings = { ...defaultSettings, ...response.data.data }
@@ -475,7 +474,7 @@ function PengaturanSistem() {
                               })
                             }}
                           >
-                            ×
+                            Ãƒâ€”
                           </button>
                         </div>
                       )}

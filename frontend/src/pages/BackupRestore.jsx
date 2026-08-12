@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/api";
 import "../App.css";
 
 export default function BackupRestore() {
@@ -19,7 +19,7 @@ export default function BackupRestore() {
 
   const loadHistory = async () => {
     try {
-      const res = await axios.get("/api/backup/history");
+      const res = await axios.get("/backup/history");
       setHistory(res.data);
     } catch (err) {
       console.log(err);
@@ -35,7 +35,7 @@ export default function BackupRestore() {
     try {
       setLoading(true);
 
-      await axios.post("/api/backup", {
+      await axios.post("/backup", {
         name: backupName,
         description,
       });
@@ -65,7 +65,7 @@ export default function BackupRestore() {
     try {
       setRestoreLoading(true);
 
-      await axios.post("/api/restore", formData, {
+      await axios.post("/restore", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -78,6 +78,22 @@ export default function BackupRestore() {
       alert("Restore gagal");
     } finally {
       setRestoreLoading(false);
+    }
+  };
+
+  const handleDownload = async (id) => {
+    try {
+      const response = await axios.get(`/backup/download/${id}`, {
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `backup-${id}.sql`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Gagal mengunduh backup");
     }
   };
 
@@ -218,12 +234,7 @@ export default function BackupRestore() {
 
                 <button
                   className="btn-download"
-                  onClick={()=>{
-                    window.open(
-                      `/api/backup/download/${item.id}`,
-                      "_blank"
-                    );
-                  }}
+                  onClick={() => handleDownload(item.id)}
                 >
                   Download
                 </button>
@@ -243,7 +254,7 @@ export default function BackupRestore() {
                       setRestoreLoading(true);
 
                       await axios.post(
-                        `/api/restore/${item.id}`
+                        `/restore/${item.id}`
                       );
 
                       alert("Restore berhasil");
@@ -276,7 +287,7 @@ export default function BackupRestore() {
                     try{
 
                       await axios.delete(
-                        `/api/backup/${item.id}`
+                        `/backup/${item.id}`
                       );
 
                       loadHistory();

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import { Link } from 'react-router-dom'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
@@ -54,7 +54,7 @@ function formatActivityTime(value) {
 }
 
 
-/* ── Dashboard Page ── */
+/* â”€â”€ Dashboard Page â”€â”€ */
 const getRoleAdoptionPath = (role) => {
   if (role === 'admin') return '/admin/adoptions'
   if (role === 'petugas') return '/petugas/adoptions'
@@ -112,7 +112,7 @@ function Dashboard() {
 
   const loadDashboard = useCallback(() => {
     axios
-      .get(`http://localhost:3000/api/superadmin/dashboard?role=${encodeURIComponent(authRole)}`)
+      .get(`/superadmin/dashboard?role=${encodeURIComponent(authRole)}`)
       .then((response) => {
         const data = response.data?.data || defaultDashboardData
         setDashboardData({
@@ -130,7 +130,7 @@ function Dashboard() {
       })
 
     axios
-      .get('http://localhost:3000/api/superadmin/adoption-requests')
+      .get('/superadmin/adoption-requests')
       .then((response) => {
         const waitingRequests = (response.data?.data || []).filter((request) =>
           ['pending', 'menunggu', 'Menunggu'].includes(request.status)

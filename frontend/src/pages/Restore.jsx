@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import { publishLiveData } from '../utils/liveDataEvents'
@@ -37,10 +37,10 @@ function Restore() {
   const loadDeletedData = async () => {
     try {
       const [usersRes, animalsRes, categoriesRes, adoptionsRes] = await Promise.all([
-        axios.get('http://localhost:3000/api/superadmin/deleted-users'),
-        axios.get('http://localhost:3000/api/superadmin/deleted-animals'),
-        axios.get('http://localhost:3000/api/superadmin/deleted-categories'),
-        axios.get('http://localhost:3000/api/superadmin/deleted-adoption-requests'),
+        axios.get('/superadmin/deleted-users'),
+        axios.get('/superadmin/deleted-animals'),
+        axios.get('/superadmin/deleted-categories'),
+        axios.get('/superadmin/deleted-adoption-requests'),
       ])
       setDeletedUsers(usersRes.data.data || [])
       setDeletedAnimals(animalsRes.data.data || [])
@@ -83,10 +83,10 @@ function Restore() {
     ;(async () => {
       try {
         const [usersRes, animalsRes, categoriesRes, adoptionsRes] = await Promise.all([
-          axios.get('http://localhost:3000/api/superadmin/deleted-users'),
-          axios.get('http://localhost:3000/api/superadmin/deleted-animals'),
-          axios.get('http://localhost:3000/api/superadmin/deleted-categories'),
-          axios.get('http://localhost:3000/api/superadmin/deleted-adoption-requests'),
+          axios.get('/superadmin/deleted-users'),
+          axios.get('/superadmin/deleted-animals'),
+          axios.get('/superadmin/deleted-categories'),
+          axios.get('/superadmin/deleted-adoption-requests'),
         ])
         if (active) {
           setDeletedUsers(usersRes.data.data || [])
@@ -112,7 +112,7 @@ function Restore() {
       return
     }
     try {
-      const endpoint = `http://localhost:3000/api/superadmin/${type}/:id/restore`.replace(':id', id)
+      const endpoint = `/superadmin/${type}/:id/restore`.replace(':id', id)
       await axios.post(endpoint)
       await loadDeletedData()
       publishRestoredType(type)
@@ -127,7 +127,7 @@ function Restore() {
       return
     }
     try {
-      const endpoint = `http://localhost:3000/api/superadmin/${type}/${id}/permanent`
+      const endpoint = `/superadmin/${type}/${id}/permanent`
       await axios.delete(endpoint)
       await loadDeletedData()
       publishRestoredType(type)
@@ -146,7 +146,7 @@ function Restore() {
       return
     }
     try {
-      const endpoint = `http://localhost:3000/api/superadmin/deleted-${activeTab}/delete-all`
+      const endpoint = `/superadmin/deleted-${activeTab}/delete-all`
       await axios.post(endpoint)
       await loadDeletedData()
       publishRestoredType(activeTab)

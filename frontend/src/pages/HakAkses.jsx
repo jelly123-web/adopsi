@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import Toast from '../components/Toast'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 
 const roleLabels = {
   superadmin: 'Superadmin',
@@ -116,7 +115,7 @@ function HakAkses() {
   const loadPermissions = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${API_BASE_URL}/superadmin/permissions`)
+      const response = await axios.get(`/superadmin/permissions`)
       setPermissions(response.data?.data || {})
       setMessage('')
     } catch (error) {
@@ -147,7 +146,7 @@ function HakAkses() {
       setSaving(true)
       await Promise.all(
         roleOptions.map((role) =>
-          axios.put(`${API_BASE_URL}/superadmin/permissions`, {
+          axios.put(`/superadmin/permissions`, {
             role,
             permissions: permissions[role] || {},
           })

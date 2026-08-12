@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../utils/api'
 import { subscribeLiveData } from '../utils/liveDataEvents'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 const CHAT_STORAGE_KEY = 'petugasChatReplies'
 
 function getCustomerUserId() {
@@ -109,7 +108,7 @@ export default function CustomerLayout({ children }) {
     const items = []
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/superadmin/adoption-requests`)
+      const response = await axios.get(`/superadmin/adoption-requests`)
       const rows = Array.isArray(response.data?.data) ? response.data.data : []
       rows
         .filter((row) => String(row.user_id || '') === String(currentUserId) || (currentEmail && String(row.email || row.user_email || '').toLowerCase() === currentEmail))
@@ -169,7 +168,7 @@ export default function CustomerLayout({ children }) {
     }
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/chat-messages`)
+      const response = await axios.get(`/chat-messages`)
       const rows = Array.isArray(response.data?.data) ? response.data.data : []
       rows.forEach(addChatNotification)
     } catch {
@@ -228,7 +227,7 @@ export default function CustomerLayout({ children }) {
 
   return (
     <div className="customer-app min-h-screen font-inter bg-[#F8FAFC]" style={{ fontFamily: 'Inter, sans-serif' }}>
-      {/* ── NAVBAR ── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ NAVBAR Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <nav className="customer-topnav sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
           {/* Brand */}
@@ -350,7 +349,7 @@ export default function CustomerLayout({ children }) {
             </div>
             <span className="text-[13px] font-extrabold tracking-tight">{appName}</span>
           </div>
-          <p className="text-slate-500 text-[10px]">© 2026 {appName}. Setiap hewan berhak atas rumah yang penuh kasih.</p>
+          <p className="text-slate-500 text-[10px]">Ã‚Â© 2026 {appName}. Setiap hewan berhak atas rumah yang penuh kasih.</p>
         </div>
       </footer>
 

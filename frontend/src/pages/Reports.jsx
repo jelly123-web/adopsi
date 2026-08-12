@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import { Link } from 'react-router-dom'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
@@ -30,7 +30,7 @@ function Reports() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:3000/api/superadmin/reports')
+      .get('/superadmin/reports')
       .then((response) => {
         if (response.data?.data) {
           const data = response.data.data
@@ -94,7 +94,7 @@ function Reports() {
   const handleExportBackup = async () => {
     setBackupLoading(true)
     try {
-      const response = await axios.get('http://localhost:3000/api/superadmin/backup/export', {
+      const response = await axios.get('/superadmin/backup/export', {
         responseType: 'blob',
       })
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/json' }))
@@ -119,9 +119,9 @@ function Reports() {
     try {
       const text = await file.text()
       const payload = JSON.parse(text)
-      await axios.post('http://localhost:3000/api/superadmin/backup/import', payload)
+      await axios.post('/superadmin/backup/import', payload)
       publishImportedData()
-      const response = await axios.get('http://localhost:3000/api/superadmin/reports')
+      const response = await axios.get('/superadmin/reports')
       const data = response.data?.data || {}
       setReportData({
         ...defaultReportData,

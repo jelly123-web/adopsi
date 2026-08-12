@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import { publishLiveData, subscribeLiveData } from '../utils/liveDataEvents'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 const defaultScheduleStatus = 'Belum Dikonfirmasi Customer'
 
 const toDateTimeInputValue = (value) => {
@@ -60,7 +59,7 @@ function PetugasVisits() {
     }
 
     try {
-      await axios.put(`${API_BASE_URL}/superadmin/adoption-requests/${request.id}`, payload)
+      await axios.put(`/superadmin/adoption-requests/${request.id}`, payload)
       setRequests((prev) => prev.map((item) => (
         item.id === request.id ? { ...item, ...payload } : item
       )))
@@ -95,7 +94,7 @@ function PetugasVisits() {
     let active = true
     const loadRequests = () => {
       axios
-        .get(`${API_BASE_URL}/superadmin/adoption-requests`)
+        .get(`/superadmin/adoption-requests`)
         .then((response) => {
           if (active) setRequests(response.data.data || [])
         })

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import { useLocation } from 'react-router-dom'
 import CropModal from '../components/CropModal'
 import SuperadminNavbar from '../components/SuperadminNavbar'
@@ -105,7 +105,7 @@ function ManageAnimals() {
 
   const loadAnimals = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/superadmin/animals')
+      const response = await axios.get('/superadmin/animals')
       const data = response.data?.data || []
       setAnimals(data)
       setTotalAnimals(Array.isArray(data) ? data.length : (response.data?.total || 0))
@@ -116,7 +116,7 @@ function ManageAnimals() {
 
   const loadCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/superadmin/categories')
+      const response = await axios.get('/superadmin/categories')
       setCategories(['Semua', ...(response.data.data || []).map(cat => cat.name)])
     } catch {
       setCategories(['Semua'])
@@ -129,8 +129,8 @@ function ManageAnimals() {
     ;(async () => {
       try {
         const [animalsRes, categoriesRes] = await Promise.all([
-          axios.get('http://localhost:3000/api/superadmin/animals'),
-          axios.get('http://localhost:3000/api/superadmin/categories'),
+          axios.get('/superadmin/animals'),
+          axios.get('/superadmin/categories'),
         ])
         if (active) {
           const data = animalsRes.data?.data || []
@@ -302,7 +302,7 @@ function ManageAnimals() {
       // Try upload to backend endpoint; if it fails, fall back to data URL
       setIsUploading(true)
       try {
-        const res = await axios.post('http://localhost:3000/api/superadmin/upload-photo', { image: dataUrl })
+        const res = await axios.post('/superadmin/upload-photo', { image: dataUrl })
         const url = res?.data?.url
         if (url) {
           setForm((current) => ({ ...current, [cropTargetField]: url }))
@@ -355,9 +355,9 @@ function ManageAnimals() {
     try {
       const payload = { ...form, age: Number(form.age) }
       if (editingId) {
-        await axios.put(`http://localhost:3000/api/superadmin/animals/${editingId}`, payload)
+        await axios.put(`/superadmin/animals/${editingId}`, payload)
       } else {
-        await axios.post('http://localhost:3000/api/superadmin/animals', payload)
+        await axios.post('/superadmin/animals', payload)
       }
       await loadAnimals()
       dispatchAnimalUpdate()
@@ -414,7 +414,7 @@ function ManageAnimals() {
   const handleDelete = async (id) => {
     if (!window.confirm('Hapus hewan ini?')) return
     try {
-      await axios.delete(`http://localhost:3000/api/superadmin/animals/${id}`)
+      await axios.delete(`/superadmin/animals/${id}`)
       await loadAnimals()
       dispatchAnimalUpdate()
       if (editingId === id) {
@@ -432,7 +432,7 @@ function ManageAnimals() {
     }
     if (!window.confirm(`Hapus semua hewan? Aksi ini akan menghapus ${totalAnimals} hewan secara permanen. Lanjutkan?`)) return
     try {
-      const res = await axios.post('http://localhost:3000/api/superadmin/animals/delete-all')
+      const res = await axios.post('/superadmin/animals/delete-all')
       await loadAnimals()
       dispatchAnimalUpdate()
       if (editingId) closeDrawer()
@@ -778,7 +778,7 @@ function ManageAnimals() {
               </label>
               {form.photo && (
                 <div className="selected-photo">
-                  <button className="photo-clear" title="Hapus foto" onClick={() => setForm((c) => ({ ...c, photo: '' }))}>×</button>
+                  <button className="photo-clear" title="Hapus foto" onClick={() => setForm((c) => ({ ...c, photo: '' }))}>Ã—</button>
                   {isVideoMedia(form.photo) ? (
                     <video src={form.photo} controls muted playsInline />
                   ) : (
@@ -859,7 +859,7 @@ function ManageAnimals() {
                         <div className="selected-photo">
                           {value && (
                             <button className="photo-clear" type="button" title="Hapus" onClick={() => setForm(c => ({ ...c, [field]: '' }))} style={{ position: 'absolute', top: 2, right: 2, width: 20, height: 20, fontSize: 12, zIndex: 2 }}>
-                              ×
+                              Ã—
                             </button>
                           )}
                           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 10, textAlign: 'center', padding: '2px 0', zIndex: 1 }}>{labels[field]}</div>

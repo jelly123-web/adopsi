@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import { Link } from 'react-router-dom'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
@@ -24,7 +24,7 @@ function ManageCategories() {
 
   const loadCategories = async (page = 1, search = '') => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/superadmin/categories?page=${page}&limit=6&search=${search}`)
+      const response = await axios.get(`/superadmin/categories?page=${page}&limit=6&search=${search}`)
       setCategories(response.data.data || [])
       setCurrentPage(response.data.page || 1)
       setTotalPages(response.data.pages || 1)
@@ -38,7 +38,7 @@ function ManageCategories() {
     let active = true
     ;(async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/superadmin/categories?page=1&limit=6`)
+        const response = await axios.get(`/superadmin/categories?page=1&limit=6`)
         if (active) {
           setCategories(response.data.data || [])
           setCurrentPage(response.data.page || 1)
@@ -69,9 +69,9 @@ function ManageCategories() {
     event.preventDefault()
     try {
       if (editingId) {
-        await axios.put(`http://localhost:3000/api/superadmin/categories/${editingId}`, form)
+        await axios.put(`/superadmin/categories/${editingId}`, form)
       } else {
-        await axios.post('http://localhost:3000/api/superadmin/categories', form)
+        await axios.post('/superadmin/categories', form)
       }
       await loadCategories(1, searchTerm)
       publishLiveData('categories')
@@ -128,7 +128,7 @@ function ManageCategories() {
   const handleDelete = async (id) => {
     if (!window.confirm('Hapus kategori ini?')) return
     try {
-      await axios.delete(`http://localhost:3000/api/superadmin/categories/${id}`)
+      await axios.delete(`/superadmin/categories/${id}`)
       await loadCategories(currentPage, searchTerm)
       publishLiveData('categories')
       if (editingId === id) {
@@ -148,7 +148,7 @@ function ManageCategories() {
       }
       
       for (const category of categories) {
-        await axios.delete(`http://localhost:3000/api/superadmin/categories/${category.id}`)
+        await axios.delete(`/superadmin/categories/${category.id}`)
       }
       
       await loadCategories(1, searchTerm)
@@ -303,7 +303,7 @@ function ManageCategories() {
                     }
                   }}
                 >
-                  ◀
+                  â—€
                 </button>
 
                 <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
@@ -388,7 +388,7 @@ function ManageCategories() {
                     }
                   }}
                 >
-                  ▶
+                  â–¶
                 </button>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import MediaAvatar, { DEFAULT_ANIMAL_PHOTO, DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
@@ -52,7 +52,7 @@ function VerifyAdoptions() {
 
   const loadRequests = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/superadmin/adoption-requests')
+      const response = await axios.get('/superadmin/adoption-requests')
       setRequests(response.data.data || [])
     } catch {
       setRequests([])
@@ -61,7 +61,7 @@ function VerifyAdoptions() {
 
   const updateStatus = async (id, status) => {
     try {
-      await axios.put(`http://localhost:3000/api/superadmin/adoption-requests/${id}`, { status })
+      await axios.put(`/superadmin/adoption-requests/${id}`, { status })
       await loadRequests()
       publishLiveData('adoptions')
     } catch (error) {
@@ -79,7 +79,7 @@ function VerifyAdoptions() {
     let active = true
     ;(async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/superadmin/adoption-requests')
+        const response = await axios.get('/superadmin/adoption-requests')
         if (active) {
           setRequests(response.data.data || [])
         }

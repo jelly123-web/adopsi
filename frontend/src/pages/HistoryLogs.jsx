@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import { Link } from 'react-router-dom'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
@@ -34,7 +34,7 @@ function HistoryLogs() {
         setLocationError(null)
         setLoadingLocation(false)
 
-        axios.post('http://localhost:3000/api/superadmin/activity-logs', {
+        axios.post('/superadmin/activity-logs', {
           type: 'location',
           title: 'Izin Lokasi Diberikan',
           description: `Superadmin memberikan izin lokasi browser. Lat: ${coords.lat.toFixed(4)}, Lng: ${coords.lng.toFixed(4)}`,
@@ -60,7 +60,7 @@ function HistoryLogs() {
   const fetchLogs = (p = page) => {
     setLoading(true)
     axios
-      .get('http://localhost:3000/api/superadmin/activity-logs', { params: { page: p, limit } })
+      .get('/superadmin/activity-logs', { params: { page: p, limit } })
       .then((response) => {
         setActivityLogs(response.data?.data || [])
         setTotalLogs(response.data?.total || 0)
@@ -77,7 +77,7 @@ function HistoryLogs() {
 
   const recordPageVisit = async () => {
     try {
-      await axios.post('http://localhost:3000/api/superadmin/activity-logs', {
+      await axios.post('/superadmin/activity-logs', {
         type: 'navigation',
         title: 'Membuka History Logs',
         description: 'Superadmin membuka halaman History Logs.',
@@ -106,7 +106,7 @@ function HistoryLogs() {
     }
 
     try {
-      await axios.delete('http://localhost:3000/api/superadmin/activity-logs')
+      await axios.delete('/superadmin/activity-logs')
       setActivityLogs([])
       setTotalLogs(0)
       setPages(1)
@@ -247,7 +247,7 @@ function HistoryLogs() {
                           <div>
                             <strong>{log.user_name || 'User'}</strong>
                             <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
-                              {log.user_email || '-'} • {log.user_role || 'user'}
+                              {log.user_email || '-'} â€¢ {log.user_role || 'user'}
                             </div>
                             
                           </div>
@@ -300,7 +300,7 @@ function HistoryLogs() {
             {/* Pagination Controls */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px' }}>
               <div style={{ color: 'var(--muted)' }}>
-                Menampilkan halaman {page} dari {pages} — total {totalLogs} entri
+                Menampilkan halaman {page} dari {pages} â€” total {totalLogs} entri
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn" onClick={() => fetchLogs(Math.max(1, page - 1))} disabled={page <= 1}>Prev</button>

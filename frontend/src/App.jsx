@@ -1,5 +1,6 @@
 import { Component, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import axios from './utils/api'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register.jsx'
@@ -25,7 +26,6 @@ import CustomerStatus from './pages/CustomerStatus'
 import CustomerChat from './pages/CustomerChat'
 import './App.css'
 
-const API_BASE_URL = 'http://localhost:3000/api'
 const adminNavTargets = new Map([
   ['Dashboard', '/admin/dashboard'],
   ['Kelola Hewan', '/admin/animals'],
@@ -188,11 +188,10 @@ function AppSettingsBridge() {
       }
     }
 
-    fetch(`${API_BASE_URL}/superadmin/settings`)
-      .then((response) => response.json())
+    axios.get('/superadmin/settings')
       .then((payload) => {
         if (!alive) return
-        const settings = payload?.data || {}
+        const settings = payload.data?.data || {}
         localStorage.setItem('appSettings', JSON.stringify(settings))
         applySettingsToDocument(settings)
       })

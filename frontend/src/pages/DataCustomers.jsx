@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import MediaAvatar, { DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
@@ -31,7 +31,7 @@ function DataCustomers() {
   const loadCustomers = async (page = 1) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/superadmin/users?page=${page}&limit=10&role=costumer`,
+        `/superadmin/users?page=${page}&limit=10&role=costumer`,
       )
       setCustomers(response.data.data || [])
       setCurrentPage(response.data.page || 1)
@@ -56,7 +56,7 @@ function DataCustomers() {
     if (!window.confirm('Hapus semua data customer?')) return
 
     try {
-      await axios.post('http://localhost:3000/api/superadmin/customers/delete-all')
+      await axios.post('/superadmin/customers/delete-all')
       await loadCustomers(1)
       publishLiveData('customers')
     } catch (error) {
@@ -69,7 +69,7 @@ function DataCustomers() {
     ;(async () => {
       try {
         const response = await axios.get(
-          'http://localhost:3000/api/superadmin/users?page=1&limit=10&role=costumer',
+          '/superadmin/users?page=1&limit=10&role=costumer',
         )
         if (active) {
           setCustomers(response.data.data || [])

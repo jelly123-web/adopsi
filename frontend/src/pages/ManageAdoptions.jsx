@@ -1,5 +1,5 @@
-﻿import { useEffect, useState } from 'react'
-import axios from 'axios'
+import { useEffect, useState } from 'react'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 import MediaAvatar, { DEFAULT_ANIMAL_PHOTO, DEFAULT_USER_PHOTO, pickMedia } from '../components/MediaAvatar'
@@ -55,7 +55,7 @@ function ManageAdoptions() {
 
   const loadRequests = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/superadmin/adoption-requests')
+      const response = await axios.get('/superadmin/adoption-requests')
       setRequests(response.data.data || [])
       setCurrentPage(1)
     } catch {
@@ -75,7 +75,7 @@ function ManageAdoptions() {
     }
 
     try {
-      await axios.post('http://localhost:3000/api/superadmin/adoption-requests/delete-all')
+      await axios.post('/superadmin/adoption-requests/delete-all')
       await loadRequests()
       publishLiveData('adoptions')
       window.alert(`${requests.length} pengajuan berhasil dihapus.`)
@@ -86,7 +86,7 @@ function ManageAdoptions() {
 
   const handleUpdateStatus = async (id, status) => {
     try {
-      await axios.put(`http://localhost:3000/api/superadmin/adoption-requests/${id}`, { status })
+      await axios.put(`/superadmin/adoption-requests/${id}`, { status })
       await loadRequests()
       publishLiveData('adoptions')
     } catch (error) {
@@ -97,7 +97,7 @@ function ManageAdoptions() {
   const handleDelete = async (id) => {
     if (!window.confirm('Hapus pengajuan ini?')) return
     try {
-      await axios.delete(`http://localhost:3000/api/superadmin/adoption-requests/${id}`)
+      await axios.delete(`/superadmin/adoption-requests/${id}`)
       await loadRequests()
       publishLiveData('adoptions')
     } catch (error) {
@@ -141,7 +141,7 @@ function ManageAdoptions() {
     let active = true
     ;(async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/superadmin/adoption-requests')
+        const response = await axios.get('/superadmin/adoption-requests')
         if (active) {
           setRequests(response.data.data || [])
           setCurrentPage(1)

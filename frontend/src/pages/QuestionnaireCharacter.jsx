@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import axios from 'axios'
+import axios from '../utils/api'
 import SuperadminNavbar from '../components/SuperadminNavbar'
 import SuperadminSidebar from '../components/SuperadminSidebar'
 
@@ -43,7 +43,7 @@ function QuestionnaireCharacter() {
 
   const loadQuestions = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/superadmin/questionnaire-questions')
+      const response = await axios.get('/superadmin/questionnaire-questions')
       setItems(response.data.data || [])
     } catch (error) {
       window.alert(error.response?.data?.message || 'Gagal memuat data kuisioner.')
@@ -77,7 +77,7 @@ function QuestionnaireCharacter() {
 
   useEffect(() => {
     let active = true
-    axios.get('http://localhost:3000/api/superadmin/questionnaire-questions')
+    axios.get('/superadmin/questionnaire-questions')
       .then((response) => {
         if (active) setItems(response.data.data || [])
       })
@@ -123,9 +123,9 @@ function QuestionnaireCharacter() {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:3000/api/superadmin/questionnaire-questions/${editingId}`, payload)
+        await axios.put(`/superadmin/questionnaire-questions/${editingId}`, payload)
       } else {
-        await axios.post('http://localhost:3000/api/superadmin/questionnaire-questions', payload)
+        await axios.post('/superadmin/questionnaire-questions', payload)
       }
       await loadQuestions()
       resetForm()
@@ -149,7 +149,7 @@ function QuestionnaireCharacter() {
     if (!window.confirm('Hapus pertanyaan ini?')) return
 
     try {
-      await axios.delete(`http://localhost:3000/api/superadmin/questionnaire-questions/${id}`)
+      await axios.delete(`/superadmin/questionnaire-questions/${id}`)
       await loadQuestions()
       if (editingId === id) {
         resetForm()
