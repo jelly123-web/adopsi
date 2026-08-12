@@ -28,7 +28,9 @@ function ManageUsers() {
 
   const loadUsers = async (page = 1) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/superadmin/users?page=${page}&limit=6`)
+      const response = await axios.get('/api/superadmin/users', {
+        params: { page, limit: 6 },
+      })
       setUsers(response.data.data || [])
       setCurrentPage(response.data.page || 1)
       setTotalPages(response.data.pages || 1)
@@ -43,7 +45,9 @@ function ManageUsers() {
     let active = true
     ;(async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/superadmin/users?page=1&limit=6`)
+        const response = await axios.get('/api/superadmin/users', {
+          params: { page: 1, limit: 6 },
+        })
         if (active) {
           setUsers(response.data.data || [])
           setCurrentPage(response.data.page || 1)
@@ -74,9 +78,9 @@ function ManageUsers() {
     event.preventDefault()
     try {
       if (editingId) {
-        await axios.put(`http://localhost:3000/api/superadmin/users/${editingId}`, form)
+        await axios.put(`/api/superadmin/users/${editingId}`, form)
       } else {
-        await axios.post('http://localhost:3000/api/superadmin/users', form)
+        await axios.post('/api/superadmin/users', form)
       }
       await loadUsers(1)
       publishLiveData('users')
@@ -114,7 +118,7 @@ function ManageUsers() {
   const handleDelete = async (id) => {
     if (!window.confirm('Hapus user ini?')) return
     try {
-      await axios.delete(`http://localhost:3000/api/superadmin/users/${id}`)
+      await axios.delete(`/api/superadmin/users/${id}`)
       await loadUsers(currentPage)
       publishLiveData('users')
       publishLiveData('customers')
@@ -136,7 +140,7 @@ function ManageUsers() {
       }
       
       for (const user of usersToDelete) {
-        await axios.delete(`http://localhost:3000/api/superadmin/users/${user.id}`)
+        await axios.delete(`/api/superadmin/users/${user.id}`)
       }
       
       await loadUsers(1)
