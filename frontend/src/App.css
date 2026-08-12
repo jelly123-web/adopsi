@@ -3004,6 +3004,18 @@ table tbody tr:last-child td { border-bottom: none; }
   border-color: var(--red);
 }
 
+/* Always render a Unicode close symbol. This also prevents malformed legacy
+   text from appearing in the media-remove control. */
+.photo-clear {
+  font-size: 0;
+}
+
+.photo-clear::before {
+  content: "\\00d7";
+  font-size: 18px;
+  line-height: 1;
+}
+
 .crop-modal {
   position: fixed;
   inset: 0;
@@ -4967,6 +4979,40 @@ table tbody tr:last-child td { border-bottom: none; }
     grid-row: auto;
     justify-self: flex-start;
   }
+}
+
+/* Keep all remove-media controls as a clear UTF-8 close symbol. */
+.photo-clear {
+  font-size: 0;
+}
+
+.photo-clear::before {
+  content: "\00d7";
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* The old pagination arrow bytes were malformed. Hide that legacy text and
+   draw stable CSS arrows instead. */
+.pagination-arrow {
+  color: transparent !important;
+  letter-spacing: 0 !important;
+}
+
+.pagination-arrow::before {
+  color: #ffffff;
+  content: "\2039";
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.pagination-arrow:last-child::before {
+  content: "\203a";
+}
+
+.pagination-arrow:disabled::before {
+  color: #999999;
 }
 
 .chat-box {

@@ -1236,6 +1236,14 @@ async function updateSettings(req, res, next) {
   try {
     const settings = req.body || {}
 
+    if (Array.isArray(settings) || typeof settings !== "object") {
+      return res.status(400).json({ success: false, message: "Data pengaturan tidak valid." })
+    }
+
+    if (Object.values(settings).some((value) => typeof value !== "string")) {
+      return res.status(400).json({ success: false, message: "Nilai pengaturan harus berupa teks." })
+    }
+
     await superadminModel.updateSettings(settings)
 
     res.json({

@@ -373,7 +373,7 @@ function Register() {
         </div>
 
         <div className="panel-body">
-          <h2>Daftar Akun <span className="dog-emoji">Ã°Å¸Ââ€¢</span></h2>
+          <h2>Daftar Akun <span className="dog-emoji" role="img" aria-label="anjing">{'\u{1F415}'}</span></h2>
           <p>Silahkan daftar.</p>
 
           <form className="panel-form" onSubmit={handleSubmit}>

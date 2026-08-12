@@ -340,6 +340,7 @@ function ManageUsers() {
             }}>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <button
+                  className="pagination-arrow"
                   onClick={prevPage}
                   disabled={currentPage === 1}
                   style={{
@@ -425,6 +426,7 @@ function ManageUsers() {
                 </div>
 
                 <button
+                  className="pagination-arrow"
                   onClick={nextPage}
                   disabled={currentPage === totalPages}
                   style={{

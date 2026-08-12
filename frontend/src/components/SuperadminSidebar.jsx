@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 
 const superadminMenu = [
@@ -71,6 +71,7 @@ const hasUnreadCustomerChat = (role) => {
 }
 
 function SuperadminSidebar({ open = true, onClose }) {
+  const sidebarNavRef = useRef(null)
   const [authSnapshot, setAuthSnapshot] = useState(getAuthSnapshot)
   const [hasUnreadChat, setHasUnreadChat] = useState(() =>
     hasUnreadCustomerChat(getAuthSnapshot().role)
@@ -85,6 +86,26 @@ function SuperadminSidebar({ open = true, onClose }) {
     return () => {
       window.removeEventListener('auth-profile-updated', refreshAuth)
       window.removeEventListener('storage', refreshAuth)
+    }
+  }, [])
+
+  // The sidebar is recreated when the route changes. Keep its own scroll
+  // position so selecting a menu item near the bottom does not jump to MENU.
+  useLayoutEffect(() => {
+    const nav = sidebarNavRef.current
+    if (!nav) return undefined
+
+    const savedPosition = Number(sessionStorage.getItem('superadminSidebarScrollTop') || 0)
+    nav.scrollTop = Number.isFinite(savedPosition) ? savedPosition : 0
+
+    const savePosition = () => {
+      sessionStorage.setItem('superadminSidebarScrollTop', String(nav.scrollTop))
+    }
+
+    nav.addEventListener('scroll', savePosition, { passive: true })
+    return () => {
+      savePosition()
+      nav.removeEventListener('scroll', savePosition)
     }
   }, [])
 
@@ -135,7 +156,7 @@ function SuperadminSidebar({ open = true, onClose }) {
           </div>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav ref={sidebarNavRef} className="sidebar-nav">
           <div className="nav-section-title">MENU</div>
           {menuItems.map((item) => {
             const showChatUnread = item.to.includes('/chat') && !isCustomer && hasUnreadChat

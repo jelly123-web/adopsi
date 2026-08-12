@@ -247,7 +247,7 @@ function HistoryLogs() {
                           <div>
                             <strong>{log.user_name || 'User'}</strong>
                             <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
-                              {log.user_email || '-'} â€¢ {log.user_role || 'user'}
+                              {log.user_email || '-'} {'\u2022'} {log.user_role || 'user'}
                             </div>
                             
                           </div>
@@ -300,7 +300,7 @@ function HistoryLogs() {
             {/* Pagination Controls */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px' }}>
               <div style={{ color: 'var(--muted)' }}>
-                Menampilkan halaman {page} dari {pages} â€” total {totalLogs} entri
+                Menampilkan halaman {page} dari {pages} {'\u2014'} total {totalLogs} entri
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="btn" onClick={() => fetchLogs(Math.max(1, page - 1))} disabled={page <= 1}>Prev</button>

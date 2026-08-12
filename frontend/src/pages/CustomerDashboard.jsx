@@ -92,7 +92,7 @@ export default function CustomerDashboard() {
               <i />
               Selamat Datang Kembali
             </div>
-            <h1>Hai, {userName}! ðŸ‘‹</h1>
+            <h1>Hai, {userName}! <span role="img" aria-label="melambaikan tangan">{'\u{1F44B}'}</span></h1>
             <p>{totalAnimals || 'â€”'} hewan menunggu untuk kamu bawa pulang hari ini.</p>
           </div>
           <Link to="/customer/adoptions" className="customer-main-btn small">

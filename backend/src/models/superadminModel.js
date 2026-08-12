@@ -1093,12 +1093,24 @@ async function getSettings() {
 
 async function updateSettings(settings) {
   const pool = await getPool()
-  for (const [key, value] of Object.entries(settings)) {
-    await pool.query(
-      "INSERT INTO settings (setting_key, setting_value) VALUES ($1, $2) ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value",
-      [key, value],
-    )
-  }
+  const entries = Object.entries(settings)
+  if (!entries.length) return
+
+  // A single atomic query avoids one network round trip per field. PostgreSQL
+  // receives text in UTF-8, so emoji and other Unicode symbols are preserved.
+  await pool.query(
+    `
+      INSERT INTO settings (setting_key, setting_value)
+      SELECT setting_key, setting_value
+      FROM UNNEST($1::text[], $2::text[]) AS input(setting_key, setting_value)
+      ON CONFLICT (setting_key)
+      DO UPDATE SET setting_value = EXCLUDED.setting_value
+    `,
+    [
+      entries.map(([key]) => key),
+      entries.map(([, value]) => String(value ?? "")),
+    ],
+  )
 }
 
 async function getProfile() {

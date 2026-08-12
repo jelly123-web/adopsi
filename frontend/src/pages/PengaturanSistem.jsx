@@ -210,7 +210,11 @@ function PengaturanSistem() {
       publishSettings(formData)
       alert('Pengaturan berhasil disimpan!')
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal menyimpan pengaturan')
+      const status = error.response?.status
+      const message = error.response?.data?.message
+        || (status === 413 ? 'Ukuran gambar atau video terlalu besar. Gunakan total file maksimal 25 MB.' : null)
+        || 'Gagal menyimpan pengaturan'
+      alert(message)
     } finally {
       setLoading(false)
     }

@@ -990,7 +990,7 @@ function Login() {
                 <p className="reset-copy">Masukkan password baru untuk akun kamu.</p>
               </>
             )}
-            <h2>Selamat Datang<br />Kembali <span className="dog-emoji">Ã°Å¸Ââ€¢</span></h2>
+            <h2>Selamat Datang<br />Kembali <span className="dog-emoji" role="img" aria-label="anjing">{'\u{1F415}'}</span></h2>
             <p>Masuk untuk mulai perjalanan adopsimu.</p>
 
             {!resetToken && <div className="social-row single">
